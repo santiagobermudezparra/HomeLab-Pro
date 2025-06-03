@@ -5,7 +5,7 @@ metadata:
 spec:
   ingressClassName: traefik
   rules:
-    - host: linkding.watarystack.org
+    - host: ldpi.watarystack.org
       http:
         paths:
           - backend:
