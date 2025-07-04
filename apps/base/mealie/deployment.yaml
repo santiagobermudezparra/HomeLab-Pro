@@ -24,14 +24,6 @@ spec:
           name: mealie
           ports: 
             - containerPort: 9000
-          securityContext:
-            runAsNonRoot: true
-            runAsUser: 911
-            runAsGroup: 911
-            allowPrivilegeEscalation: false
-            capabilities:
-              drop:
-              - ALL
           volumeMounts:
           - mountPath: /app/data
             name: mealie-data  
