@@ -15,15 +15,28 @@ spec:
       labels:
         app: mealie
     spec:
+      securityContext:
+        runAsUser: 911
+        runAsGroup: 911
+        fsGroup: 911
       containers:
         - image: ghcr.io/mealie-recipes/mealie:v2.8.0 
           name: mealie
           ports: 
             - containerPort: 9000
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 911
+            runAsGroup: 911
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
           volumeMounts:
           - mountPath: /app/data
-            name: mealie-data    
+            name: mealie-data  
+      restartPolicy: Always
       volumes:
         - name: mealie-data
           persistentVolumeClaim:
-            claimName: mealie-data        
+            claimName: mealie-data
