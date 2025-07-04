@@ -24,6 +24,9 @@ spec:
           name: mealie
           ports: 
             - containerPort: 9000
+          env:
+            - name: NLTK_DATA
+              value: "/app/data/nltk_data"  
           volumeMounts:
           - mountPath: /app/data
             name: mealie-data  
