@@ -25,7 +25,7 @@ spec:
       tag: "v1.26.0"
       pullPolicy: IfNotPresent
     
-    replicaCount: 1  # Start with 1, can scale to 2 in staging
+    replicaCount: 1
     
     service:
       enabled: true
@@ -46,23 +46,18 @@ spec:
       - configMapRef:
           name: homarr-config
     
-    # Additional environment variables for non-root user
-    env:
-      PUID: "1000"  # Run as user 1000 instead of root
-      PGID: "1000"  # Run as group 1000 instead of root
-    
     # Database configuration - using MySQL
     database:
-      externalDatabaseEnabled: false  # Use included MySQL dependency
+      externalDatabaseEnabled: false
       migrationEnabled: true
     
     # MySQL dependency configuration (from Bitnami chart)
     mysql:
-      enabled: true  # Enable MySQL subchart
+      enabled: true
       auth:
         database: homarrdb
         username: homarr
-        existingSecret: db-secret  # Reference our secret
+        existingSecret: db-secret
         secretKeys:
           adminPassword: mysql-root-password
           userPassword: mysql-password
@@ -70,19 +65,19 @@ spec:
         persistence:
           enabled: true
           size: 2Gi
-          storageClass: ""  # Use default storage class
+          storageClass: ""
     
     # Homarr data persistence
     persistence:
       homarrDatabase:
-        enabled: false  # Disable since we're using MySQL
+        enabled: false  # Disabled because we're using MySQL
       
-      # Optional: Enable persistence for images/icons
+      # Enable persistence for images/icons
       homarrImages:
         enabled: true
         size: "1Gi"
         accessMode: "ReadWriteOnce"
-        storageClass: ""  # Use default storage class
+        storageClass: ""
     
     # Health checks
     livenessProbe:
@@ -103,21 +98,11 @@ spec:
       limits:
         memory: "1Gi"
         cpu: "1000m"
-     
-    # # Pod security context - run as non-root
-    # podSecurityContext:
-    #   fsGroup: 1000  # Ensures mounted volumes have correct group ownership
-    #   runAsNonRoot: true
-    #   runAsUser: 1000
-    #   runAsGroup: 1000
     
-    # # Container security context # Security context - let the image define the user
+    # Simple security context - no user changes
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: false
-    #   runAsNonRoot: true
-    #   runAsUser: 1000
-    #   runAsGroup: 1000
-    #   capabilities:
-    #     drop:
-    #     - ALL
+    
+    # Let the container run as default user (root)
+    # podSecurityContext: {}  # Empty = use container defaults
