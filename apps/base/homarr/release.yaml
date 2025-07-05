@@ -46,6 +46,11 @@ spec:
       - configMapRef:
           name: homarr-config
     
+    # Additional environment variables for non-root user
+    env:
+      PUID: "1000"  # Run as user 1000 instead of root
+      PGID: "1000"  # Run as group 1000 instead of root
+    
     # Database configuration - using MySQL
     database:
       externalDatabaseEnabled: false  # Use included MySQL dependency
@@ -99,19 +104,20 @@ spec:
         memory: "1Gi"
         cpu: "1000m"
     
-    # Security context - let the image define the user
+    # Pod security context - run as non-root
+    podSecurityContext:
+      fsGroup: 1000  # Ensures mounted volumes have correct group ownership
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+    
+    # Container security context
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: false
-    
-    # podSecurityContext:
-    #   fsGroup: 2000
-
-    # # Security context
-    # securityContext:
-    #   capabilities:
-    #     drop:
-    #       - ALL
-    #   readOnlyRootFilesystem: true
-    #   runAsNonRoot: true
-    #   runAsUser: 1000
+      runAsNonRoot: true
+      runAsUser: 1000
+      runAsGroup: 1000
+      capabilities:
+        drop:
+        - ALL
