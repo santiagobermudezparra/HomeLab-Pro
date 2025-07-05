@@ -100,7 +100,18 @@ spec:
         cpu: "1000m"
     
     # Security context - let the image define the user
-    securityContext:
-      allowPrivilegeEscalation: false
-      readOnlyRootFilesystem: false
+    # securityContext:
+    #   allowPrivilegeEscalation: false
+    #   readOnlyRootFilesystem: false
     
+    podSecurityContext:
+      fsGroup: 2000
+
+    # Security context
+    securityContext:
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
