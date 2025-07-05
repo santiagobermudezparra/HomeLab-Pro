@@ -103,21 +103,21 @@ spec:
       limits:
         memory: "1Gi"
         cpu: "1000m"
+     
+    # # Pod security context - run as non-root
+    # podSecurityContext:
+    #   fsGroup: 1000  # Ensures mounted volumes have correct group ownership
+    #   runAsNonRoot: true
+    #   runAsUser: 1000
+    #   runAsGroup: 1000
     
-    # Pod security context - run as non-root
-    podSecurityContext:
-      fsGroup: 1000  # Ensures mounted volumes have correct group ownership
-      runAsNonRoot: true
-      runAsUser: 1000
-      runAsGroup: 1000
-    
-    # Container security context
+    # # Container security context # Security context - let the image define the user
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: false
-      runAsNonRoot: true
-      runAsUser: 1000
-      runAsGroup: 1000
-      capabilities:
-        drop:
-        - ALL
+    #   runAsNonRoot: true
+    #   runAsUser: 1000
+    #   runAsGroup: 1000
+    #   capabilities:
+    #     drop:
+    #     - ALL
