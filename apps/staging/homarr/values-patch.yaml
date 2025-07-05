@@ -1,0 +1,21 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: homarr
+  namespace: homarr
+spec:
+  values:
+    # Staging-specific overrides - ONLY what's different from base
+    # replicaCount: 1  # Scale to 2 replicas in staging
+    
+    # Reference the encrypted database secret
+    envSecrets:
+      dbCredentials:
+        existingSecret: "db-secret"
+        dbEncryptionKey: "db-encryption-key"
+        dbUrlKey: "db-url"
+        dbPasswordKey: "mysql-root-password"
+        dbUserPasswordKey: "mysql-password"
+    
+    # NO storage configuration here - it inherits from base
+    # This follows the linkding pattern where base defines storage

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: homarr-cloudflared
+  namespace: homarr
+spec:
+  selector:
+    matchLabels:
+      app: homarr-cloudflared
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: homarr-cloudflared
+    spec:
+      containers:
+      - name: cloudflared
+        image: cloudflare/cloudflared:latest
+        args:
+        - tunnel
+        - --config
+        - /etc/cloudflared/config/config.yaml
+        - run
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 2000
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+        - name: config
+          mountPath: /etc/cloudflared/config
+          readOnly: true
+        - name: creds
+          mountPath: /etc/cloudflared/creds
+          readOnly: true
+      volumes:
+      - name: creds
+        secret:
+          secretName: tunnel-credentials  # Updated secret name
+      - name: config
+        configMap:
+          name: homarr-cloudflared  # Updated configmap name
+          items:
+          - key: config.yaml
+            path: config.yaml
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: homarr-cloudflared  # Updated configmap name
+  namespace: homarr
+data:
+  config.yaml: |
+    # Name of the tunnel you want to run
+    tunnel: homarr-tunnel  # Updated tunnel name
+    
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    
+    # Serves the metrics server under /metrics and the readiness server under /ready
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+    
+    ingress:
+    - hostname: homarr.watarystack.org  # Updated hostname for Homarr
+      service: http://homarr:7575        # Updated service and port
+    
+    # This rule sends traffic to the built-in hello-world HTTP server
+    - hostname: hello.example.com
+      service: hello_world
+      
+    # This rule matches any traffic which didn't match a previous rule
+    - service: http_status:404
