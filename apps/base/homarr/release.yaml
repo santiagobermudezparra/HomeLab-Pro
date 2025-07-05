@@ -24,9 +24,9 @@ spec:
       repository: ghcr.io/homarr-labs/homarr
       tag: "v1.26.0"
       pullPolicy: IfNotPresent
-    
+
     replicaCount: 1  # Start with 1, can scale to 2 in staging
-    
+
     service:
       enabled: true
       type: ClusterIP
@@ -35,22 +35,22 @@ spec:
           port: 7575
           protocol: TCP
           targetPort: http
-    
+
     containerPorts:
       http:
         port: 7575
         protocol: TCP
-    
+
     # Reference ConfigMap for environment variables
     envFrom:
       - configMapRef:
           name: homarr-config
-    
+
     # Database configuration - using MySQL
     database:
       externalDatabaseEnabled: false  # Use included MySQL dependency
       migrationEnabled: true
-    
+
     # MySQL dependency configuration (from Bitnami chart)
     mysql:
       enabled: true  # Enable MySQL subchart
@@ -66,30 +66,30 @@ spec:
           enabled: true
           size: 2Gi
           storageClass: ""  # Use default storage class
-    
+
     # Homarr data persistence
     persistence:
       homarrDatabase:
         enabled: false  # Disable since we're using MySQL
-      
+
       # Optional: Enable persistence for images/icons
       homarrImages:
         enabled: true
         size: "1Gi"
         accessMode: "ReadWriteOnce"
         storageClass: ""  # Use default storage class
-    
+
     # Health checks
     livenessProbe:
       httpGet:
         path: "/api/health/live"
         port: 7575
-    
+
     readinessProbe:
       httpGet:
         path: "/api/health/ready"
         port: 7575
-    
+
     # Resource limits
     resources:
       requests:
@@ -98,21 +98,16 @@ spec:
       limits:
         memory: "1Gi"
         cpu: "1000m"
-    
-    # Security context - let the image define the user
-    # securityContext:
-    #   allowPrivilegeEscalation: false
-    #   readOnlyRootFilesystem: false
-    
-    # -- Pod security context
-    podSecurityContext: {}
-    fsGroup: 2000
 
-    # -- Security context
-    securityContext: {}
+    # Pod security context
+    podSecurityContext:
+      fsGroup: 2000
+
+    # Security context
+    securityContext:
       capabilities:
         drop:
-        - ALL
+          - ALL
       readOnlyRootFilesystem: true
       runAsNonRoot: true
       runAsUser: 1000
