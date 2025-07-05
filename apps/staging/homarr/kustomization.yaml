@@ -4,6 +4,6 @@ namespace: homarr
 resources:
   - ../../base/homarr/
   - cloudflare-secret.yaml
-  # - cloudflare.yaml
+  - cloudflare.yaml
   - db-secret.yaml
   - values-patch.yaml
