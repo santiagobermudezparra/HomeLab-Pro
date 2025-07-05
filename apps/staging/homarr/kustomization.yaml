@@ -6,4 +6,6 @@ resources:
   - cloudflare-secret.yaml
   - cloudflare.yaml
   - db-secret.yaml
-  - values-patch.yaml
+
+patchesStrategicMerge:
+  - values-patch.yaml 
