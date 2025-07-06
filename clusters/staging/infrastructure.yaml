@@ -15,6 +15,11 @@ spec:
   path: ./infrastructure/controllers/staging
   prune: true
   wait: true  # Wait for resources to be ready
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cert-manager
+      namespace: cert-manager
   decryption:
     provider: sops
     secretRef:
