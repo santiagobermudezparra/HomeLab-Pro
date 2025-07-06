@@ -38,11 +38,15 @@ spec:
         ##
         hosts:
           - grafana.watarystack.org
-
-        ## TLS configuration for grafana Ingress
-        ## Secret must be manually created in the namespace
-        ##
-        tls: 
-          - secretName: grafana-tls-secret
+        
+        ## Annotations for cert-manager
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod  # 🎯 Use Cloudflare DNS challenge
+          # Optional: Force HTTPS redirect
+          traefik.ingress.kubernetes.io/redirect-entry-point: https
+        
+        ## TLS configuration - cert-manager will create this secret automatically
+        tls:
+          - secretName: grafana-tls-cert-manager  # 🎯 Different name to avoid conflicts
             hosts:
               - grafana.watarystack.org
