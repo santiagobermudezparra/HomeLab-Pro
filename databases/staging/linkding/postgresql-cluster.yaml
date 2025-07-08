@@ -21,9 +21,9 @@ spec:
     storageClass: ""  # Use default storage class
   
   # Monitoring
-  monitoring:
-    enabled: true
-    podMonitorEnabled: true
+  # monitoring:
+  #   enabled: true
+  #   podMonitorEnabled: true
   
   # Security
   superuserSecret:
