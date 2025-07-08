@@ -1,0 +1,18 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: linkding-backup
+  namespace: linkding-db
+spec:
+  # Schedule: Daily at 3 AM
+  schedule: "0 3 * * *"
+  
+  # Backup immediately on creation
+  immediate: true
+  
+  # Reference to the cluster
+  cluster:
+    name: linkding-postgres
+  
+  # Retention policy
+  backupOwnerReference: cluster

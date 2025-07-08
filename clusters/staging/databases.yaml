@@ -1,0 +1,24 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: databases
+  namespace: flux-system
+spec:
+  interval: 10m
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./databases/staging
+  prune: true
+  wait: true
+  dependsOn:
+    - name: infrastructure-controllers  # Wait for CloudNativePG operator
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: cnpg-controller-manager
+      namespace: cnpg-system
+  decryption:
+    provider: sops
+    secretRef:
+      name: sops-age

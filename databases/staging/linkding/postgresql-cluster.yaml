@@ -1,0 +1,62 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: linkding-postgres
+  namespace: linkding-db
+spec:
+  description: "PostgreSQL cluster for Linkding application"
+  
+  # Database configuration
+  instances: 1  # Start with 1, can scale to 3 later
+  
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
+      effective_cache_size: "512MB"
+  
+  # Storage configuration
+  storage:
+    size: 2Gi
+    storageClass: ""  # Use default storage class
+  
+  # Monitoring
+  monitoring:
+    enabled: true
+    podMonitorEnabled: true
+  
+  # Security
+  superuserSecret:
+    name: linkding-superuser
+  
+  # Database initialization
+  bootstrap:
+    initdb:
+      database: linkding
+      owner: linkding
+      secret:
+        name: linkding-db-credentials
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+  
+  # Service configuration
+  managed:
+    services:
+      disabledDefaultServices: ["ro"]  # Disable read-only service
+      additional:
+        - selectorType: rw
+          serviceTemplate:
+            metadata:
+              name: linkding-postgres-rw
+              annotations:
+                # Optional: expose via LoadBalancer for external access
+                # metallb.universe.tf/address-pool: database-pool
+            spec:
+              type: ClusterIP  # Change to LoadBalancer if needed
