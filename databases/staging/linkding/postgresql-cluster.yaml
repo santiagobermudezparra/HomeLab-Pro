@@ -46,17 +46,3 @@ spec:
       memory: "512Mi"
       cpu: "500m"
   
-  # Service configuration
-  managed:
-    services:
-      disabledDefaultServices: ["ro"]  # Disable read-only service
-      additional:
-        - selectorType: rw
-          serviceTemplate:
-            metadata:
-              name: linkding-postgres-rw
-              annotations:
-                # Optional: expose via LoadBalancer for external access
-                # metallb.universe.tf/address-pool: database-pool
-            spec:
-              type: ClusterIP  # Change to LoadBalancer if needed
