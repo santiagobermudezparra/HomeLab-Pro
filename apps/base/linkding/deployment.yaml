@@ -17,18 +17,38 @@ spec:
         runAsUser: 33
         runAsGroup: 33
 
+      # Wait for database to be ready
+      initContainers:
+        - name: wait-for-db
+          image: postgres:17
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h linkding-postgres-rw -p 5432 -U linkding; do
+                echo "Waiting for database..."
+                sleep 2
+              done
+              echo "Database is ready!"
+          env:
+            - name: PGPASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-db-credentials
+                  key: password
+
       containers:
         - name: linkding
           image: sissbruecker/linkding:1.31.0
           ports:
             - containerPort: 9090
 
-          # Environment configuration
           envFrom:
             - configMapRef:
                 name: linkding-configmap
             - secretRef:
                 name: linkding-container-env
+          
           env:
             - name: LD_DB_USER
               valueFrom:
@@ -51,24 +71,8 @@ spec:
                   name: linkding-superuser
                   key: password
 
-          # Health checks - let Kubernetes handle retries
-          readinessProbe:
-            httpGet:
-              path: /health  # Linkding health endpoint
-              port: 9090
-            initialDelaySeconds: 30
-            periodSeconds: 10
-            timeoutSeconds: 5
-            failureThreshold: 6  # Allow 6 failures (1 minute)
-          
-          livenessProbe:
-            httpGet:
-              path: /health
-              port: 9090
-            initialDelaySeconds: 60
-            periodSeconds: 30
-            timeoutSeconds: 5
-            failureThreshold: 3
+          securityContext:
+            allowPrivilegeEscalation: false
 
           volumeMounts:
             - name: linkding-data
