@@ -2,12 +2,10 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: linkding-postgres
-  namespace: linkding-db
+  namespace: linkding  # CHANGED: from linkding-db to linkding
 spec:
   description: "PostgreSQL cluster for Linkding application"
-  
-  # Database configuration
-  instances: 1  # Start with 1, can scale to 3 later
+  instances: 1
   
   postgresql:
     parameters:
@@ -15,34 +13,16 @@ spec:
       shared_buffers: "128MB"
       effective_cache_size: "512MB"
   
-  # Storage configuration
   storage:
     size: 2Gi
-    storageClass: ""  # Use default storage class
+    # storageClass: ""
   
-  # Monitoring
-  # monitoring:
-  #   enabled: true
-  #   podMonitorEnabled: true
-  
-  # Security
   superuserSecret:
     name: linkding-superuser
   
-  # Database initialization
   bootstrap:
     initdb:
       database: linkding
       owner: linkding
       secret:
         name: linkding-db-credentials
-  
-  # Resource limits
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "100m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  

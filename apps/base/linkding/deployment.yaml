@@ -13,9 +13,9 @@ spec:
         app: linkding
     spec:
       securityContext:
-        fsGroup: 33           # www-data group ID
-        runAsUser: 33         # www-data user ID
-        runAsGroup: 33        # www-data group ID
+        fsGroup: 33
+        runAsUser: 33
+        runAsGroup: 33
 
       containers:
         - name: linkding
@@ -23,11 +23,37 @@ spec:
           ports:
             - containerPort: 9090
 
+          # Load configuration from ConfigMap and Secrets
           envFrom:
-            # - configMapRef:
-            #    name: linkding-configmap
+            - configMapRef:
+                name: linkding-configmap
             - secretRef:
                 name: linkding-container-env
+          
+          # Database credentials
+          env:
+            - name: LD_DB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-db-credentials
+                  key: username
+            - name: LD_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-db-credentials
+                  key: password
+            
+            # Superuser credentials (referenced from secret)
+            - name: LD_SUPERUSER_NAME
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-superuser
+                  key: username
+            - name: LD_SUPERUSER_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: linkding-superuser
+                  key: password
 
           securityContext:
             allowPrivilegeEscalation: false
@@ -40,4 +66,3 @@ spec:
         - name: linkding-data
           persistentVolumeClaim:
             claimName: linkding-data-pvc
-

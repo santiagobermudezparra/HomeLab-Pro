@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linkding-configmap
+data:
+  # Database configuration (simplified DNS - same namespace)
+  LD_DB_ENGINE: "postgres"
+  LD_DB_HOST: "linkding-postgres-rw"  # Simple name, same namespace
+  LD_DB_PORT: "5432"
+  LD_DB_DATABASE: "linkding"
+  
+  # Application configuration
+  LD_CSRF_TRUSTED_ORIGINS: "https://linkding.watarystack.org"
+  LD_ALLOWED_HOSTS: "*"

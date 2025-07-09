@@ -2,7 +2,7 @@ apiVersion: postgresql.cnpg.io/v1
 kind: ScheduledBackup
 metadata:
   name: linkding-backup
-  namespace: linkding-db
+  namespace: linkding
 spec:
   # Schedule: Daily at 3 AM
   schedule: "0 3 * * *"
