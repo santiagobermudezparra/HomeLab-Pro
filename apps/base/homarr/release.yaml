@@ -46,51 +46,43 @@ spec:
       - configMapRef:
           name: homarr-config
     
-    # Database configuration - using MySQL
+    # DISABLE MySQL - Homarr uses SQLite by default
+    mysql:
+      enabled: false
+    
+    # Database configuration - using SQLite (default)
     database:
       externalDatabaseEnabled: false
       migrationEnabled: true
     
-    # MySQL dependency configuration (from Bitnami chart)
-    mysql:
-      enabled: true
-      auth:
-        database: homarrdb
-        username: homarr
-        existingSecret: db-secret
-        secretKeys:
-          adminPassword: mysql-root-password
-          userPassword: mysql-password
-      primary:
-        persistence:
-          enabled: true
-          # Try without existingClaim first - let chart create PVC
-          size: 5Gi
-          storageClass: "local-path"
-    
-    # Homarr data persistence
+    # Correct persistence configuration based on Dockerfile
     persistence:
+      # Main data volume for SQLite database (/data)
       homarrDatabase:
-        enabled: false  # Disabled because we're using MySQL
+        enabled: true
+        existingClaim: homarr-data-pvc
+        mountPath: /data
       
-      # Enable persistence for images/icons
+      # Config volume for configuration files (/app/data/configs)
       homarrImages:
         enabled: true
-        # Try without existingClaim first - let chart create PVC
-        size: "2Gi"
-        accessMode: "ReadWriteOnce"
-        storageClass: "local-path"
+        existingClaim: homarr-configs-pvc
+        mountPath: /app/data/configs
     
     # Health checks
     livenessProbe:
       httpGet:
-        path: "/api/health/live"
+        path: "/"
         port: 7575
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
     
     readinessProbe:
       httpGet:
-        path: "/api/health/ready"
+        path: "/"
         port: 7575
+      initialDelaySeconds: 10
+      timeoutSeconds: 5
     
     # Resource limits
     resources:
@@ -101,7 +93,7 @@ spec:
         memory: "1Gi"
         cpu: "1000m"
     
-    # Simple security context - no user changes
+    # Security context
     securityContext:
       allowPrivilegeEscalation: false
       readOnlyRootFilesystem: false

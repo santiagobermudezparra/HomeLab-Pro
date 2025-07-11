@@ -8,19 +8,19 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
-  # storageClassName: ""  # Use default storage class
+      storage: 1Gi
+  storageClassName: local-path
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: homarr-mysql-data-pvc
+  name: homarr-configs-pvc
   namespace: homarr
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 2Gi
-  # storageClassName: ""  # Use default storage class
+      storage: 1Gi
+  storageClassName: local-path
