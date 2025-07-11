@@ -41,43 +41,45 @@ spec:
         port: 7575
         protocol: TCP
     
-    # Reference ConfigMap for environment variables
+    # Reference ConfigMap for basic config
     envFrom:
       - configMapRef:
           name: homarr-config
     
-    # DISABLE MySQL - Homarr uses SQLite by default
+    # REFERENCE THE SECRET HERE!
+    envSecrets:
+      dbCredentials:
+        existingSecret: "db-secret"        # This points to our secret
+        dbEncryptionKey: "db-encryption-key"  # Key from secret
+        dbUrlKey: "db-url"                    # Key from secret
+        dbPasswordKey: "mysql-root-password"  # Required by chart
+        dbUserPasswordKey: "mysql-password"   # Required by chart
+    
+    # DISABLE MySQL
     mysql:
       enabled: false
     
-    # Database configuration - using SQLite (default)
+    # Database configuration
     database:
       externalDatabaseEnabled: false
       migrationEnabled: true
     
-    # Correct persistence configuration based on Dockerfile
+    # Persistence for SQLite
     persistence:
-      # Main data volume for SQLite database (/data)
       homarrDatabase:
         enabled: true
         existingClaim: homarr-data-pvc
         mountPath: /data
-      
-      # Config volume for configuration files (/app/data/configs)
-      homarrImages:
-        enabled: true
-        existingClaim: homarr-configs-pvc
-        mountPath: /app/data/configs
     
-    # Simplified health checks - remove duplicates
+    # Health checks
     livenessProbe:
       httpGet:
-        path: "/"
+        path: /api/health/live
         port: 7575
     
     readinessProbe:
       httpGet:
-        path: "/"
+        path: /api/health/ready
         port: 7575
     
     # Resource limits
@@ -86,10 +88,5 @@ spec:
         memory: "256Mi"
         cpu: "100m"
       limits:
-        memory: "1Gi"
-        cpu: "1000m"
-    
-    # Security context
-    securityContext:
-      allowPrivilegeEscalation: false
-      readOnlyRootFilesystem: false
+        memory: "512Mi"
+        cpu: "500m"

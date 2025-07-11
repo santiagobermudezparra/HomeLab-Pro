@@ -5,7 +5,7 @@ resources:
   - ../../base/homarr/
   - cloudflare-secret.yaml
   - cloudflare.yaml
-#   - db-secret.yaml
+  - db-secret.yaml
 
 # patchesStrategicMerge:
 #   - values-patch.yaml 
