@@ -4,5 +4,5 @@ resources:
   - linkding
   - mealie
   - audiobookshelf
-  - homarr
+  # - homarr
   - pgadmin
