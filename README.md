@@ -13,16 +13,8 @@ A production-ready Kubernetes HomeLab built with GitOps principles, featuring au
 - [Access Methods](#-access-methods)
 - [Maintenance](#-maintenance)
 
-## 🚀 Applications
 
-### Self-Hosted Services
 
-| Service | Description | Access | Status |
-|---------|-------------|--------|--------|
-| **Linkding** | Bookmark manager | `linkding.watarystack.org` | ✅ Active |
-| **Mealie** | Recipe manager | `mealie.watarystack.org` | ✅ Active |
-| **Audiobookshelf** | Audiobook server | `audiobooks.watarystack.org` | ✅ Active |
-| **Homarr** | Dashboard & homepage | `homarr.watarystack.org` | ✅ Active |
 
 ### Infrastructure Services
 
@@ -211,25 +203,6 @@ HomeLab-Pro/
 - **AlertManager**: Alert routing and deduplication
 - **Notification Channels**: Multiple alert channels
 - **Escalation Policies**: Tiered alert escalation
-
-## 🌐 Access Methods
-
-### External Access (Public)
-
-| Service | URL | Method |
-|---------|-----|--------|
-| Linkding | `https://linkding.watarystack.org` | Cloudflare Tunnel |
-| Mealie | `https://mealie.watarystack.org` | Cloudflare Tunnel |
-| Audiobookshelf | `https://audiobooks.watarystack.org` | Cloudflare Tunnel |
-| Homarr | `https://homarr.watarystack.org` | Cloudflare Tunnel |
-
-### Internal Access (Private)
-
-| Service | URL | Method |
-|---------|-----|--------|
-| Grafana | `https://grafana.watarystack.org` | Traefik + cert-manager |
-| Prometheus | `http://prometheus.monitoring.svc.cluster.local` | Cluster DNS |
-| AlertManager | `http://alertmanager.monitoring.svc.cluster.local` | Cluster DNS |
 
 ### Administrative Access
 
