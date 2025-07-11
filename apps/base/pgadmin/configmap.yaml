@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgadmin-config
+  namespace: pgadmin
+data:
+  # pgAdmin configuration
+  PGADMIN_DEFAULT_EMAIL: "admin@homelab.local"
+  PGADMIN_LISTEN_PORT: "80"
+  PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "True"
+  # PGADMIN_CONFIG_WTF_CSRF_SSL_STRICT: "False"  # For local development
