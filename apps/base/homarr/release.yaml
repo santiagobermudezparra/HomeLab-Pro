@@ -50,7 +50,7 @@ spec:
     envSecrets:
       dbCredentials:
         existingSecret: "db-secret"        # This points to our secret
-        dbEncryptionKey: "db-encryption-key"  # Key from secret
+        dbEncryptionKey: "enctryption-key"  # Key from secret
         dbUrlKey: "db-url"                    # Key from secret
         dbPasswordKey: "mysql-root-password"  # Required by chart
         dbUserPasswordKey: "mysql-password"   # Required by chart
