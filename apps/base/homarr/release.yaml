@@ -69,20 +69,16 @@ spec:
         existingClaim: homarr-configs-pvc
         mountPath: /app/data/configs
     
-    # Health checks
+    # Simplified health checks - remove duplicates
     livenessProbe:
       httpGet:
         path: "/"
         port: 7575
-      initialDelaySeconds: 30
-      timeoutSeconds: 5
     
     readinessProbe:
       httpGet:
         path: "/"
         port: 7575
-      initialDelaySeconds: 10
-      timeoutSeconds: 5
     
     # Resource limits
     resources:
