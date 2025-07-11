@@ -64,18 +64,22 @@ spec:
       primary:
         persistence:
           enabled: true
-          existingClaim: homarr-mysql-data-pvc  # Reference  PVC
-
+          # Try without existingClaim first - let chart create PVC
+          size: 5Gi
+          storageClass: "local-path"
     
     # Homarr data persistence
     persistence:
       homarrDatabase:
         enabled: false  # Disabled because we're using MySQL
       
-      # Enable persistence for images/icons using  PVC
+      # Enable persistence for images/icons
       homarrImages:
         enabled: true
-        existingClaim: homarr-data-pvc  
+        # Try without existingClaim first - let chart create PVC
+        size: "2Gi"
+        accessMode: "ReadWriteOnce"
+        storageClass: "local-path"
     
     # Health checks
     livenessProbe:
