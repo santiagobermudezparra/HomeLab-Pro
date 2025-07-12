@@ -27,6 +27,14 @@ spec:
           kind: PrometheusRule
   values:
     grafana:
+      dashboards:
+        enabled: true
+        label: grafana_dashboard  # Matches the label in our ConfigMap
+        labelValue: "1"
+        searchNamespace: "monitoring"
+        provider:
+          allowUiUpdates: true
+
       adminPassword: watary
       ingress:
         enabled: true
