@@ -6,6 +6,9 @@ metadata:
 spec:
   description: "PostgreSQL cluster for Linkding application"
   instances: 1
+
+  monitoring:
+    enablePodMonitor: true
   
   postgresql:
     parameters:
