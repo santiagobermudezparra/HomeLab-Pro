@@ -1,4 +1,12 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
-resources:
-  - cnpg-dashboard.yaml
+
+namespace: monitoring
+
+configMapGenerator:
+- name: cnpg-grafana-dashboard
+  files:
+  - cnpg-cluster-overview.json=cnpg-dashboard.json
+  options:
+    labels:
+      grafana_dashboard: "1"
