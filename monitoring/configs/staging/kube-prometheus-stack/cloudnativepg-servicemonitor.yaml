@@ -5,14 +5,12 @@ metadata:
   namespace: monitoring
   labels:
     app.kubernetes.io/name: cloudnativepg
-    release: kube-prometheus-stack  # Important for Prometheus to pick it up
+    release: kube-prometheus-stack
 spec:
-  # This will match ALL CloudNativePG services automatically
   selector:
     matchExpressions:
       - key: cnpg.io/cluster
-        operator: Exists  # Any service with this label
-  # Monitor ALL namespaces
+        operator: Exists
   namespaceSelector: {}
   endpoints:
     - port: metrics
