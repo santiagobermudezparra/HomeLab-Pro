@@ -1,7 +1,7 @@
 apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
+kind: PodMonitor
 metadata:
-  name: cloudnativepg-clusters
+  name: cloudnativepg-pods
   namespace: monitoring
   labels:
     app.kubernetes.io/name: cloudnativepg
@@ -12,12 +12,14 @@ spec:
       - key: cnpg.io/cluster
         operator: Exists
   namespaceSelector: {}
-  endpoints:
+  podMetricsEndpoints:
     - port: metrics
       interval: 30s
       path: /metrics
       relabelings:
-        - sourceLabels: [__meta_kubernetes_service_label_cnpg_io_cluster]
+        - sourceLabels: [__meta_kubernetes_pod_label_cnpg_io_cluster]
           targetLabel: cluster_name
         - sourceLabels: [__meta_kubernetes_namespace]
           targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod_name

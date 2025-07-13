@@ -2,14 +2,16 @@ apiVersion: postgresql.cnpg.io/v1
 kind: Cluster
 metadata:
   name: linkding-postgres
-  namespace: linkding  # CHANGED: from linkding-db to linkding
+  namespace: linkding
 spec:
   description: "PostgreSQL cluster for Linkding application"
   instances: 1
-
-  monitoring:
-    enablePodMonitor: true
   
+  # Enable monitoring with service
+  monitoring:
+    enabled: true
+    podMonitorEnabled: true
+    
   postgresql:
     parameters:
       max_connections: "100"
