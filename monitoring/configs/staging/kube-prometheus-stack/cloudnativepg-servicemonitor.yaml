@@ -1,0 +1,25 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cloudnativepg-clusters
+  namespace: monitoring
+  labels:
+    app.kubernetes.io/name: cloudnativepg
+    release: kube-prometheus-stack  # Important for Prometheus to pick it up
+spec:
+  # This will match ALL CloudNativePG services automatically
+  selector:
+    matchExpressions:
+      - key: cnpg.io/cluster
+        operator: Exists  # Any service with this label
+  # Monitor ALL namespaces
+  namespaceSelector: {}
+  endpoints:
+    - port: metrics
+      interval: 30s
+      path: /metrics
+      relabelings:
+        - sourceLabels: [__meta_kubernetes_service_label_cnpg_io_cluster]
+          targetLabel: cluster_name
+        - sourceLabels: [__meta_kubernetes_namespace]
+          targetLabel: namespace

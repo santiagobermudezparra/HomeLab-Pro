@@ -26,6 +26,15 @@ spec:
         target:
           kind: PrometheusRule
   values:
+
+    prometheus:
+      prometheusSpec:
+        # Enable monitoring across ALL namespaces - this is the key!
+        serviceMonitorNamespaceSelector: {}
+        serviceMonitorSelector: {}
+        podMonitorNamespaceSelector: {}
+        podMonitorSelector: {}
+
     grafana:
       dashboards:
         enabled: true
