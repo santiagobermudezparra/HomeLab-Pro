@@ -8,13 +8,12 @@ metadata:
     release: kube-prometheus-stack
 spec:
   selector:
-    matchLabels:
-      cnpg.io/cluster: linkding-postgres
-  namespaceSelector:
-    matchNames:
-      - linkding
+    matchExpressions:
+      - key: cnpg.io/cluster
+        operator: Exists  # Any pod with this label (any CNPG cluster)
+  namespaceSelector: {}  # All namespaces
   podMetricsEndpoints:
-    - port: metrics  # Use the named port
+    - port: metrics
       interval: 30s
       path: /metrics
       relabelings:
@@ -22,3 +21,5 @@ spec:
           targetLabel: cluster_name
         - sourceLabels: [__meta_kubernetes_namespace]
           targetLabel: namespace
+        - sourceLabels: [__meta_kubernetes_pod_name]
+          targetLabel: pod_name
