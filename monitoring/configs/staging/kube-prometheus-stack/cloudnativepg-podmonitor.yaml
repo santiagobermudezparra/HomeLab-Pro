@@ -10,8 +10,9 @@ spec:
   selector:
     matchExpressions:
       - key: cnpg.io/cluster
-        operator: Exists  # Any pod with this label (any CNPG cluster)
-  namespaceSelector: {}  # All namespaces
+        operator: Exists
+  namespaceSelector:
+    matchNames: []  # Empty array means all namespaces
   podMetricsEndpoints:
     - port: metrics
       interval: 30s
