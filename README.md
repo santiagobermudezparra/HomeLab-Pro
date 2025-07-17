@@ -213,10 +213,6 @@ kubectl proxy
 # FluxCD UI
 flux get all
 
-# Direct service access
-kubectl port-forward svc/grafana 3000:80 -n monitoring
-```
-
 ## 🔧 Maintenance
 
 ### Regular Tasks
