@@ -7,3 +7,4 @@ resources:
   - deployment.yaml
   - configmap.yaml
   - clusterrole.yaml
+  - homepage-configmap.yaml
