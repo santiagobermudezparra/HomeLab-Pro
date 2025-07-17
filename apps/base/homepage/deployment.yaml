@@ -74,8 +74,8 @@ spec:
               name: logs
       volumes:
         - name: homepage-config
-          # configMap:
-          #   name: homepage
+          configMap:
+            name: homepage
           secret:
             secretName: homepage-config
         - name: logs
