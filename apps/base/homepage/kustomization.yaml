@@ -6,5 +6,5 @@ resources:
   - namespace.yaml
   - deployment.yaml
   - configmap.yaml
+  - homepage-configmap.yaml 
   - clusterrole.yaml
-  - homepage-configmap.yaml
