@@ -17,8 +17,27 @@ data:
     # Bookmarks will be configured through the UI
     []
   services.yaml: |
-    # Services will be configured through the UI
-    []
+    - HomeLab Services:
+        - Audiobookshelf:
+            href: https://audiobookshelf.watarystack.org
+            description: Audiobook and podcast server
+            icon: audiobookshelf.png
+        - Linkding:
+            href: https://linkding.watarystack.org
+            description: Bookmark manager
+            icon: linkding.png
+        - Mealie:
+            href: https://mealie.watarystack.org
+            description: Recipe manager
+            icon: mealie.png
+        - PgAdmin:
+            href: https://pgadmin.watarystack.org
+            description: PostgreSQL administration
+            icon: pgadmin.png
+        - Grafana:
+            href: https://grafana.watarystack.org
+            description: Monitoring stack
+            icon: grafana.png
   widgets.yaml: |
     - kubernetes:
         cluster:
