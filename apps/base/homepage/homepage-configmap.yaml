@@ -19,7 +19,7 @@ data:
   services.yaml: |
     - HomeLab Services:
         - Audiobookshelf:
-            href: https://audiobookshelf.watarystack.org
+            href: https://audiobooks.watarystack.org
             description: Audiobook and podcast server
             icon: audiobookshelf.png
         - Linkding:
