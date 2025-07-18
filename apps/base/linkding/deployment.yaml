@@ -18,24 +18,24 @@ spec:
         runAsGroup: 33
 
       # Wait for database to be ready
-      initContainers:
-        - name: wait-for-db
-          image: postgres:17
-          command:
-            - sh
-            - -c
-            - |
-              until pg_isready -h linkding-postgres-rw -p 5432 -U linkding; do
-                echo "Waiting for database..."
-                sleep 2
-              done
-              echo "Database is ready!"
-          env:
-            - name: PGPASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: linkding-db-credentials
-                  key: password
+      # initContainers:
+      #   - name: wait-for-db
+      #     image: postgres:17
+      #     command:
+      #       - sh
+      #       - -c
+      #       - |
+      #         until pg_isready -h linkding-postgres-rw -p 5432 -U linkding; do
+      #           echo "Waiting for database..."
+      #           sleep 2
+      #         done
+      #         echo "Database is ready!"
+      #     env:
+      #       - name: PGPASSWORD
+      #         valueFrom:
+      #           secretKeyRef:
+      #             name: linkding-db-credentials
+      #             key: password
 
       containers:
         - name: linkding
