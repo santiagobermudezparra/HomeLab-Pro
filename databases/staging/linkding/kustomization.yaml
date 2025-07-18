@@ -4,4 +4,4 @@ namespace: linkding
 resources:
   - secrets.yaml
   - postgresql-cluster.yaml
-  - backup-config.yaml
+  # - backup-config.yaml
