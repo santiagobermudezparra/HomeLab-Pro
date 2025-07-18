@@ -30,4 +30,4 @@ spec:
       database: linkding
       owner: linkding
       secret:
-        name: linkding-db-credential
+        name: linkding-db-credentials
