@@ -14,6 +14,10 @@ metadata:
     gethomepage.dev/name: Homepage
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - homepage.watarystack.org
+      secretName: homepage-tls
   rules:
     - host: homepage.watarystack.org
       http:
