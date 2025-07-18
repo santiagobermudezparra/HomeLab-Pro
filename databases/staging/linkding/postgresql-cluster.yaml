@@ -7,10 +7,10 @@ spec:
   description: "PostgreSQL cluster for Linkding application"
   instances: 1
   
-  # Enable monitoring with service
+  # Enable monitoring (remove podMonitorEnabled line)
   monitoring:
     enabled: true
-    podMonitorEnabled: true
+    # Remove this line: podMonitorEnabled: true
     
   postgresql:
     parameters:
@@ -30,4 +30,4 @@ spec:
       database: linkding
       owner: linkding
       secret:
-        name: linkding-db-credentials
+        name: linkding-db-credential
