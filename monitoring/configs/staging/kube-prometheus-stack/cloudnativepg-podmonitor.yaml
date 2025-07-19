@@ -12,7 +12,8 @@ spec:
       - key: cnpg.io/cluster
         operator: Exists
   namespaceSelector:
-    matchNames: []  # Empty array means all namespaces
+    any: true
+    
   podMetricsEndpoints:
     - port: metrics
       interval: 30s
