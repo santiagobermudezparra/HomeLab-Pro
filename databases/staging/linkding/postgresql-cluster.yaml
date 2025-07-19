@@ -9,7 +9,7 @@ spec:
   
   # Enable monitoring (remove podMonitorEnabled line)
   monitoring:
-    enabled: true
+    # enabled: true
     podMonitorEnabled: true
     # Remove this line: podMonitorEnabled: true
     
