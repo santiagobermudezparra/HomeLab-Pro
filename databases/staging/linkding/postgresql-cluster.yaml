@@ -8,9 +8,9 @@ spec:
   instances: 1
   
   # Enable monitoring (remove podMonitorEnabled line)
-  monitoring:
-    enabled: true
-    podMonitorEnabled: true
+  # monitoring:
+  #   enabled: true
+  #   podMonitorEnabled: true
 
     
   postgresql:
