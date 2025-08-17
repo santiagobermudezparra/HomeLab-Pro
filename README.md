@@ -2,6 +2,18 @@
 
 A production-ready Kubernetes HomeLab built with GitOps principles, featuring automated deployments, monitoring, and secure external access.
 
+### Devpod Instructions
+```
+.devcontainer
+├── kubeconfig  # my K3s config file needed
+└── setup.sh
+└── .devcontainer.json
+```
+
+**After Setting my dotfiles**
+- RUN : chmod +x .devcontainer/
+- RUN : devpod up .
+- RUN : bash .devcontainer/setup.sh
 ## 📋 Table of Contents
 
 - [Applications](#-applications)
