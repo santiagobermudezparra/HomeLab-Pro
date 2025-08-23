@@ -44,12 +44,19 @@ fi
 #  Install K9s
 echo "Installing K9s..."
 if ! command -v k9s &> /dev/null; then
+    # Get latest K9s version if not set
+    if [ -z "$K9S_VERSION" ]; then
+        K9S_VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest \
+            | grep -Po '"tag_name": "v\K[^"]*')
+    fi
+    echo "Latest K9s version: $K9S_VERSION"
+
     # Create a temporary directory for safe extraction and cleanup
     temp_dir=$(mktemp -d)
     echo "Using temporary directory: $temp_dir"
 
     # Download and extract the archive into the temporary directory
-    curl -LO "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_${ARCH_SUFFIX}.tar.gz"
+    curl -LO "https://github.com/derailed/k9s/releases/download/v${K9S_VERSION}/k9s_Linux_${ARCH_SUFFIX}.tar.gz"
     tar -xzf k9s_Linux_${ARCH_SUFFIX}.tar.gz -C "$temp_dir"
     
     # Move the executable from the temp directory to a bin path
