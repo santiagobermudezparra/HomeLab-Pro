@@ -1,0 +1,33 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: n8n-postgresql-cluster
+  namespace: n8n
+spec:
+  description: "PostgreSQL cluster for n8n application"
+  instances: 1
+  
+  # Enable monitoring (remove podMonitorEnabled line)
+  # monitoring:
+  #   enabled: true
+  #   podMonitorEnabled: true
+  
+  postgresql:
+    parameters:
+      max_connections: "200"
+      shared_buffers: "128MB" 
+      effective_cache_size: "512MB"
+  
+  storage:
+    size: 2Gi
+    # storageClass: "" # Use default storage class
+  
+  superuserSecret:
+    name: n8n-superuser
+  
+  bootstrap:
+    initdb:
+      database: n8n
+      owner: n8n
+      secret:
+        name: n8n-db-credentials
