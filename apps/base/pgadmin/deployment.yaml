@@ -22,7 +22,7 @@ spec:
 
       containers:
         - name: pgadmin
-          image: dpage/pgadmin4:8.2
+          image: dpage/pgadmin4:9.8.0
           ports:
             - containerPort: 80
               protocol: TCP
@@ -53,3 +53,4 @@ spec:
         - name: pgadmin-data
           persistentVolumeClaim:
             claimName: pgadmin-data-pvc
+
