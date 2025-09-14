@@ -5,6 +5,7 @@ resources:
   - mealie
   - audiobookshelf
   # - homarr
-  - pgadmin
+  #- pgadmin
   - homepage
   - n8n
+
