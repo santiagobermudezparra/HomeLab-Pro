@@ -37,7 +37,11 @@ data:
         - Grafana:
             href: https://grafana.watarystack.org
             description: Monitoring stack
-            icon: grafana.png
+            icon: grafana.png    
+        - n8n:
+            href:  https://n8n.watarystack.org
+            description: workflow automation platform
+            icon: n8n.png
   widgets.yaml: |
     - kubernetes:
         cluster:
@@ -60,3 +64,4 @@ data:
         provider: duckduckgo
         target: _blank
   docker.yaml: ""
+
