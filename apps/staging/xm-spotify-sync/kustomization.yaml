@@ -5,6 +5,7 @@ resources:
   - ../../base/xm-spotify-sync/
   - secret.yaml
   - ingress.yaml
+  - cloudflare-secret.yaml
 
 # Override the image with your actual GitHub username
 images:
