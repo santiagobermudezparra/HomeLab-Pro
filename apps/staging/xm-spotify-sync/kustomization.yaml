@@ -1,0 +1,16 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: xm-spotify-sync
+resources:
+  - ../../base/xm-spotify-sync/
+  - secret.yaml
+  - ingress.yaml
+
+# Override the image with your actual GitHub username
+images:
+  - name: ghcr.io/santiagobermudezparra/xm-spotify-sync-backend
+    newName: ghcr.io/santiagobermudezparra/xm-spotify-sync-backend
+    newTag: v0.1.0
+  - name: ghcr.io/santiagobermudezparra/xm-spotify-sync-frontend
+    newName: ghcr.io/santiagobermudezparra/xm-spotify-sync-frontend
+    newTag: v0.1.0

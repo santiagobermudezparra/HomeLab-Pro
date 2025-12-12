@@ -1,0 +1,106 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: xm-spotify-sync
+  labels:
+    app.kubernetes.io/name: xm-spotify-sync
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: xm-spotify-sync
+  template:
+    metadata:
+      labels:
+        app: xm-spotify-sync
+        app.kubernetes.io/name: xm-spotify-sync
+    spec:
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+
+      containers:
+        # Backend container (FastAPI)
+        - name: backend
+          image: ghcr.io/santiagobermudezparra/xm-spotify-sync-backend:v0.1.0
+          imagePullPolicy: Always
+          ports:
+            - name: backend
+              containerPort: 22112
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: xm-spotify-sync-config
+            - secretRef:
+                name: xm-spotify-sync-secret
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 22112
+            initialDelaySeconds: 30
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 22112
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+
+        # Frontend container (Flask)
+        - name: frontend
+          image: ghcr.io/santiagobermudezparra/xm-spotify-sync-frontend:v0.1.0
+          imagePullPolicy: Always
+          ports:
+            - name: frontend
+              containerPort: 22111
+              protocol: TCP
+          env:
+            - name: FRONTEND_PORT
+              value: "22111"
+            - name: API_URL
+              value: "http://localhost:22112"  # Connects to backend via localhost (same pod)
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "200m"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 22111
+            initialDelaySeconds: 15
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 22111
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            seccompProfile:
+              type: RuntimeDefault
+            capabilities:
+              drop:
+                - ALL
+
+      restartPolicy: Always

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: xm-spotify-sync
+  labels:
+    app.kubernetes.io/name: xm-spotify-sync
+spec:
+  type: ClusterIP
+  ports:
+    # Frontend port (main entry point)
+    - name: frontend
+      port: 22111
+      targetPort: frontend
+      protocol: TCP
+    # Backend API port (for direct API access if needed)
+    - name: backend
+      port: 22112
+      targetPort: backend
+      protocol: TCP
+  selector:
+    app: xm-spotify-sync
