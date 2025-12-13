@@ -3,7 +3,7 @@ kind: Kustomization
 resources:
   - linkding
   - mealie
-    #- xm-spotify-sync
+  - xm-spotify-sync
   - audiobookshelf
   # - homarr
   - pgadmin
