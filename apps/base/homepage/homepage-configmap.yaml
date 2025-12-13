@@ -42,6 +42,10 @@ data:
             href:  https://n8n.watarystack.org
             description: workflow automation platform
             icon: n8n.png
+        - xmspotify:
+            href:  https://xmspotify.watarystack.org
+            description: LifeWithJM
+            icon: radio.png
   widgets.yaml: |
     - kubernetes:
         cluster:
