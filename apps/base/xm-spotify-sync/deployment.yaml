@@ -23,7 +23,7 @@ spec:
       containers:
         # Backend container (FastAPI)
         - name: backend
-          image: ghcr.io/santiagobermudezparra/xm-spotify-sync-backend:v0.1.0
+          image: ghcr.io/santiagobermudezparra/xm-spotify-sync-backend:latest
           imagePullPolicy: Always
           ports:
             - name: backend
@@ -64,7 +64,7 @@ spec:
 
         # Frontend container (Flask)
         - name: frontend
-          image: ghcr.io/santiagobermudezparra/xm-spotify-sync-frontend:v0.1.0
+          image: ghcr.io/santiagobermudezparra/xm-spotify-sync-frontend:latest
           imagePullPolicy: Always
           ports:
             - name: frontend
