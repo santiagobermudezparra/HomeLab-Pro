@@ -10,7 +10,7 @@ data:
   
   # Sync settings
   SYNC_INTERVAL: "300"
-  LOG_LEVEL: "INFO"
+  LOG_LEVEL: "DEBUG"
   
   # Spotify settings (non-sensitive)
   SPOTIFY_PLAYLIST_ID: "2l5SCIiH1cjeZQ4TQ7PAAF"
