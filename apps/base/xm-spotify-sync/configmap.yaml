@@ -9,8 +9,8 @@ data:
   XM_STATION: "lifewithjohnmayer"
   
   # Sync settings
-  SYNC_INTERVAL: "300"
-  LOG_LEVEL: "DEBUG"
+  SYNC_INTERVAL: "5400"
+  LOG_LEVEL: "INFO"
   
   # Spotify settings (non-sensitive)
   SPOTIFY_PLAYLIST_ID: "2l5SCIiH1cjeZQ4TQ7PAAF"
