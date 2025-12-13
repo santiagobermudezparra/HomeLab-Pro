@@ -32,7 +32,7 @@ spec:
                 port:
                   number: 22111
           # Backend API (direct access)
-          - path: "/api"
+          - path: "/api/v1"
             pathType: Prefix
             backend:
               service:
