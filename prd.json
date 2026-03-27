@@ -1,0 +1,147 @@
+{
+  "project": "HomeLab-Pro",
+  "branchName": "ralph/add-filebrowser",
+  "description": "Deploy filebrowser to HomeLab K3s cluster — web-based file manager for PC-to-PC file transfers at filebrowser.watarystack.org via Cloudflare Tunnel, with SOPS-encrypted secrets and GitOps-compliant base/overlay manifests",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "Create feature branch",
+      "description": "As a developer, I need a feature branch so no changes land directly on main.",
+      "acceptanceCriteria": [
+        "Run: git checkout main && git pull origin main && git checkout -b feat/add-filebrowser",
+        "Branch feat/add-filebrowser is checked out and up to date with main",
+        "git status shows clean working tree on feat/add-filebrowser"
+      ],
+      "priority": 1,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-002",
+      "title": "Create base namespace and PVC storage manifests",
+      "description": "As a developer, I need the namespace and persistent storage defined in base so the app has a place to store its database and user files.",
+      "acceptanceCriteria": [
+        "apps/base/filebrowser/namespace.yaml creates namespace 'filebrowser'",
+        "apps/base/filebrowser/storage.yaml defines PVC 'filebrowser-db' (1Gi, ReadWriteOnce)",
+        "apps/base/filebrowser/storage.yaml defines PVC 'filebrowser-files' (20Gi, ReadWriteOnce)",
+        "Neither PVC has a storageClassName set (uses cluster default, matching existing apps)",
+        "kubectl apply -f apps/base/filebrowser/namespace.yaml --dry-run=client passes",
+        "kubectl apply -f apps/base/filebrowser/storage.yaml --dry-run=client passes"
+      ],
+      "priority": 2,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-003",
+      "title": "Create base deployment manifest",
+      "description": "As a developer, I need the deployment manifest so Kubernetes knows how to run filebrowser with correct volume mounts and config.",
+      "acceptanceCriteria": [
+        "apps/base/filebrowser/deployment.yaml deploys image filebrowser/filebrowser:latest",
+        "Container port is 80",
+        "initContainer runs 'chown -R 1000:1000 /database /srv' before the main container starts (matching n8n pattern)",
+        "Volume mount: filebrowser-db PVC → /database",
+        "Volume mount: filebrowser-files PVC → /srv",
+        "Volume mount: ConfigMap 'filebrowser-config' key 'settings.json' → /config/.filebrowser.json (readOnly)",
+        "Container args include: ['--config', '/config/.filebrowser.json']",
+        "envFrom references secret 'filebrowser-env-secret'",
+        "Resource requests: memory 128Mi, cpu 50m — limits: memory 256Mi, cpu 200m",
+        "kubectl apply -f apps/base/filebrowser/deployment.yaml --dry-run=client passes"
+      ],
+      "priority": 3,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-004",
+      "title": "Create base service and kustomization",
+      "description": "As a developer, I need the ClusterIP service and base kustomization so the app is reachable inside the cluster and all base files are bundled.",
+      "acceptanceCriteria": [
+        "apps/base/filebrowser/service.yaml is ClusterIP type",
+        "Service exposes port 8088, targetPort 80",
+        "apps/base/filebrowser/kustomization.yaml lists: namespace.yaml, storage.yaml, deployment.yaml, service.yaml",
+        "kustomization.yaml sets namespace: filebrowser",
+        "kustomize build apps/base/filebrowser/ completes with no errors"
+      ],
+      "priority": 4,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-005",
+      "title": "Create staging filebrowser ConfigMap",
+      "description": "As a developer, I need the filebrowser settings.json delivered via ConfigMap so app configuration is version-controlled and not baked into the image.",
+      "acceptanceCriteria": [
+        "apps/staging/filebrowser/filebrowser-config.yaml is a ConfigMap named 'filebrowser-config' in namespace 'filebrowser'",
+        "ConfigMap data key is 'settings.json'",
+        "settings.json contains: port=80, address=0.0.0.0, root=/srv, database=/database/filebrowser.db, log=stdout, noauth=false",
+        "kubectl apply -f apps/staging/filebrowser/filebrowser-config.yaml --dry-run=client passes"
+      ],
+      "priority": 5,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-006",
+      "title": "Create and encrypt Cloudflare tunnel secret and cloudflared deployment",
+      "description": "As a developer, I need the tunnel credentials encrypted and the cloudflared sidecar deployment configured so external traffic can reach the app.",
+      "acceptanceCriteria": [
+        "Run: kubectl create secret generic tunnel-credentials --from-file=credentials.json=/home/santi/.cloudflared/352eee72-576c-4669-9377-a17499aac4ea.json --dry-run=client -o yaml > apps/staging/filebrowser/cloudflare-secret.yaml",
+        "Run SOPS encrypt: sops --age=age1spwc8lctzldd0ghkkls8jfvzzra7cx95r2zqq6eya84etq65wfgqy2h99p --encrypt --encrypted-regex '^(data|stringData)$' --in-place apps/staging/filebrowser/cloudflare-secret.yaml",
+        "cloudflare-secret.yaml data field contains ENC[AES256_GCM (not plaintext)",
+        "apps/staging/filebrowser/cloudflare.yaml contains ConfigMap named 'cloudflared' with tunnel=filebrowser, credentials-file=/etc/cloudflared/creds/credentials.json, ingress hostname=filebrowser.watarystack.org → service=http://filebrowser:8088",
+        "cloudflare.yaml also contains cloudflared Deployment with 2 replicas, liveness probe on port 2000, mounts config ConfigMap and tunnel-credentials secret",
+        "kubectl apply -f apps/staging/filebrowser/cloudflare.yaml --dry-run=client passes"
+      ],
+      "priority": 6,
+      "passes": false,
+      "notes": "Tunnel UUID: 352eee72-576c-4669-9377-a17499aac4ea. Credentials JSON: /home/santi/.cloudflared/352eee72-576c-4669-9377-a17499aac4ea.json"
+    },
+    {
+      "id": "US-007",
+      "title": "Create and encrypt admin credentials secret",
+      "description": "As a developer, I need the filebrowser admin username and password in a SOPS-encrypted Kubernetes secret so they are never exposed in plaintext in Git.",
+      "acceptanceCriteria": [
+        "Run: kubectl create secret generic filebrowser-env-secret --from-literal=FB_USERNAME=fa020124_admin --from-literal=FB_PASSWORD=Adla7fhRkTWQ932oqJBk9dIy4pKG --dry-run=client -o yaml > apps/staging/filebrowser/filebrowser-env-secret.yaml",
+        "Run SOPS encrypt: sops --age=age1spwc8lctzldd0ghkkls8jfvzzra7cx95r2zqq6eya84etq65wfgqy2h99p --encrypt --encrypted-regex '^(data|stringData)$' --in-place apps/staging/filebrowser/filebrowser-env-secret.yaml",
+        "filebrowser-env-secret.yaml data field contains ENC[AES256_GCM (not plaintext)",
+        "grep -r 'Adla7fhRkTWQ932oqJBk9dIy4pKG' apps/ returns no matches (password not in plaintext anywhere in apps/)"
+      ],
+      "priority": 7,
+      "passes": false,
+      "notes": "Credentials are for initial admin setup only. FB_USERNAME=fa020124_admin, FB_PASSWORD=Adla7fhRkTWQ932oqJBk9dIy4pKG — MUST be encrypted before commit."
+    },
+    {
+      "id": "US-008",
+      "title": "Create staging kustomization and wire into main staging list",
+      "description": "As a developer, I need the staging overlay kustomization completed and the app registered in the root staging kustomization so FluxCD discovers and deploys it.",
+      "acceptanceCriteria": [
+        "apps/staging/filebrowser/kustomization.yaml resources list includes: ../../base/filebrowser/, cloudflare.yaml, cloudflare-secret.yaml, filebrowser-env-secret.yaml, filebrowser-config.yaml",
+        "apps/staging/kustomization.yaml resources list includes '- filebrowser'",
+        "kustomize build apps/staging/filebrowser/ completes with no errors",
+        "kubectl apply -k apps/staging/filebrowser/ --dry-run=client passes"
+      ],
+      "priority": 8,
+      "passes": false,
+      "notes": ""
+    },
+    {
+      "id": "US-009",
+      "title": "Commit all files and open pull request",
+      "description": "As a developer, I need all manifests committed to the feature branch and a PR opened so changes can be reviewed before hitting the cluster.",
+      "acceptanceCriteria": [
+        "git add apps/base/filebrowser/ apps/staging/filebrowser/ apps/staging/kustomization.yaml tasks/",
+        "git commit with message 'feat: add filebrowser to homelab'",
+        "git push origin feat/add-filebrowser succeeds",
+        "gh pr create --base main --head feat/add-filebrowser with title 'feat: add filebrowser to homelab'",
+        "PR body includes: image (filebrowser/filebrowser:latest), port (8088), hostname (filebrowser.watarystack.org), tunnel UUID (352eee72-576c-4669-9377-a17499aac4ea)",
+        "PR body includes manual DNS checklist: CNAME filebrowser → 352eee72-576c-4669-9377-a17499aac4ea.cfargotunnel.com (proxied)",
+        "grep -r 'ENC\\[AES256_GCM' apps/staging/filebrowser/cloudflare-secret.yaml returns match (secret is encrypted)",
+        "grep -r 'ENC\\[AES256_GCM' apps/staging/filebrowser/filebrowser-env-secret.yaml returns match (secret is encrypted)"
+      ],
+      "priority": 9,
+      "passes": false,
+      "notes": "Do not merge until DNS CNAME record is added in Cloudflare dashboard."
+    }
+  ]
+}

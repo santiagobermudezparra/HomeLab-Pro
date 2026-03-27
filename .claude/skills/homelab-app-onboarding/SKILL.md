@@ -28,21 +28,19 @@ Ask the user for these details. If they've already provided some in the conversa
 | Variable | Example | Purpose |
 |----------|---------|---------|
 | `APP_NAME` | `vaultwarden`, `paperless`, `stirling-pdf` | App identifier (lowercase, no spaces) |
-| `APP_PORT` | `8080`, `3000` | Internal port the app listens on |
+| `APP_PORT` | `8080`, `3000` | Internal port the app listens on — check existing apps and pick one not already in use |
 | `APP_IMAGE` | `docker.io/user/image:latest` | Full container image with tag |
 | `APP_HOSTNAME` | `myapp.watarystack.org` | Full domain for external access |
-| `TUNNEL_NAME` | `homelab-main`, `external-tunnel` | Name of existing Cloudflare tunnel |
-| `TUNNEL_JSON` | `~/.cloudflared/abc123-xxxx.json` | Path to tunnel credentials JSON |
 | `DB_REQUIRED` | `yes`/`no` | Does the app need a database? |
 | `DB_TYPE` | `postgres`, `sqlite` | If yes, which database system |
 | `SECRETS` | `ADMIN_USER=admin`, `API_KEY=xyz` | Key=value pairs for env secrets |
 
-**How to find TUNNEL_NAME and TUNNEL_JSON:**
+**Port conflict check — always run this before picking a port:**
 ```bash
-cloudflared tunnel list                    # Lists all tunnels; find your tunnel name
-cloudflared tunnel list | grep <tunnel-id> # Find the tunnel's credentials file path
-ls ~/.cloudflared/*.json                   # List available credential files
+grep -r "containerPort\|port:" apps/base/*/service.yaml apps/base/*/deployment.yaml 2>/dev/null | grep -oP '\d+' | sort -u
 ```
+
+Do NOT ask the user for `TUNNEL_JSON` — it will be created automatically in Step 1.5.
 
 Confirm all details before proceeding.
 
@@ -56,6 +54,32 @@ git checkout main
 git pull origin main
 git checkout -b feat/add-${APP_NAME}
 ```
+
+## Step 1.5 — Create Cloudflare Tunnel
+
+**Always create a new tunnel for each app.** Do not reuse tunnels across apps.
+
+```bash
+cloudflared tunnel create ${APP_NAME}
+```
+
+This outputs:
+- A tunnel UUID
+- The credentials file path: `~/.cloudflared/<UUID>.json`
+
+Capture both — you'll need them for the secret and DNS steps.
+
+```bash
+# Confirm tunnel was created
+cloudflared tunnel list | grep ${APP_NAME}
+
+# Find the credentials JSON path
+TUNNEL_JSON=$(ls ~/.cloudflared/*.json | xargs grep -l "\"TunnelName\":\"${APP_NAME}\"" 2>/dev/null)
+echo "Tunnel credentials: $TUNNEL_JSON"
+```
+
+> Tell the user the tunnel ID so they can add the CNAME DNS record in Cloudflare:
+> `CNAME ${APP_HOSTNAME} → <TUNNEL_UUID>.cfargotunnel.com` (proxied/orange cloud)
 
 ## Step 2 — Create Base Configuration
 

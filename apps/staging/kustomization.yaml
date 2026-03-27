@@ -9,3 +9,4 @@ resources:
   - pgadmin
   - homepage
   - n8n
+  - filebrowser
