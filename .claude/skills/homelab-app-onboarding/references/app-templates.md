@@ -350,6 +350,51 @@ Use whatever port the app's docs specify. You're routing through Cloudflare Tunn
 
 ---
 
+## Internal Access via Traefik Ingress
+
+For apps accessible only on your local network — no Cloudflare tunnel needed.
+
+**ingress.yaml** (goes in `apps/staging/{APP_NAME}/`):
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: myapp
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: myapp.watarystack.org
+      http:
+        paths:
+          - backend:
+              service:
+                name: myapp
+                port:
+                  number: 8080
+            path: /
+            pathType: Prefix
+```
+
+**staging kustomization.yaml** (no cloudflare entries):
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: myapp
+resources:
+  - ../../base/myapp/
+  - ingress.yaml
+  - myapp-env-secret.yaml
+```
+
+**Key points:**
+- `ingressClassName: traefik` — picks up K3s's built-in Traefik ingress controller automatically
+- The hostname must resolve on your local network (Pi-hole, local DNS, or `/etc/hosts`)
+- No `cloudflare.yaml`, no `cloudflare-secret.yaml`, no tunnel pod needed
+- See `apps/staging/linkding/ingress.yaml` for a real example in this repo
+
+---
+
 ## Common Pitfalls
 
 1. **Image doesn't exist**: Verify image name and tag are correct

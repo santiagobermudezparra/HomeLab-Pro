@@ -1,6 +1,6 @@
 ---
 name: homelab-app-onboarding
-description: Automate deploying new apps to a Kubernetes homelab with Cloudflare Tunnels. Use this skill whenever the user wants to add a new service to their homelab — phrases like "deploy X to homelab", "add X app to my cluster", "set up X in kubernetes", "onboard X to my homelab", or even just "I want to run X at home". This handles everything: creating Kubernetes manifests, encrypting secrets with SOPS, configuring Cloudflare tunnels, and opening a PR — the user just provides the app and basic config details.
+description: Automate deploying new apps to a Kubernetes homelab. Supports both public access via Cloudflare Tunnels and internal/local access via Traefik Ingress. Use this skill whenever the user wants to add a new service to their homelab — phrases like "deploy X to homelab", "add X app to my cluster", "set up X in kubernetes", "onboard X to my homelab", or even just "I want to run X at home". This handles everything: creating Kubernetes manifests, encrypting secrets with SOPS, configuring access (Cloudflare tunnel or Traefik ingress), and opening a PR.
 compatibility: git, kubectl, sops, age, cloudflared
 ---
 
@@ -30,17 +30,22 @@ Ask the user for these details. If they've already provided some in the conversa
 | `APP_NAME` | `vaultwarden`, `paperless`, `stirling-pdf` | App identifier (lowercase, no spaces) |
 | `APP_PORT` | `8080`, `3000` | Internal port the app listens on — check existing apps and pick one not already in use |
 | `APP_IMAGE` | `docker.io/user/image:latest` | Full container image with tag |
-| `APP_HOSTNAME` | `myapp.watarystack.org` | Full domain for external access |
+| `APP_HOSTNAME` | `myapp.watarystack.org` | Full domain for access |
+| `ACCESS_TYPE` | `public` or `internal` | **public** = Cloudflare Tunnel (internet-accessible); **internal** = Traefik Ingress (local network only) |
 | `DB_REQUIRED` | `yes`/`no` | Does the app need a database? |
 | `DB_TYPE` | `postgres`, `sqlite` | If yes, which database system |
 | `SECRETS` | `ADMIN_USER=admin`, `API_KEY=xyz` | Key=value pairs for env secrets |
+
+**When to use each access type:**
+- **`public`** — app needs to be reachable from the internet (Cloudflare Tunnel handles routing + DDoS protection)
+- **`internal`** — app is only for home network / LAN access (Traefik Ingress is simpler, no tunnel required)
 
 **Port conflict check — always run this before picking a port:**
 ```bash
 grep -r "containerPort\|port:" apps/base/*/service.yaml apps/base/*/deployment.yaml 2>/dev/null | grep -oP '\d+' | sort -u
 ```
 
-Do NOT ask the user for `TUNNEL_JSON` — it will be created automatically in Step 1.5.
+Do NOT ask the user for `TUNNEL_JSON` — it will be created automatically in Step 1.5 (public mode only).
 
 Confirm all details before proceeding.
 
@@ -55,7 +60,7 @@ git pull origin main
 git checkout -b feat/add-${APP_NAME}
 ```
 
-## Step 1.5 — Create Cloudflare Tunnel
+## Step 1.5 — Create Cloudflare Tunnel *(public access only — skip if internal)*
 
 **Always create a new tunnel for each app.** Do not reuse tunnels across apps.
 
@@ -180,13 +185,17 @@ resources:
 
 ## Step 3 — Create Staging Overlay
 
-Create environment-specific config in `apps/staging/${APP_NAME}/`. This includes secrets, tunnel routing, and environment patches.
+Create environment-specific config in `apps/staging/${APP_NAME}/`. The contents depend on the access type chosen in Step 0.
 
 ```bash
 mkdir -p apps/staging/${APP_NAME}
 ```
 
-### kustomization.yaml
+---
+
+### Option A: Public access via Cloudflare Tunnel
+
+#### kustomization.yaml
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -332,7 +341,67 @@ data:
 
 Add this to the kustomization.yaml resources list.
 
-## Step 4 — Configure Cloudflare DNS (Manual)
+---
+
+### Option B: Internal access via Traefik Ingress *(skip if public)*
+
+For apps only accessible on your local network. Much simpler — no tunnel, no Cloudflare credentials.
+
+#### kustomization.yaml
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ${APP_NAME}
+resources:
+  - ../../base/${APP_NAME}/
+  - ingress.yaml
+  - ${APP_NAME}-env-secret.yaml
+# Add any ConfigMap or additional secrets here
+```
+
+#### ingress.yaml
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${APP_NAME}
+  namespace: ${APP_NAME}
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: ${APP_HOSTNAME}
+      http:
+        paths:
+          - backend:
+              service:
+                name: ${APP_NAME}
+                port:
+                  number: ${APP_PORT}
+            path: /
+            pathType: Prefix
+```
+
+> **Note:** `${APP_HOSTNAME}` must resolve on your local network (e.g. via Pi-hole, local DNS, or `/etc/hosts`). This does **not** require a Cloudflare record or tunnel. Traefik picks it up automatically from the `ingressClassName: traefik`.
+
+#### ${APP_NAME}-env-secret.yaml (SOPS-encrypted)
+
+Same as the public path — create and encrypt any app secrets:
+
+```bash
+kubectl create secret generic ${APP_NAME}-env-secret \
+  --from-literal=ADMIN_USER=admin \
+  --from-literal=ADMIN_PASSWORD=changeme \
+  --dry-run=client -o yaml > apps/staging/${APP_NAME}/${APP_NAME}-env-secret.yaml
+
+sops --age=${AGE_KEY} \
+  --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place apps/staging/${APP_NAME}/${APP_NAME}-env-secret.yaml
+```
+
+---
+
+## Step 4 — Configure Cloudflare DNS (Manual, public access only — skip if internal)
 
 The tunnel credentials must be paired with a DNS record in Cloudflare. This step is manual because it requires access to the Cloudflare console.
 
@@ -458,16 +527,17 @@ If the pod doesn't start, check pod events and logs for errors (image pull failu
 
 ## Checklist Summary
 
-- [ ] User provided all required info (app name, port, image, hostname, tunnel)
+- [ ] User provided all required info (app name, port, image, hostname, **access type**)
 - [ ] Created `apps/base/${APP_NAME}/` with namespace, deployment, service, kustomization
-- [ ] Created `apps/staging/${APP_NAME}/` with cloudflare.yaml, secrets (encrypted)
+- [ ] **Public:** Created `apps/staging/${APP_NAME}/` with cloudflare.yaml + encrypted secrets
+- [ ] **Internal:** Created `apps/staging/${APP_NAME}/` with ingress.yaml + encrypted secrets
 - [ ] Verified secrets are encrypted with SOPS (look for `ENC[AES256_GCM`)
 - [ ] Updated `apps/staging/kustomization.yaml` with new app
 - [ ] Tested manifests with `--dry-run=client`
 - [ ] Committed to feature branch
 - [ ] Pushed to origin
 - [ ] Opened PR with `gh pr create`
-- [ ] Reminded user: manual DNS CNAME step in Cloudflare, then merge
+- [ ] **Public only:** Reminded user to add DNS CNAME in Cloudflare before merging
 - [ ] Monitor post-merge with `kubectl get pods -n ${APP_NAME}`
 
 ---
@@ -546,11 +616,17 @@ Each app gets its own `cloudflared` deployment for:
 - Age key is stored in `sops-age` secret in cluster (Flux can access it)
 - No extra controllers needed
 
-### Why Cloudflare Tunnels Instead of Ingress?
-- Zero-trust network access (no port forwarding)
-- DDoS protection and global CDN included
-- No need to manage public IPs or firewall rules
-- Easier to manage multiple services with one tunnel
+### Cloudflare Tunnel vs. Traefik Ingress
+
+| | Cloudflare Tunnel (public) | Traefik Ingress (internal) |
+|---|---|---|
+| **Access** | Internet-accessible | LAN only |
+| **DNS** | Cloudflare CNAME required | Local DNS / Pi-hole / hosts file |
+| **Complexity** | Higher (tunnel + cloudflared pod) | Lower (just an Ingress resource) |
+| **Security** | DDoS protection, zero-trust | Depends on your network |
+| **Use when** | Sharing with others, remote access | Personal tools, admin UIs, dev tools |
+
+**Rule of thumb:** if you need it outside your home network, use Cloudflare Tunnel. If it's only for you on your LAN, Traefik Ingress is simpler and keeps traffic off the internet entirely.
 
 ---
 

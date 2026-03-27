@@ -7,8 +7,9 @@ Use this checklist when onboarding a new app. Print it out or reference it as yo
 - [ ] Image and tag known: `_________________`
 - [ ] Port the app listens on: `_________________`
 - [ ] Final hostname: `_________________` (e.g., myapp.watarystack.org)
-- [ ] Tunnel name exists: `_________________` (run `cloudflared tunnel list`)
-- [ ] Tunnel credentials file: `_________________` (usually `~/.cloudflared/[uuid].json`)
+- [ ] **Access type**: Public (Cloudflare Tunnel) / Internal (Traefik Ingress)
+- [ ] *If public:* Tunnel name exists: `_________________` (run `cloudflared tunnel list`)
+- [ ] *If public:* Tunnel credentials file: `_________________` (usually `~/.cloudflared/[uuid].json`)
 - [ ] Secrets the app needs listed: (see below)
 - [ ] Database required?: Yes / No (if yes, which type?: `_________________`)
 
@@ -61,13 +62,13 @@ mkdir -p apps/staging/{APP_NAME}
 **kustomization.yaml**: References base + overlays
 - [ ] Lists all resources
 
-**cloudflare.yaml**: ConfigMap + cloudflared Deployment
+**If public — cloudflare.yaml**: ConfigMap + cloudflared Deployment
 - [ ] Tunnel name: `_________________`
 - [ ] Hostname: `_________________`
 - [ ] App service name: `_________________`
 - [ ] App port: `_________________`
 
-**cloudflare-secret.yaml**: SOPS-encrypted tunnel credentials
+**If public — cloudflare-secret.yaml**: SOPS-encrypted tunnel credentials
 ```bash
 kubectl create secret generic tunnel-credentials \
   --from-file=credentials.json={TUNNEL_JSON} \
@@ -77,6 +78,29 @@ sops --age={AGE_KEY} --encrypt --encrypted-regex '^(data|stringData)$' --in-plac
 ```
 - [ ] Created
 - [ ] Encrypted (check for `ENC[AES256_GCM`)
+
+**If internal — ingress.yaml**: Traefik Ingress resource
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {APP_NAME}
+  namespace: {APP_NAME}
+spec:
+  ingressClassName: traefik
+  rules:
+    - host: {APP_HOSTNAME}
+      http:
+        paths:
+          - backend:
+              service:
+                name: {APP_NAME}
+                port:
+                  number: {APP_PORT}
+            path: /
+            pathType: Prefix
+```
+- [ ] Created (no encryption needed — no secrets here)
 
 **{APP_NAME}-env-secret.yaml**: SOPS-encrypted app secrets
 ```bash
@@ -94,7 +118,9 @@ sops --age={AGE_KEY} --encrypt --encrypted-regex '^(data|stringData)$' --in-plac
 **{APP_NAME}-config ConfigMap** (if needed):
 - [ ] Created (if app needs non-secret config)
 
-### 4. Cloudflare DNS Setup (MANUAL - Do This in Browser)
+### 4. Access Setup
+
+**If public — Cloudflare DNS Setup (MANUAL - Do This in Browser):**
 1. [ ] Log into Cloudflare dashboard
 2. [ ] Select domain: `watarystack.org`
 3. [ ] Go to DNS → Records
@@ -106,6 +132,10 @@ sops --age={AGE_KEY} --encrypt --encrypted-regex '^(data|stringData)$' --in-plac
    - [ ] Proxy status: Proxied (orange cloud)
 6. [ ] Click Save
 7. [ ] Verify: Takes a few minutes to propagate
+
+**If internal — Local DNS Setup:**
+- [ ] Add hostname `{APP_HOSTNAME}` → cluster IP to Pi-hole / local DNS / `/etc/hosts`
+- [ ] No Cloudflare setup required
 
 ### 5. Update Main Kustomization
 Edit `apps/staging/kustomization.yaml`:
