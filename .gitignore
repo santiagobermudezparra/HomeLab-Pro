@@ -4,3 +4,8 @@ age.agekey
 tls.crt
 tls.key
 .DS_Store
+
+# Claude / Ralph working files — app-specific, not for version control
+tasks/
+prd.json
+memory/
