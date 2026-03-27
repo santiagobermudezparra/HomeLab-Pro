@@ -79,28 +79,35 @@ sops --age={AGE_KEY} --encrypt --encrypted-regex '^(data|stringData)$' --in-plac
 - [ ] Created
 - [ ] Encrypted (check for `ENC[AES256_GCM`)
 
-**If internal — ingress.yaml**: Traefik Ingress resource
+**If internal — ingress.yaml**: Traefik Ingress resource with cert-manager TLS
 ```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {APP_NAME}
   namespace: {APP_NAME}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - {APP_HOSTNAME}
+      secretName: {APP_NAME}-tls
   rules:
     - host: {APP_HOSTNAME}
       http:
         paths:
-          - backend:
+          - path: /
+            pathType: Prefix
+            backend:
               service:
                 name: {APP_NAME}
                 port:
                   number: {APP_PORT}
-            path: /
-            pathType: Prefix
 ```
 - [ ] Created (no encryption needed — no secrets here)
+- [ ] cert-manager will auto-provision the TLS cert (`{APP_NAME}-tls` secret)
 
 **{APP_NAME}-env-secret.yaml**: SOPS-encrypted app secrets
 ```bash

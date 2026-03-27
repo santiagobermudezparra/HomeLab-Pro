@@ -361,19 +361,32 @@ kind: Ingress
 metadata:
   name: myapp
   namespace: myapp
+  annotations:
+    # cert-manager will automatically provision a TLS certificate
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+    # Optional: Homepage dashboard integration (uncomment to enable)
+    # gethomepage.dev/enabled: "true"
+    # gethomepage.dev/name: "My App"
+    # gethomepage.dev/description: "Short description"
+    # gethomepage.dev/group: "HomeLab Services"
+    # gethomepage.dev/icon: "icon-name.png"
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - myapp.watarystack.org
+      secretName: myapp-tls
   rules:
     - host: myapp.watarystack.org
       http:
         paths:
-          - backend:
+          - path: /
+            pathType: Prefix
+            backend:
               service:
                 name: myapp
                 port:
                   number: 8080
-            path: /
-            pathType: Prefix
 ```
 
 **staging kustomization.yaml** (no cloudflare entries):
@@ -388,10 +401,12 @@ resources:
 ```
 
 **Key points:**
-- `ingressClassName: traefik` — picks up K3s's built-in Traefik ingress controller automatically
+- `ingressClassName: traefik` — uses K3s's built-in Traefik ingress controller
+- `cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod` — cert-manager is already deployed in this cluster; it auto-provisions and renews TLS via Let's Encrypt
+- `secretName: myapp-tls` — cert-manager stores the issued certificate here automatically; no need to create this secret manually
 - The hostname must resolve on your local network (Pi-hole, local DNS, or `/etc/hosts`)
 - No `cloudflare.yaml`, no `cloudflare-secret.yaml`, no tunnel pod needed
-- See `apps/staging/linkding/ingress.yaml` for a real example in this repo
+- Real examples in this repo: `apps/staging/xm-spotify-sync/ingress.yaml` (with TLS + homepage), `apps/staging/linkding/ingress.yaml` (minimal, no TLS)
 
 ---
 

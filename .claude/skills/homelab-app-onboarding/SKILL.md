@@ -367,22 +367,35 @@ kind: Ingress
 metadata:
   name: ${APP_NAME}
   namespace: ${APP_NAME}
+  annotations:
+    # cert-manager will automatically provision a TLS certificate
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+    # Optional: Homepage dashboard integration
+    # gethomepage.dev/enabled: "true"
+    # gethomepage.dev/name: "${APP_DISPLAY_NAME}"
+    # gethomepage.dev/description: "Short description"
+    # gethomepage.dev/group: "HomeLab Services"
+    # gethomepage.dev/icon: "icon-name.png"
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - ${APP_HOSTNAME}
+      secretName: ${APP_NAME}-tls
   rules:
     - host: ${APP_HOSTNAME}
       http:
         paths:
-          - backend:
+          - path: /
+            pathType: Prefix
+            backend:
               service:
                 name: ${APP_NAME}
                 port:
                   number: ${APP_PORT}
-            path: /
-            pathType: Prefix
 ```
 
-> **Note:** `${APP_HOSTNAME}` must resolve on your local network (e.g. via Pi-hole, local DNS, or `/etc/hosts`). This does **not** require a Cloudflare record or tunnel. Traefik picks it up automatically from the `ingressClassName: traefik`.
+> **Note:** cert-manager (`letsencrypt-cloudflare-prod` cluster issuer) is already deployed in this cluster — it will automatically provision and renew the TLS certificate. `${APP_HOSTNAME}` must resolve via local DNS / Pi-hole / `/etc/hosts`. No Cloudflare record or tunnel needed.
 
 #### ${APP_NAME}-env-secret.yaml (SOPS-encrypted)
 
