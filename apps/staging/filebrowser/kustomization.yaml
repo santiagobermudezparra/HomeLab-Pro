@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: filebrowser
+resources:
+  - ../../base/filebrowser/
+  - cloudflare.yaml
+  - cloudflare-secret.yaml
+  - filebrowser-env-secret.yaml
+  - filebrowser-config.yaml
