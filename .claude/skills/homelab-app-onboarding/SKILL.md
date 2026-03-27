@@ -486,6 +486,31 @@ Ensure kubectl is installed and kubeconfig is set up.
 ### "cloudflared: command not found"
 Install cloudflared: `brew install cloudflare/cloudflare/cloudflared`
 
+### "initContainer credentials never applied / login fails after deploy"
+
+Two common causes:
+
+**1. Wrong binary path in initContainer.**
+The binary is not always at `/<appname>` — verify first:
+```bash
+kubectl exec deployment/${APP_NAME} -n ${APP_NAME} -- find / -name "${APP_NAME}" -type f 2>/dev/null
+```
+Use the real path (e.g. `/bin/filebrowser`, `/usr/local/bin/app`) in the initContainer command.
+
+**2. Env vars leaking into the main container via Viper / env prefix.**
+Some apps (e.g. filebrowser with `FB_` prefix, n8n with `N8N_`) use `AutomaticEnv` and pick up any env var matching their prefix as a config override. If you put credentials in `envFrom` on the main container, the app may interpret them as config values and corrupt or override auth.
+
+**Rule:** only mount credential secrets in the initContainer. Remove `envFrom` / `env` referencing those secrets from the main container unless the app explicitly documents support for them.
+
+**Recovery if this happens:**
+```bash
+# Scale down, delete the bad DB, scale back up to let initContainer re-run
+kubectl scale deployment/${APP_NAME} -n ${APP_NAME} --replicas=0
+kubectl delete pvc ${APP_NAME}-db -n ${APP_NAME}
+kubectl scale deployment/${APP_NAME} -n ${APP_NAME} --replicas=1
+kubectl logs deployment/${APP_NAME} -n ${APP_NAME} --all-containers
+```
+
 ### "Pod won't start"
 ```bash
 kubectl describe pod <pod-name> -n ${APP_NAME}  # See events
