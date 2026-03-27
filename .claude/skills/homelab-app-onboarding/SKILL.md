@@ -1,0 +1,509 @@
+---
+name: homelab-app-onboarding
+description: Automate deploying new apps to a Kubernetes homelab with Cloudflare Tunnels. Use this skill whenever the user wants to add a new service to their homelab — phrases like "deploy X to homelab", "add X app to my cluster", "set up X in kubernetes", "onboard X to my homelab", or even just "I want to run X at home". This handles everything: creating Kubernetes manifests, encrypting secrets with SOPS, configuring Cloudflare tunnels, and opening a PR — the user just provides the app and basic config details.
+compatibility: git, kubectl, sops, age, cloudflared
+---
+
+# HomeLab App Onboarding Skill
+
+Automate the full deployment of a new application to your Kubernetes homelab. This skill creates base and overlay configurations, encrypts secrets, sets up Cloudflare tunnel routing, and opens a pull request.
+
+## Prerequisites Check
+
+Before starting, verify your environment is set up:
+
+- [ ] `cloudflared` installed and authenticated (`~/.cloudflared/cert.pem` exists)
+- [ ] `sops` and `age` installed
+- [ ] `AGE_PUBLIC` exported in shell or .sops.yaml contains the key
+- [ ] Git repository cloned locally
+- [ ] `gh` (GitHub CLI) available for PR creation
+- [ ] Kubectl configured and can access cluster
+
+If any prerequisite is missing, pause and ask the user to fix it before continuing.
+
+## Step 0 — Gather Information
+
+Ask the user for these details. If they've already provided some in the conversation, extract and confirm rather than re-asking:
+
+| Variable | Example | Purpose |
+|----------|---------|---------|
+| `APP_NAME` | `vaultwarden`, `paperless`, `stirling-pdf` | App identifier (lowercase, no spaces) |
+| `APP_PORT` | `8080`, `3000` | Internal port the app listens on |
+| `APP_IMAGE` | `docker.io/user/image:latest` | Full container image with tag |
+| `APP_HOSTNAME` | `myapp.watarystack.org` | Full domain for external access |
+| `TUNNEL_NAME` | `homelab-main`, `external-tunnel` | Name of existing Cloudflare tunnel |
+| `TUNNEL_JSON` | `~/.cloudflared/abc123-xxxx.json` | Path to tunnel credentials JSON |
+| `DB_REQUIRED` | `yes`/`no` | Does the app need a database? |
+| `DB_TYPE` | `postgres`, `sqlite` | If yes, which database system |
+| `SECRETS` | `ADMIN_USER=admin`, `API_KEY=xyz` | Key=value pairs for env secrets |
+
+**How to find TUNNEL_NAME and TUNNEL_JSON:**
+```bash
+cloudflared tunnel list                    # Lists all tunnels; find your tunnel name
+cloudflared tunnel list | grep <tunnel-id> # Find the tunnel's credentials file path
+ls ~/.cloudflared/*.json                   # List available credential files
+```
+
+Confirm all details before proceeding.
+
+## Step 1 — Create Git Branch
+
+Always branch from main. Never commit directly to main.
+
+```bash
+cd /path/to/HomeLab-Pro
+git checkout main
+git pull origin main
+git checkout -b feat/add-${APP_NAME}
+```
+
+## Step 2 — Create Base Configuration
+
+Create the base Kubernetes manifests in `apps/base/${APP_NAME}/`. These are reusable across environments.
+
+### Create Directory
+```bash
+mkdir -p apps/base/${APP_NAME}
+```
+
+### namespace.yaml
+```yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ${APP_NAME}
+```
+
+### deployment.yaml
+
+Use this template, adjusting for the app's specific needs:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${APP_NAME}
+  namespace: ${APP_NAME}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ${APP_NAME}
+  template:
+    metadata:
+      labels:
+        app: ${APP_NAME}
+    spec:
+      containers:
+      - name: ${APP_NAME}
+        image: ${APP_IMAGE}
+        ports:
+        - containerPort: ${APP_PORT}
+        env:
+        - name: PORT
+          value: "${APP_PORT}"
+        # Add database connection env vars here if needed
+        envFrom:
+        - configMapRef:
+            name: ${APP_NAME}-config
+        - secretRef:
+            name: ${APP_NAME}-env-secret
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          readOnlyRootFilesystem: false
+```
+
+**Notes:**
+- If the app is stateless, you're done
+- If it stores data, add a `volumeMounts` section and corresponding `volumes` with PVC
+- If it needs database access, add `LD_DB_HOST`, `LD_DB_PASSWORD` env vars (examples for Postgres)
+
+### service.yaml
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ${APP_NAME}
+  namespace: ${APP_NAME}
+spec:
+  type: ClusterIP
+  selector:
+    app: ${APP_NAME}
+  ports:
+  - port: ${APP_PORT}
+    targetPort: ${APP_PORT}
+    protocol: TCP
+```
+
+### kustomization.yaml
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ${APP_NAME}
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+```
+
+## Step 3 — Create Staging Overlay
+
+Create environment-specific config in `apps/staging/${APP_NAME}/`. This includes secrets, tunnel routing, and environment patches.
+
+```bash
+mkdir -p apps/staging/${APP_NAME}
+```
+
+### kustomization.yaml
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ${APP_NAME}
+resources:
+  - ../../base/${APP_NAME}/
+  - cloudflare.yaml
+  - cloudflare-secret.yaml
+  - ${APP_NAME}-env-secret.yaml
+# Add any ConfigMap or additional secrets here
+```
+
+### cloudflare.yaml (ConfigMap)
+
+This ConfigMap contains the tunnel routing configuration:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cloudflared
+  namespace: ${APP_NAME}
+data:
+  config.yaml: |
+    tunnel: ${TUNNEL_NAME}
+    credentials-file: /etc/cloudflared/creds/credentials.json
+    metrics: 0.0.0.0:2000
+    no-autoupdate: true
+
+    ingress:
+    - hostname: ${APP_HOSTNAME}
+      service: http://${APP_NAME}:${APP_PORT}
+    - service: http_status:404
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloudflared
+  namespace: ${APP_NAME}
+spec:
+  selector:
+    matchLabels:
+      app: cloudflared
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: cloudflared
+    spec:
+      containers:
+      - name: cloudflared
+        image: cloudflare/cloudflared:latest
+        args:
+        - tunnel
+        - --config
+        - /etc/cloudflared/config/config.yaml
+        - run
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 2000
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        volumeMounts:
+        - name: config
+          mountPath: /etc/cloudflared/config
+          readOnly: true
+        - name: creds
+          mountPath: /etc/cloudflared/creds
+          readOnly: true
+      volumes:
+      - name: creds
+        secret:
+          secretName: tunnel-credentials
+      - name: config
+        configMap:
+          name: cloudflared
+          items:
+          - key: config.yaml
+            path: config.yaml
+```
+
+### cloudflare-secret.yaml (SOPS-encrypted)
+
+Create the tunnel credentials secret. First, generate it in plaintext, then encrypt:
+
+```bash
+# Generate plaintext secret
+kubectl create secret generic tunnel-credentials \
+  --from-file=credentials.json=${TUNNEL_JSON} \
+  --dry-run=client -o yaml > apps/staging/${APP_NAME}/cloudflare-secret.yaml
+```
+
+Then encrypt it with SOPS:
+
+```bash
+# Get the age public key from .sops.yaml
+AGE_KEY=$(grep -A 2 "creation_rules:" clusters/staging/.sops.yaml | grep "age:" | awk '{print $NF}')
+
+# Encrypt
+sops --age=${AGE_KEY} \
+  --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place apps/staging/${APP_NAME}/cloudflare-secret.yaml
+```
+
+**Verify the file is encrypted:** Open it and look for `ENC[AES256_GCM` in the data section.
+
+### ${APP_NAME}-env-secret.yaml (SOPS-encrypted)
+
+Create a secret for environment variables the app needs (admin credentials, API keys, etc.).
+
+```bash
+# First, create the secret in plaintext
+kubectl create secret generic ${APP_NAME}-env-secret \
+  --from-literal=ADMIN_USER=admin \
+  --from-literal=ADMIN_PASSWORD=changeme \
+  --dry-run=client -o yaml > apps/staging/${APP_NAME}/${APP_NAME}-env-secret.yaml
+```
+
+Replace the example with actual secrets the app needs. Then encrypt:
+
+```bash
+sops --age=${AGE_KEY} \
+  --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place apps/staging/${APP_NAME}/${APP_NAME}-env-secret.yaml
+```
+
+### (Optional) ${APP_NAME}-config ConfigMap
+
+If the app needs non-secret configuration (feature flags, log levels, etc.):
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ${APP_NAME}-config
+  namespace: ${APP_NAME}
+data:
+  LOG_LEVEL: "info"
+  FEATURE_X: "enabled"
+```
+
+Add this to the kustomization.yaml resources list.
+
+## Step 4 — Configure Cloudflare DNS (Manual)
+
+The tunnel credentials must be paired with a DNS record in Cloudflare. This step is manual because it requires access to the Cloudflare console.
+
+**Steps:**
+1. Log in to Cloudflare dashboard
+2. Navigate to your domain (watarystack.org)
+3. Go to DNS → Records
+4. Click "Add record"
+5. Set:
+   - **Type**: CNAME
+   - **Name**: `${APP_HOSTNAME}` (just the subdomain, e.g., `myapp` for `myapp.watarystack.org`)
+   - **Target**: `<TUNNEL_UUID>.cfargotunnel.com` (find TUNNEL_UUID in the tunnel credentials JSON file under `TunnelID`)
+   - **Proxy status**: Proxied (orange cloud)
+6. Click Save
+
+The user must do this manually. Verify it's set up before deploying.
+
+## Step 5 — Update Main Staging Kustomization
+
+Edit `apps/staging/kustomization.yaml` to include the new app:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - linkding
+  - mealie
+  - audiobookshelf
+  - homarr
+  - ${APP_NAME}  # Add here
+  - monitoring
+  - infrastructure
+```
+
+Maintain alphabetical order if possible, for consistency.
+
+## Step 6 — Test Manifests (Optional but Recommended)
+
+Before committing, test the Kubernetes manifests:
+
+```bash
+# Validate without applying
+kubectl apply -k apps/staging/${APP_NAME}/ --dry-run=client -o yaml
+
+# Or build to see final output
+kustomize build apps/staging/${APP_NAME}/
+
+# Check for issues
+kustomize build apps/staging/${APP_NAME}/ | kubectl apply --dry-run=client -f -
+```
+
+If there are validation errors, fix them before proceeding.
+
+## Step 7 — Commit & Push
+
+```bash
+git add apps/
+git add clusters/staging/kustomization.yaml  # if you modified it
+git commit -m "feat: add ${APP_NAME} to homelab
+
+- Create base deployment, service, namespace
+- Add staging overlay with Cloudflare tunnel config
+- SOPS-encrypt tunnel credentials and app secrets
+- Wire into main staging kustomization"
+
+git push origin feat/add-${APP_NAME}
+```
+
+## Step 8 — Open Pull Request
+
+Use the GitHub CLI to open a PR:
+
+```bash
+gh pr create \
+  --base main \
+  --head feat/add-${APP_NAME} \
+  --title "feat: add ${APP_NAME} to homelab" \
+  --body "Adds ${APP_NAME} with the following:
+
+- Image: ${APP_IMAGE}
+- Port: ${APP_PORT}
+- Hostname: ${APP_HOSTNAME}
+- Tunnel: ${TUNNEL_NAME}
+- Secrets: SOPS-encrypted and safe in Git
+
+## Pre-merge checklist
+- [ ] DNS CNAME record created in Cloudflare
+- [ ] Manifests validated with dry-run
+- [ ] Secrets are encrypted (check for ENC[AES256_GCM in files)
+- [ ] Tunnel credentials JSON is in .gitignore (not committed)
+
+Once merged, FluxCD will automatically deploy within 1 minute."
+```
+
+If `gh` is not available, print the PR URL:
+```
+https://github.com/santiagobermudezparra/HomeLab-Pro/compare/main...feat/add-${APP_NAME}
+```
+
+Tell the user to review and merge via the web UI.
+
+## Step 9 — Monitor Deployment
+
+Once the PR is merged, FluxCD will sync automatically (within 1 minute by default). The user can monitor:
+
+```bash
+# Watch FluxCD sync
+flux get kustomizations
+
+# View the new app's pods
+kubectl get pods -n ${APP_NAME}
+
+# Check logs
+kubectl logs -f deployment/${APP_NAME} -n ${APP_NAME}
+
+# Verify tunnel is running
+kubectl logs -f deployment/cloudflared -n ${APP_NAME}
+```
+
+If the pod doesn't start, check pod events and logs for errors (image pull failures, missing secrets, port conflicts).
+
+---
+
+## Checklist Summary
+
+- [ ] User provided all required info (app name, port, image, hostname, tunnel)
+- [ ] Created `apps/base/${APP_NAME}/` with namespace, deployment, service, kustomization
+- [ ] Created `apps/staging/${APP_NAME}/` with cloudflare.yaml, secrets (encrypted)
+- [ ] Verified secrets are encrypted with SOPS (look for `ENC[AES256_GCM`)
+- [ ] Updated `apps/staging/kustomization.yaml` with new app
+- [ ] Tested manifests with `--dry-run=client`
+- [ ] Committed to feature branch
+- [ ] Pushed to origin
+- [ ] Opened PR with `gh pr create`
+- [ ] Reminded user: manual DNS CNAME step in Cloudflare, then merge
+- [ ] Monitor post-merge with `kubectl get pods -n ${APP_NAME}`
+
+---
+
+## Troubleshooting
+
+### "Secret is not encrypted"
+Check the file content. It should start with `ENC[AES256_GCM` in the `data` field. If it's readable, run:
+```bash
+sops --age=${AGE_KEY} --encrypt --encrypted-regex '^(data|stringData)$' --in-place <file>
+```
+
+### "kubectl: command not found"
+Ensure kubectl is installed and kubeconfig is set up.
+
+### "cloudflared: command not found"
+Install cloudflared: `brew install cloudflare/cloudflare/cloudflared`
+
+### "Pod won't start"
+```bash
+kubectl describe pod <pod-name> -n ${APP_NAME}  # See events
+kubectl logs <pod-name> -n ${APP_NAME}          # See logs
+```
+
+Common issues: image doesn't exist, secret not found, port conflict, insufficient resources.
+
+### "Tunnel not reaching the app"
+- Verify CNAME record in Cloudflare DNS (should point to `<UUID>.cfargotunnel.com`)
+- Check `cloudflared` pod logs: `kubectl logs -f deployment/cloudflared -n ${APP_NAME}`
+- Verify service name matches in cloudflare.yaml: `service: http://${APP_NAME}:${APP_PORT}`
+- Check app is actually listening on the port: `kubectl port-forward svc/${APP_NAME} ${APP_PORT}:${APP_PORT} -n ${APP_NAME}` then `curl localhost:${APP_PORT}`
+
+### "FluxCD won't decrypt secret"
+- Check age key in cluster: `kubectl get secret sops-age -n flux-system`
+- Check FluxCD logs: `flux logs --namespace flux-system`
+- Ensure secret was encrypted with the correct age key from `.sops.yaml`
+
+---
+
+## Architecture Notes
+
+### Why Separate Tunnel Deployments?
+Each app gets its own `cloudflared` deployment for:
+- **Isolation**: If one tunnel config has issues, others aren't affected
+- **Scaling**: Each app can scale independently
+- **Monitoring**: Pod logs clearly show which tunnel is having issues
+
+### Why SOPS Instead of Sealed Secrets?
+- SOPS is simpler to set up and maintain
+- Works well with GitOps (secrets stay in Git, encrypted)
+- Age key is stored in `sops-age` secret in cluster (Flux can access it)
+- No extra controllers needed
+
+### Why Cloudflare Tunnels Instead of Ingress?
+- Zero-trust network access (no port forwarding)
+- DDoS protection and global CDN included
+- No need to manage public IPs or firewall rules
+- Easier to manage multiple services with one tunnel
+
+---
+
+**Version**: 1.0
+**Last Updated**: March 28, 2026
