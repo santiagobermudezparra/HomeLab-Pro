@@ -46,6 +46,10 @@ data:
             href:  https://xmspotify.watarystack.org
             description: LifeWithJM
             icon: spotify.png
+        - Filebrowser:
+            href: https://filebrowser.watarystack.org
+            description: File manager — upload and share files between devices
+            icon: filebrowser.png
   widgets.yaml: |
     - kubernetes:
         cluster:
