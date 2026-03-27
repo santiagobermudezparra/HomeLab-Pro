@@ -46,9 +46,6 @@ spec:
           ports:
             - containerPort: 80
               name: http
-          envFrom:
-            - secretRef:
-                name: filebrowser-env-secret
           resources:
             requests:
               memory: "128Mi"
