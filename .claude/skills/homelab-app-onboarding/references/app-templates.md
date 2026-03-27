@@ -350,6 +350,66 @@ Use whatever port the app's docs specify. You're routing through Cloudflare Tunn
 
 ---
 
+## Internal Access via Traefik Ingress
+
+For apps accessible only on your local network — no Cloudflare tunnel needed.
+
+**ingress.yaml** (goes in `apps/staging/{APP_NAME}/`):
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: myapp
+  namespace: myapp
+  annotations:
+    # cert-manager will automatically provision a TLS certificate
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+    # Optional: Homepage dashboard integration (uncomment to enable)
+    # gethomepage.dev/enabled: "true"
+    # gethomepage.dev/name: "My App"
+    # gethomepage.dev/description: "Short description"
+    # gethomepage.dev/group: "HomeLab Services"
+    # gethomepage.dev/icon: "icon-name.png"
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - myapp.watarystack.org
+      secretName: myapp-tls
+  rules:
+    - host: myapp.watarystack.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: myapp
+                port:
+                  number: 8080
+```
+
+**staging kustomization.yaml** (no cloudflare entries):
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: myapp
+resources:
+  - ../../base/myapp/
+  - ingress.yaml
+  - myapp-env-secret.yaml
+```
+
+**Key points:**
+- `ingressClassName: traefik` — uses K3s's built-in Traefik ingress controller
+- `cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod` — cert-manager is already deployed in this cluster; it auto-provisions and renews TLS via Let's Encrypt
+- `secretName: myapp-tls` — cert-manager stores the issued certificate here automatically; no need to create this secret manually
+- The hostname must resolve on your local network (Pi-hole, local DNS, or `/etc/hosts`)
+- No `cloudflare.yaml`, no `cloudflare-secret.yaml`, no tunnel pod needed
+- Real examples in this repo: `apps/staging/xm-spotify-sync/ingress.yaml` (with TLS + homepage), `apps/staging/linkding/ingress.yaml` (minimal, no TLS)
+
+---
+
 ## Common Pitfalls
 
 1. **Image doesn't exist**: Verify image name and tag are correct
