@@ -24,9 +24,10 @@ spec:
           args:
             - |
               if [ ! -f /database/filebrowser.db ]; then
-                /filebrowser config init -d /database/filebrowser.db
-                /filebrowser users add "$FB_USERNAME" "$FB_PASSWORD" --perm.admin -d /database/filebrowser.db
-                echo "Admin user created."
+                /bin/filebrowser -d /database/filebrowser.db config init
+                /bin/filebrowser -d /database/filebrowser.db users rm admin 2>/dev/null || true
+                /bin/filebrowser -d /database/filebrowser.db users add "$FB_USERNAME" "$FB_PASSWORD" --perm.admin
+                echo "Admin user $FB_USERNAME created."
               else
                 echo "Database already exists, skipping init."
               fi
