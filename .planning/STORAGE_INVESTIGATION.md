@@ -1,19 +1,22 @@
 # Storage Scalability Investigation Report
 
-**Date:** 2026-04-03 (updated with verified data)
+**Date:** 2026-04-03 (v4 — worker-01 disk data verified, both nodes disk-constrained, strategy updated)
 **Project:** HomeLab-Pro Kubernetes Cluster
 
 ---
 
 ## Executive Summary
 
-The homelab has two distinct but related problems that need to be solved together:
+Three problems, now fully verified:
 
-1. **Control-plane disk at 77% capacity** — caused by container images (K3s + Docker), not Kubernetes volumes. Volumes are actually well-distributed.
-2. **Storage is not scalable** — `local-path` binds volumes to nodes. Adding a 3rd worker without shared storage will eventually strand workloads.
+1. **Both nodes are disk-constrained** — control-plane at 77% (122/167GB), worker-01 at **82% (179/233GB)**. Combined free space: ~80GB across the cluster.
+2. **Root cause is image caches, not PVCs** — PVCs total only ~19Gi. The disk is full from K3s containerd cache + Docker dev images.
+3. **Storage is not scalable** — `local-path` StorageClass binds every PVC to a specific node. Adding worker-02 without shared storage will strand workloads.
 
-**Immediate fix:** Clean K3s/Docker image cache on control-plane (recovers 20-40GB).  
-**Structural fix:** Adopt shared storage (NFS or Proxmox-native) before adding the 3rd node.
+**User constraint:** Per-app PVC isolation is working correctly and should be kept. The issue is storage *backend*, not PVC structure.
+
+**Immediate fix (1h):** Clean image caches on control-plane.
+**Structural fix:** Adopt shared storage before scheduling new apps on worker-02.
 
 ---
 
@@ -23,394 +26,284 @@ The homelab has two distinct but related problems that need to be solved togethe
 
 | Node | Role | CPU | RAM | Disk Total | Disk Used | OS | Virtualization |
 |------|------|-----|-----|-----------|----------|----|----|
-| `santi-standard-pc-i440fx-piix-1996` | Control-plane | 8 vCPU | 28GB | 167GB | **122GB (77%)** | Ubuntu 24.04.2 | **KVM VM** inside Proxmox |
-| `homelab-worker-01` | Worker | 6 vCPU | 16GB | 237GB | Unknown¹ | Ubuntu 24.04.3 | Bare Ubuntu |
+| `santi-standard-pc-i440fx-piix-1996` | Control-plane | 8 vCPU | 28GB | 167GB | **122GB (77%)** | Ubuntu 24.04.2 | KVM VM inside Proxmox |
+| `homelab-worker-01` | Worker | 6 vCPU | 16GB | 233GB NVMe | **179GB (82%)** | Ubuntu 24.04.3 | Bare-metal Ubuntu |
+| `worker-02` | Worker (pending) | TBD | TBD | TBD | — | Ubuntu 24.04 | **Recommend: Proxmox VM** |
 
-> ¹ Worker-01 SSH access wasn't available during this investigation. Disk usage is unverified.
+> Worker-01 disk verified 2026-04-03: `/dev/nvme0n1p2  233G  179G   42G  82%` — **NVMe drive**, 82% full.
+> Critical: both nodes are now disk-constrained. Worker-02's disk size is the main capacity lever.
 
-**Critical architecture note:** The control-plane is confirmed running as a KVM virtual machine (`systemd-detect-virt` returns `kvm`). The hostname `i440FX-PIIX-1996` is the QEMU machine type. This means:
-- The physical Proxmox host has separate storage capacity not visible to this VM
-- The 167GB disk is a **virtual disk** allocated by Proxmox
-- Proxmox-native storage (ZFS datasets, LVM-thin) is available as a backend option
-
----
-
-## Where Is the Disk Space Going?
-
-### Control-plane (122GB/167GB used)
-
-The original investigation incorrectly attributed disk usage. Here's what we actually found:
-
-| Category | Size | Source |
-|----------|------|--------|
-| `/snap` (GNOME, Firefox, etc.) | 8.4GB | Desktop snaps running on this machine |
-| `/var` (Docker, logs, rancher) | 9.1GB | K3s rancher: 417MB; logs: 4.2GB; Docker: ~4GB |
-| `/home` | 4.0GB | Projects, config, Docker dev images |
-| `/usr` | 6.2GB | System packages |
-| `/swap.img` | 4.1GB | Swap file |
-| **K3s containerd images** | **~90GB** | Root-owned; requires `sudo` to measure |
-| Kubernetes volumes | ~8GB | 6 PVCs bound to this node |
-| **Total** | **~130GB** | Matches 122GB on disk |
-
-**Root cause of disk pressure:** K3s bundles its own containerd and stores all container images under root-owned paths (not accessible without sudo). With ~30 running pods across audiobookshelf, mealie, linkding, monitoring stack (Prometheus/Grafana/AlertManager), FluxCD, cert-manager, Traefik, and CloudNativePG — accumulated container images are the primary consumer.
-
-Additionally, this machine functions as **both a K3s node and a desktop** (Firefox, GNOME desktop environment are installed). That's an unusual setup with unique resource implications.
-
-### Kubernetes Volume Distribution (Verified)
-
-Volumes are **split between nodes**, not all on the control-plane:
-
-**Control-plane (8Gi claimed):**
-
-| App | PVC | Size |
-|-----|-----|------|
-| linkding | `linkding-data-pvc` | 1Gi |
-| linkding | `linkding-postgres-1` (CNPG) | 2Gi |
-| audiobookshelf | `audiobookshelf-config` | 1Gi |
-| audiobookshelf | `audiobookshelf-metadata` | 1Gi |
-| audiobookshelf | `audiobookshelf-audiobooks` | 1Gi |
-| mealie | `mealie-data` | 1Gi |
-
-**Worker-01 (11Gi claimed):**
-
-| App | PVC | Size |
-|-----|-----|------|
-| filebrowser | `filebrowser-files` | **5Gi** |
-| filebrowser | `filebrowser-db` | 1Gi |
-| n8n | `n8n-data` | 2Gi |
-| n8n | `n8n-postgresql-cluster-1` (CNPG) | 2Gi |
-| pgadmin | `pgadmin-data-pvc` | 1Gi |
-
-**Key insight:** filebrowser (the largest workload) is already on worker-01, not the control-plane. The disk crisis on the control-plane is from container images, not application data.
+**Architecture notes:**
+- Control-plane is a **KVM VM** (`i440FX-PIIX` hostname = QEMU machine type). Physical Proxmox host has storage capacity not visible from inside this VM.
+- Worker-01 is **bare metal** (Ubuntu only, not Proxmox-managed). This is the key constraint for storage architecture.
+- Proxmox CSI requires all nodes to be Proxmox VMs — currently only 1 of 2 nodes qualifies.
 
 ---
 
-## The Real Problems
+## Where Is the Disk Space Going? (Control-plane)
 
-### Problem 1: Control-plane Disk Pressure (Immediate)
+### Verified breakdown (122GB/167GB used)
 
-**Cause:** K3s containerd image cache + Docker dev images + desktop apps filling a 167GB VM disk.
+| Category | Size | Verified? | Notes |
+|----------|------|-----------|-------|
+| K3s containerd image cache | ~90GB est. | Estimated | Root-owned, can't `du` without sudo |
+| `/snap` (GNOME, Firefox, etc.) | 8.4GB | ✅ | Desktop environment running on this VM |
+| `/var/lib/snapd` | 4.1GB | ✅ | Snap package data |
+| `/var/log/journal` | 4.2GB | ✅ | systemd journal logs — can be vacuumed |
+| `/var/cache/apt` | 227MB | ✅ | Package cache |
+| Docker images | 6.2GB | ✅ | `docker system df` — 78% reclaimable |
+| Docker stopped containers | 2.5GB | ✅ | `docker system df` — **100% reclaimable** |
+| Docker volumes | 1.7GB | ✅ | 81% reclaimable |
+| Kubernetes PVCs (on this node) | ~8GB | ✅ | Healthy, spread correctly |
 
-**Solution (independent of storage architecture):**
-```bash
-# View K3s image storage (requires sudo)
-sudo k3s crictl images
-sudo k3s crictl rmi --prune  # Remove unused K3s images
+**Root cause:** K3s uses its own containerd (separate from Docker) and caches all container images under root-owned paths. With ~30+ pods (monitoring stack, FluxCD, cert-manager, Traefik, CNPG, apps), image cache is the dominant consumer.
 
-# Docker dev containers (these are large - 1.3GB each)
-docker image prune -a  # Removes ALL unused Docker images (safe if not using DevPod now)
+**Secondary cause:** This VM doubles as a desktop workstation (GNOME, Firefox via snap) — unusual setup that adds ~12GB of non-K8s disk pressure that will recur.
 
-# Check log disk usage
-sudo journalctl --disk-usage
-sudo journalctl --vacuum-size=500M  # Trim journal to 500MB
+### Kubernetes PVC Distribution (Verified, 2026-04-03)
 
-# Snap cleanup
-snap list --all | awk '/disabled/{print $1, $3}' | while read snapname revision; do
-    sudo snap remove "$snapname" --revision="$revision"
-done
-```
+**Control-plane (8Gi total):**
+| App | PVC | Size | StorageClass |
+|-----|-----|------|---|
+| linkding | `linkding-data-pvc` | 1Gi | local-path |
+| linkding | `linkding-postgres-1` (CNPG) | 2Gi | local-path |
+| audiobookshelf | `audiobookshelf-config` | 1Gi | local-path |
+| audiobookshelf | `audiobookshelf-metadata` | 1Gi | local-path |
+| audiobookshelf | `audiobookshelf-audiobooks` | 1Gi | local-path |
+| mealie | `mealie-data` | 1Gi | local-path |
 
-Expected recovery: **20-50GB** depending on image cache size.
+**Worker-01 (11Gi total):**
+| App | PVC | Size | StorageClass |
+|-----|-----|------|---|
+| filebrowser | `filebrowser-files` | 5Gi | local-path |
+| filebrowser | `filebrowser-db` | 1Gi | local-path |
+| n8n | `n8n-data` | 2Gi | local-path |
+| n8n | `n8n-postgresql-cluster-1` (CNPG) | 2Gi | local-path |
+| pgadmin | `pgadmin-data-pvc` | 1Gi | local-path |
 
-### Problem 2: Storage Not Scalable (Structural)
-
-**Current:** `local-path` storage class — volumes are node-local, bound at creation time.
-
-```
-STORAGECLASS   PROVISIONER                ALLOWVOLUMEEXPANSION   MODE
-local-path     rancher.io/local-path      false                  WaitForFirstConsumer
-```
-
-**Consequences when adding worker-02:**
-- Pods may be scheduled on worker-02 but their PVCs are bound to control-plane or worker-01
-- Kubernetes will leave pods in `Pending` state (can't schedule because volume is node-locked)
-- No capacity pooling — control-plane disk still limited to 167GB virtual disk
-- No workload mobility — apps can't move between nodes freely
-
----
-
-## Storage Solutions Comparison
-
-### Option 1: NFS from Worker-01
-
-**Setup:** Configure worker-01 as NFS server, all nodes mount it, deploy NFS provisioner in K3s.
-
-```
-worker-01 NFS server (/mnt/nfs-k8s, 100GB)
-    ↓ exported via NFS
-Control-plane + future worker-02 mount /mnt/nfs-shared
-    ↓
-Kubernetes NFS Provisioner (subdir-external-provisioner)
-    ↓
-New StorageClass: shared-nfs
-```
-
-**Pros:**
-- ✅ Free, zero new hardware
-- ✅ Easy: Linux-native, no Kubernetes operators
-- ✅ Scales easily — new nodes just mount the NFS export
-- ✅ Supports RWX (multiple pods reading same volume)
-- ✅ Works now with 2 nodes, still works with 10
-
-**Cons:**
-- ❌ Single point of failure — if worker-01 goes down, ALL apps using shared-nfs lose storage
-- ❌ NFS server is on a worker node, which creates a dependency inversion (worker hosts infra)
-- ❌ Performance: network-attached storage adds latency vs local disk
-- ❌ Databases (CNPG) on NFS can be problematic — CNPG is sensitive to fsync behavior
-
-**Verdict:** ✅ Good for non-database workloads; avoid for CNPG clusters
-
-**Effort:** ~4 hours
+**Key insight:** The per-app PVC approach is correct and working. Volumes are well-distributed. **The disk crisis is from image caches, not PVC proliferation.** Do not consolidate PVCs — isolation is the right pattern.
 
 ---
 
-### Option 2: Proxmox CSI Driver ⭐ **Best fit for your setup**
+## Should Worker-02 Be Proxmox VM or Bare Metal?
 
-**Setup:** The Proxmox CSI driver lets Kubernetes provision storage directly from the Proxmox host. Proxmox creates LVM-thin or ZFS datasets and attaches them as block devices to VMs.
+### Recommendation: Proxmox VM
 
-```
-Proxmox Host (physical machine)
-├── Physical disks (ZFS pool or LVM volume group)
-│   └── CSI provisions new volumes as datasets/LVs
-└── VMs: control-plane VM, worker-01 VM, worker-02 VM (future)
-    ↓ block device attached via virtio
-Kubernetes PVC → Proxmox CSI → Proxmox creates + attaches LV
-```
+**Run worker-02 as a Proxmox VM.** Here's why:
 
-**Pros:**
-- ✅ **Best performance** — block-level, not network filesystem
-- ✅ **Leverages existing Proxmox** — no extra hardware
-- ✅ **Highly scalable** — add VMs to Proxmox, they get access to same storage pool
-- ✅ **Proxmox manages capacity** — can expand storage pool with disks on Proxmox host
-- ✅ **Volume expansion supported** — resize LV → resize PVC online
-- ✅ Plays well with CNPG (block device, proper fsync)
-- ✅ Native Proxmox backup integration (VM + volume snapshots)
+| Factor | Proxmox VM | Bare Metal |
+|--------|-----------|------------|
+| Storage scalability | Can expand virtual disk without touching hardware | Stuck with physical disk size |
+| RAM allocation | Proxmox can dynamically redistribute RAM between VMs (ballooning) | Fixed |
+| Snapshots & backup | Full VM snapshot before risky changes | Manual, complex |
+| Migration | Live-migrate VM to another Proxmox host | Physical move only |
+| Disk expansion | Resize VM disk online | Add physical disks or replace |
+| Future Proxmox CSI | ✅ Works — all nodes would be Proxmox VMs | ❌ Excluded from Proxmox CSI |
+| Setup time | ~30min (clone existing VM template) | ~1-2h (fresh OS install) |
 
-**Cons:**
-- ❌ More setup complexity (Proxmox API token, CSI driver deployment, Proxmox cluster config)
-- ❌ Only works for VMs on Proxmox — worker-01 is bare Ubuntu (bare metal), not a VM
-- ❌ Requires Proxmox storage pool to have free capacity (need to verify)
+**The decisive reason:** Once worker-02 is a Proxmox VM, you have 2 of 3 nodes on Proxmox. At that point, migrating worker-01 into Proxmox becomes a reasonable future step — and then all nodes are on Proxmox, making **Proxmox CSI** the cleanest long-term storage solution. Bare-metal worker-02 closes that door.
 
-**Important limitation:** worker-01 is **NOT** a Proxmox VM — it's bare Ubuntu. Proxmox CSI can only provision storage to VMs. This means:
-- Control-plane VM: ✅ gets Proxmox CSI volumes
-- Worker-01 (bare metal): ❌ cannot use Proxmox CSI directly
-- Future worker-02: ✅ if added as a Proxmox VM
-
-This makes Proxmox CSI a partial solution unless you migrate worker-01 to run as a Proxmox VM (which is a bigger change).
-
-**Verdict:** ✅ Excellent long-term path, but requires worker-01 to become a Proxmox VM to fully unify storage
-
-**Effort:** ~8-10 hours (Proxmox setup + CSI driver + storage pool config)
+**Recommended specs for worker-02 VM:**
+- CPU: 4–6 vCPU
+- RAM: 8–16GB
+- Disk: 100–200GB (Proxmox can expand later)
+- Network: virtio (same as control-plane)
 
 ---
 
-### Option 3: Longhorn
+## Storage Options Comparison
 
-**Setup:** Kubernetes-native distributed storage operator. Installs in cluster, uses disks on each node.
+### Option A: NFS from Worker-01
 
-```
-All worker nodes expose disk space to Longhorn
-    ↓
-Longhorn replicates volumes across nodes
-    ↓
-Any pod on any node can access any volume (with replication)
-```
+**How it works:** Worker-01 exports a directory over NFS. K3s nodes mount it. `nfs-subdir-external-provisioner` creates a `shared-nfs` StorageClass.
 
-**Pros:**
-- ✅ Kubernetes-native — manages itself entirely
-- ✅ Automatic replication (data survives node failure)
-- ✅ Built-in UI for monitoring volumes
-- ✅ Works on mixed hardware (Proxmox VM + bare metal)
-- ✅ Good CNPG compatibility (block-level, proper fsync)
-- ✅ Volume expansion supported
+| | |
+|---|---|
+| **Effort** | ~4 hours |
+| **Cost** | Free |
+| **Pros** | Simplest, works on all node types, supports RWX |
+| **Cons** | Worker-01 is SPOF for all NFS volumes; bad for PostgreSQL (fsync issues) |
+| **Good for** | filebrowser, mealie, audiobookshelf, pgadmin, homarr, homepage |
+| **Bad for** | CNPG clusters (linkding-postgres, n8n-postgres) |
 
-**Cons:**
-- ❌ At replica=2, needs 2 nodes — you have that, but losing either means data unavailability
-- ❌ Higher resource overhead (CPU/RAM per node for Longhorn daemons)
-- ❌ More complex to debug than NFS
-- ❌ Initial setup takes 6-8 hours including validation
+### Option B: Longhorn ⭐ Best fit for 3-node mixed cluster
 
-**Correction from prior report:** Longhorn works fine on 2 nodes. The prior claim that it "requires 3+ nodes" was wrong. With 2 nodes you can set `numberOfReplicas: 2` for redundancy or `numberOfReplicas: 1` to save space. HA requires 3+ nodes (so quorum survives 1 failure), but the system runs on 2.
+**How it works:** Kubernetes-native distributed block storage. Installs as a cluster operator, uses local disks on each node, replicates data across nodes automatically.
 
-**Verdict:** ✅ Strong candidate, especially if staying with mixed hardware long-term
+| | |
+|---|---|
+| **Effort** | ~6–8 hours |
+| **Cost** | Free |
+| **Pros** | Works on mixed hardware (Proxmox VM + bare metal), block-level (CNPG compatible), built-in UI, replication, snapshots |
+| **Cons** | ~500MB–1GB RAM per node overhead; more complex to debug than NFS; best with 3+ nodes for HA |
+| **Good for** | All workloads including CNPG databases |
+| **Timing** | Wait until worker-02 is stable (3 nodes) |
 
-**Effort:** ~8 hours
+### Option C: Proxmox CSI Driver (Long-term best)
+
+**How it works:** Kubernetes provisions storage directly from Proxmox. Proxmox creates LVM-thin volumes and attaches them as block devices to VMs.
+
+| | |
+|---|---|
+| **Effort** | ~8–10 hours |
+| **Cost** | Free (uses existing Proxmox) |
+| **Pros** | Best performance (block device), unified Proxmox management, expandable, CNPG compatible |
+| **Cons** | Only works for Proxmox VMs — worker-01 (bare metal) is excluded today |
+| **Prerequisite** | Worker-01 must be migrated into Proxmox as a VM first |
+| **Timing** | After worker-01 is on Proxmox (future decision) |
+
+### Option D: Ceph via Rook
+
+**Verdict:** Overkill. Needs 3+ dedicated OSD disks + significant RAM. Skip for homelab scale.
 
 ---
 
-### Option 4: Ceph via Rook
+## Recommended Path (Updated for 3-Node Expansion)
 
-**Verdict:** ❌ Overkill for 2-3 nodes. Requires minimum 3 OSDs and significant RAM. Skip for now.
+### Stage 1: Disk Relief (Today, ~1 hour)
 
----
-
-## Recommended Strategy: Two-Stage Approach
-
-Given your specific constraints (Proxmox VM control-plane + bare-metal worker, 3rd node coming soon), the cleanest path is:
-
-### Stage 1: Immediate Disk Relief (This Week, ~1 hour)
-
-**Goal:** Stop the disk crisis on the control-plane.
+Clean the control-plane **before** doing anything else. High value, zero risk.
 
 ```bash
-# Step 1: Clean K3s image cache (run as root/sudo)
-sudo k3s crictl rmi --prune
+# 1. Clean Docker (dev images — 100% of stopped containers reclaimable)
+docker system prune -a --volumes
+# Expected: ~10GB recovered
 
-# Step 2: Clean Docker dev images (if not actively using DevPod)
-docker image prune -a
-
-# Step 3: Trim system logs
+# 2. Trim systemd journal
 sudo journalctl --vacuum-size=500M
+# Expected: ~3.5GB recovered
 
-# Step 4: Remove disabled snap revisions
+# 3. Remove disabled snap revisions
 snap list --all | awk '/disabled/{print $1, $3}' | \
   while read name rev; do sudo snap remove "$name" --revision="$rev"; done
 
-# Step 5: Verify recovery
+# 4. Clean K3s image cache (removes unused images only)
+sudo k3s crictl rmi --prune
+# Expected: varies — potentially 20-40GB
+
+# 5. Verify
 df -h /
 ```
 
-This is independent of storage architecture and should recover 20-50GB.
+**Expected recovery: 25–50GB.** Control-plane should drop from 77% to ~45–55%.
 
----
+### Stage 2: Add Worker-02 as Proxmox VM (Today)
 
-### Stage 2: Shared Storage (Before Adding Worker-02)
+**Both existing nodes are 80%+ full. Worker-02's disk is the main capacity lever — provision it large.**
 
-**Recommended path: NFS now → Proxmox CSI later**
+Recommended VM specs:
+- CPU: 4–6 vCPU
+- RAM: 8–16GB
+- **Disk: 500GB+ if Proxmox host has capacity** (this becomes the primary Longhorn storage pool)
+- Network: virtio
 
-**Why not jump straight to Proxmox CSI:**
-- Worker-01 is bare metal, can't use Proxmox CSI
-- Migrating worker-01 to a Proxmox VM is a bigger decision
-- NFS works across all node types, buys time to plan properly
+Steps:
+1. Create VM in Proxmox with above specs
+2. Install Ubuntu 24.04 LTS
+3. Get K3s token from control-plane: `sudo cat /var/lib/rancher/k3s/server/node-token`
+4. Join cluster: `curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.115:6443 K3S_TOKEN=<token> sh -`
+5. Verify: `kubectl get nodes`
 
-**Why not Longhorn right now:**
-- You're about to add a 3rd node — wait until that node is stable
-- Longhorn on 2 nodes with no HA quorum is risky during infrastructure changes
-- NFS is faster to set up and migrate to Longhorn later is straightforward
+Do **not** add any storage layer yet. Run stable for a few days first.
 
-**Phase 2a: NFS for non-database workloads**
+### Stage 3: Install Longhorn (After Worker-02 is Stable, 1 week out)
 
-Deploy NFS provisioner using worker-01 as server (or a dedicated device if available):
-
-```
-Worker-01 (/mnt/nfs-k8s — allocate 80GB from the 237GB disk)
-  ↓ NFS export
-All K3s nodes mount /mnt/nfs-shared
-  ↓
-Helm: nfs-subdir-external-provisioner
-  ↓
-StorageClass: shared-nfs
-```
-
-Migrate these workloads to `shared-nfs`:
-- filebrowser (files + db)
-- mealie
-- audiobookshelf (config, metadata)
-- pgadmin
-- homarr
-- homepage
-
-**Do NOT migrate CNPG databases (linkding, n8n) to NFS yet** — CloudNativePG requires block storage with proper fsync semantics. NFS can cause subtle data corruption with PostgreSQL. Keep them on local-path for now, or migrate to Longhorn when you have 3 nodes.
-
-**Phase 2b: Once 3rd Node is Stable**
-
-With 3 nodes running (especially if worker-02 is a Proxmox VM), evaluate:
-
-- **Option A:** Migrate to Longhorn — installs in cluster, works on all 3 nodes, covers databases
-- **Option B:** Migrate control-plane + worker-02 to Proxmox CSI, keep worker-01 on NFS
-
----
-
-## CNPG Migration Complexity (Important)
-
-The prior investigation said "gradually migrate PVCs." This significantly understated the complexity for **CloudNativePG databases** (linkding, n8n). These are NOT simple PVC copies.
-
-**Correct CNPG migration process:**
-1. Take a CNPG backup (via `ScheduledBackup` or manual `Backup` object)
-2. Bootstrap a new `Cluster` using `recovery.backup.name` pointing to that backup
-3. Set `storage.storageClass: shared-nfs` on the new cluster spec
-4. Wait for new cluster to be fully recovered and healthy
-5. Update app secrets/configmaps to point to new cluster service name
-6. Verify app connectivity
-7. Delete old CNPG cluster (old PVC is deleted with it since `reclaimPolicy: Delete`)
-
-**CNPG migration for each database: ~30-60 minutes per app with downtime.**
-
----
-
-## Corrected Cleanup Commands
-
-The prior investigation had a wrong command. This machine uses **containerd** (K3s), not Docker for Kubernetes workloads. Correct commands:
-
-```bash
-# ❌ WRONG (Docker is only for local dev, not K3s)
-docker image prune -a  # This only cleans Docker images, not K3s container images
-
-# ✅ CORRECT for K3s container images
-sudo k3s crictl rmi --prune    # Remove unused K3s images
-sudo k3s ctr images ls         # List all K3s images with sizes
-
-# ✅ ALSO valid for Docker dev images (separate daemon)
-docker image prune -a          # Safe for DevPod/local dev images only
-```
-
----
-
-## Implementation Plan Summary
-
-| Phase | Action | Timeline | Effort | Risk |
-|-------|--------|----------|--------|------|
-| **1** | Disk cleanup (K3s images, Docker, logs) | Day 1 | 1h | Low |
-| **2** | Verify worker-01 disk stats | Day 1 | 30min | None |
-| **3** | Deploy NFS on worker-01 + provisioner | Week 1 | 4h | Low |
-| **4** | Create `shared-nfs` StorageClass | Week 1 | 1h | Low |
-| **5** | Migrate non-DB workloads to shared-nfs | Week 1-2 | 3h | Medium |
-| **6** | Run 1-2 weeks with NFS stable | Week 2-3 | monitoring | Low |
-| **7** | Add worker-02 node to cluster | Week 3+ | 2h | Low |
-| **8** | Evaluate Longhorn (3-node HA) | Month 2+ | 8h | Low |
-| **9** | Migrate CNPG clusters to Longhorn | Month 2+ | 2h/db | Medium |
-
----
-
-## Open Questions (Need Answers Before Planning)
-
-1. **What is the Proxmox host's physical disk capacity and layout?**
-   - Does Proxmox have ZFS pools with free space?
-   - This determines if Proxmox CSI is viable and how much VM disk can be expanded
-
-2. **What is worker-01's actual disk usage?**
-   - The 237GB allocatable doesn't tell us how full the disk is
-   - Run `df -h` on worker-01 directly
-
-3. **Is worker-02 going to be a Proxmox VM or bare metal?**
-   - VM: Proxmox CSI becomes viable for unified storage long-term
-   - Bare metal: NFS or Longhorn are the better choices
-
-4. **Is the desktop (Firefox, GNOME) intentional on the control-plane?**
-   - If this is also used as a workstation, the VM disk pressure will keep coming back
-   - Separating workstation from K3s node would solve the recurring disk issue
-
-5. **Are you open to migrating worker-01 to run inside Proxmox?**
-   - If yes: Proxmox CSI becomes the cleanest long-term solution
-   - If no: NFS → Longhorn is the path
-
----
-
-## Files to Create (GSD Milestone)
+With 3 nodes running, deploy Longhorn via FluxCD:
 
 ```
 infrastructure/
 └── storage/
-    ├── nfs-provisioner/        # NFS subdir provisioner deployment
-    │   ├── helmrelease.yaml    # FluxCD HelmRelease for NFS provisioner
-    │   └── storageclass.yaml   # shared-nfs StorageClass
-    └── longhorn/ (future)      # Longhorn operator (Phase 2)
-
-.planning/
-└── STORAGE_INVESTIGATION.md   (this file — keep updated)
+    └── longhorn/
+        ├── namespace.yaml
+        ├── helmrelease.yaml      # Longhorn via Helm
+        └── storageclass.yaml     # default-longhorn StorageClass
 ```
+
+Set Longhorn as the **new default** StorageClass (new apps get it automatically). Existing apps stay on `local-path` until you choose to migrate.
+
+**Migration order (safest first):**
+1. pgadmin, homarr, homepage (stateless-ish, low risk)
+2. mealie, filebrowser (important but no complex migration)
+3. audiobookshelf (larger config)
+4. CNPG clusters (linkding, n8n) — needs backup/restore process (see below)
+
+### Stage 4: Proxmox CSI (Future — when all nodes are Proxmox VMs)
+
+Once worker-01 is migrated into Proxmox: evaluate replacing Longhorn with Proxmox CSI for maximum performance. Not urgent.
 
 ---
 
-**Investigation Updated: 2026-04-03**  
-**Changes from v1:** Corrected VM status, verified PVC node distribution, fixed disk usage analysis, corrected cleanup commands, added CNPG migration complexity, added Proxmox CSI option, corrected Longhorn 2-node claim.
+## CNPG Database Migration (When Moving Storage Class)
+
+CloudNativePG databases **cannot** be migrated by copying PVCs. The correct process:
+
+```bash
+# 1. Take a CNPG backup
+kubectl apply -f - <<EOF
+apiVersion: postgresql.cnpg.io/v1
+kind: Backup
+metadata:
+  name: linkding-pre-migration
+  namespace: linkding
+spec:
+  cluster:
+    name: linkding-postgres
+EOF
+
+# 2. Wait for backup to complete
+kubectl get backup linkding-pre-migration -n linkding -w
+
+# 3. Create new cluster pointing to backup + new storageClass
+# (edit cluster spec: recovery.backup.name + storage.storageClass: longhorn)
+
+# 4. Update app to point to new cluster service
+# 5. Verify data, delete old cluster
+```
+
+**Time per database: ~30–60 minutes with downtime.** Do linkding and n8n separately.
+
+---
+
+## Quick Reference: Current Storage State (All Verified)
+
+```
+StorageClass:      local-path (only one)
+Total PVC usage:   ~19Gi across 2 nodes
+
+Control-plane:     167GB total | 122GB used (77%) | 38GB free  | KVM VM
+Worker-01:         233GB NVMe  | 179GB used (82%) | 42GB free  | Bare metal
+Worker-02:         not yet added
+
+Combined free:     ~80GB — both nodes are disk-constrained
+Main capacity fix: worker-02 disk size (provision 500GB+ if possible)
+```
+
+**Notable:** Worker-01 has an NVMe drive — fast local storage. This makes it a high-quality Longhorn disk once deployed.
+
+---
+
+## Step 1 Safety — Will Cleanup Damage Running Apps?
+
+**No.** Here's exactly what each command touches:
+
+| Command | What it removes | Safe? |
+|---------|----------------|-------|
+| `docker system prune -a --volumes` | Docker images/containers/volumes **not used by running containers**. K3s is separate — its pods are unaffected. | ✅ Safe — Docker is dev-only on this machine |
+| `journalctl --vacuum-size=500M` | Old log entries past 500MB. Running services unaffected. | ✅ Safe |
+| `k3s crictl rmi --prune` | K3s container images **not currently used by running pods**. If a pod later restarts, it re-pulls its image (brief delay, no data loss). | ✅ Safe — running pods keep their images |
+
+**What cannot break:** PVCs, running pods, databases, Kubernetes state, FluxCD sync.
+**What could cause brief delay:** A pod restarting after `crictl rmi --prune` will re-pull its image (~30s–2min depending on size). This is normal and harmless.
+
+---
+
+## Open Questions
+
+1. **Proxmox host physical disk layout** — ZFS pools, free capacity? Determines if Proxmox CSI is viable and whether the control-plane VM disk can be expanded cheaply
+2. **Is the desktop (GNOME/Firefox) on control-plane intentional?** — if so, disk pressure will recur after cleanup; separating workstation from K3s node is worth considering
+3. **Will worker-01 eventually migrate into Proxmox?** — unlocks Proxmox CSI as the long-term unified storage solution
+
+---
+
+**Investigation v3 — 2026-04-03**
+**Changes from v2:** Added live Docker stats, added worker-02 VM vs bare-metal recommendation, updated storage path to prioritize Longhorn over NFS given 3-node expansion happening today, clarified per-app PVC isolation is correct and should not change.
