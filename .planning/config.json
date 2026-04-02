@@ -1,0 +1,19 @@
+{
+  "workflow": {
+    "research": true,
+    "discussion": true,
+    "verification": true,
+    "commit_docs": true
+  },
+  "models": {
+    "researcher": "haiku",
+    "planner": "opus",
+    "executor": "opus",
+    "reviewer": "opus"
+  },
+  "project": {
+    "name": "HomeLab-Pro",
+    "created": "2026-04-03",
+    "type": "infrastructure"
+  }
+}
