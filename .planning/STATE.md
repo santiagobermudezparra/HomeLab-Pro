@@ -2,8 +2,9 @@
 gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
-status: executing
-last_updated: "2026-04-03T23:24:30Z"
+status: completed
+stopped_at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
+last_updated: "2026-04-03T23:47:19.961Z"
 progress:
   total_phases: 14
   completed_phases: 1
