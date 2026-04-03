@@ -12,6 +12,11 @@
 
 **Requirements:** CRIT-01
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 01-01-PLAN.md — Add dependsOn: databases to apps Kustomization and open PR
+
 **Scope:**
 - Add `dependsOn: [{ name: databases }]` to `clusters/staging/apps.yaml`
 - Verify the dependency chain: `infrastructure-controllers` → `databases` → `apps`
