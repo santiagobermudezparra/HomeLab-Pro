@@ -1,0 +1,122 @@
+# Requirements: HomeLab-Pro Improvement
+
+**Defined:** 2026-04-04
+**Core Value:** Every stateful app survives any single node failure without data loss
+
+## v1 Requirements
+
+### Critical Fixes (CRIT)
+
+- [ ] **CRIT-01**: `apps` Kustomization has `dependsOn: [databases]` so apps never race databases on bootstrap
+- [ ] **CRIT-02**: audiobookshelf Deployment has resource `requests` and `limits` defined
+- [ ] **CRIT-03**: All deployments using `:latest` image tags are pinned to specific versions (n8n, cloudflared)
+- [ ] **CRIT-04**: Grafana admin password is stored in a SOPS-encrypted Secret, not hardcoded in HelmRelease values
+- [ ] **CRIT-05**: Renovate external-host-error is diagnosed and resolved
+
+### Backup (BACK)
+
+- [ ] **BACK-01**: n8n CloudNativePG cluster has a `ScheduledBackup` resource configured
+- [ ] **BACK-02**: linkding `ScheduledBackup` has a `destinationPath` pointing to object storage
+- [ ] **BACK-03**: Velero is installed and configured with an S3-compatible backup target
+- [ ] **BACK-04**: All app namespaces have Velero backup schedules (daily, configurable retention)
+- [ ] **BACK-05**: A Velero test restore has been performed and documented
+
+### Storage (STOR)
+
+- [ ] **STOR-01**: Longhorn is installed via FluxCD HelmRelease
+- [ ] **STOR-02**: Longhorn is configured as the default StorageClass (local-path demoted)
+- [ ] **STOR-03**: Longhorn replication factor set to 2 (data on 2 nodes minimum)
+- [ ] **STOR-04**: All stateful app PVCs (audiobookshelf, mealie, linkding-data, filebrowser, n8n-data, pgadmin) migrated from local-path to Longhorn
+- [ ] **STOR-05**: CloudNativePG PVCs (linkding-postgres-1, n8n-postgresql-cluster-1) migrated from local-path to Longhorn
+- [ ] **STOR-06**: Longhorn UI dashboard is accessible (via Traefik Ingress, internal access)
+
+### Scheduling (SCHED)
+
+- [ ] **SCHED-01**: Worker-02 is receiving app workloads proportional to its capacity (4 CPU, 15.7GB RAM)
+- [ ] **SCHED-02**: PodTopologySpreadConstraints are defined on multi-replica deployments (cloudflared) to spread across nodes
+- [ ] **SCHED-03**: Control-plane node is not overloaded with stateful workloads after storage migration
+
+### Security (SEC)
+
+- [ ] **SEC-01**: Cilium is installed as the CNI, replacing Flannel
+- [ ] **SEC-02**: Hubble observability is enabled in Cilium
+- [ ] **SEC-03**: A default-deny NetworkPolicy is applied in each app namespace
+- [ ] **SEC-04**: Allow-rules are configured per namespace so each app can reach only its own database and required services
+- [ ] **SEC-05**: flux-system existing NetworkPolicies are preserved and verified after Cilium migration
+
+### Observability (OBS)
+
+- [ ] **OBS-01**: Headlamp dashboard is deployed and accessible via Traefik Ingress (internal)
+- [ ] **OBS-02**: Longhorn metrics are scraped by Prometheus
+
+## v2 Requirements
+
+### Media Stack
+
+- **MEDIA-01**: Radarr deployed with Cloudflare Tunnel access
+- **MEDIA-02**: Sonarr deployed with Cloudflare Tunnel access
+- **MEDIA-03**: Prowlarr deployed as indexer manager
+- **MEDIA-04**: qBittorrent with VPN sidecar deployed
+- **MEDIA-05**: Bazarr (subtitle management) deployed
+
+### Advanced Networking
+
+- **NET-01**: External Secrets Operator installed (replace SOPS-in-git with Vault or similar)
+- **NET-02**: Cilium BGP/L2 announcements for internal LoadBalancer IPs
+
+### HA Database
+
+- **DB-01**: linkding CNPG cluster scaled to 2 instances (primary + standby)
+- **DB-02**: n8n CNPG cluster scaled to 2 instances
+
+## Out of Scope
+
+| Feature | Reason |
+|---------|--------|
+| Rook-Ceph | No raw block devices; Longhorn is correct choice for this hardware |
+| Kubernetes upgrade | v1.30.0+k3s1 is stable and not blocking; out of scope for this milestone |
+| Production environment | Single staging cluster; multi-env out of scope |
+| Homarr | Replaced by Homepage; intentionally disabled |
+| Authelia/Authentik | SSO layer adds complexity not justified by current use case |
+| Flux Operator | Already running FluxCD well via bootstrap; minimal benefit |
+| CoreDNS changes | Already running correctly from k3s defaults |
+
+## Traceability
+
+| Requirement | Phase | Status |
+|-------------|-------|--------|
+| CRIT-01 | Phase 1 | Pending |
+| CRIT-02 | Phase 2 | Pending |
+| CRIT-03 | Phase 3 | Pending |
+| CRIT-04 | Phase 4 | Pending |
+| CRIT-05 | Phase 5 | Pending |
+| BACK-01 | Phase 6 | Pending |
+| BACK-02 | Phase 7 | Pending |
+| STOR-01 | Phase 8 | Pending |
+| STOR-02 | Phase 8 | Pending |
+| STOR-03 | Phase 8 | Pending |
+| STOR-06 | Phase 8 | Pending |
+| STOR-04 | Phase 9 | Pending |
+| STOR-05 | Phase 9 | Pending |
+| SCHED-01 | Phase 10 | Pending |
+| SCHED-02 | Phase 10 | Pending |
+| SCHED-03 | Phase 10 | Pending |
+| SEC-01 | Phase 11 | Pending |
+| SEC-02 | Phase 11 | Pending |
+| SEC-03 | Phase 12 | Pending |
+| SEC-04 | Phase 12 | Pending |
+| SEC-05 | Phase 12 | Pending |
+| BACK-03 | Phase 13 | Pending |
+| BACK-04 | Phase 13 | Pending |
+| BACK-05 | Phase 13 | Pending |
+| OBS-01 | Phase 14 | Pending |
+| OBS-02 | Phase 8 | Pending |
+
+**Coverage:**
+- v1 requirements: 23 total
+- Mapped to phases: 23
+- Unmapped: 0 ✓
+
+---
+*Requirements defined: 2026-04-04*
+*Last updated: 2026-04-04 after initial cluster diagnosis*
