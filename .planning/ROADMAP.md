@@ -12,10 +12,10 @@
 
 **Requirements:** CRIT-01
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Add dependsOn: databases to apps Kustomization and open PR
+- [x] 01-01-PLAN.md — Add dependsOn: databases to apps Kustomization and open PR
 
 **Scope:**
 - Add `dependsOn: [{ name: databases }]` to `clusters/staging/apps.yaml`
@@ -245,7 +245,7 @@ Plans:
 
 | Phase | Name | Category | Risk | Est. Effort |
 |-------|------|----------|------|-------------|
-| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Low | Tiny |
+| 1 | Fix FluxCD Bootstrap Race | 1/1 | Complete   | 2026-04-03 |
 | 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small |
 | 3 | Pin All Image Tags | Critical Fix | Low | Small |
 | 4 | Grafana Password to Secret | Security | Low | Small |

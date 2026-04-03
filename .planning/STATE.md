@@ -1,3 +1,16 @@
+---
+gsd_state_version: 1.0
+milestone: v2.5.1
+milestone_name: milestone
+status: executing
+last_updated: "2026-04-03T23:24:30Z"
+progress:
+  total_phases: 14
+  completed_phases: 1
+  total_plans: 1
+  completed_plans: 1
+---
+
 # Project State
 
 ## Project Reference
@@ -5,20 +18,26 @@
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 1 — Fix FluxCD Bootstrap Race Condition
+**Current focus:** Phase 02 — resource-limits-audiobookshelf
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 1: Fix FluxCD Bootstrap Race Condition**
-Status: Not started
-Next action: `/gsd:plan-phase 1`
+Status: Complete — PR pending merge (`feat/phase-1-fix-fluxcd-bootstrap-race-condition`)
+Stopped at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
+Next action: Merge PR, then `/gsd:plan-phase 2`
+
+## Key Decisions (Phase 01)
+
+- FluxCD apps Kustomization now depends on `databases`, completing bootstrap chain: `infrastructure-controllers -> databases -> apps`
+- No `wait: true` or healthChecks added to apps.yaml — minimal change sufficient, out of scope for this phase
 
 ## Phase Progress
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Fix FluxCD Bootstrap Race | ○ Pending |
+| 1 | Fix FluxCD Bootstrap Race | ✓ Complete |
 | 2 | Resource Limits — audiobookshelf | ○ Pending |
 | 3 | Pin All Image Tags | ○ Pending |
 | 4 | Grafana Password to Secret | ○ Pending |
