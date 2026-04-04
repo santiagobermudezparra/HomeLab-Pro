@@ -4,9 +4,9 @@ milestone: v2.5.1
 milestone_name: milestone
 status: completed
 stopped_at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
-last_updated: "2026-04-04T10:50:11.508Z"
+last_updated: "2026-04-04T20:51:03.038Z"
 progress:
-  total_phases: 3
+  total_phases: 12
   completed_phases: 2
   total_plans: 2
   completed_plans: 2
@@ -40,18 +40,16 @@ Next action: Merge PR, then `/gsd:plan-phase 2`
 |-------|------|--------|
 | 1 | Fix FluxCD Bootstrap Race | ✓ Complete |
 | 2 | Resource Limits — audiobookshelf | ○ Pending |
-| 3 | Pin All Image Tags | ○ Pending |
-| 4 | Grafana Password to Secret | ○ Pending |
-| 5 | Fix Renovate Errors | ○ Pending |
-| 6 | n8n Database Backup | ○ Pending |
-| 7 | Fix linkding Backup Destination | ○ Pending |
-| 8 | Install Longhorn Storage | ○ Pending |
-| 9 | Migrate PVCs to Longhorn | ○ Pending |
-| 10 | Balance Workloads to Workers | ○ Pending |
-| 11 | Cilium CNI Migration | ○ Pending |
-| 12 | NetworkPolicies per Namespace | ○ Pending |
-| 13 | Velero Full Backup | ○ Pending |
-| 14 | Headlamp Dashboard | ○ Pending |
+| 3 | Grafana Password to SOPS Secret | ○ Pending |
+| 4 | n8n Database Backup | ○ Pending |
+| 5 | Fix linkding Backup Destination | ○ Pending |
+| 6 | Install Longhorn Storage | ○ Pending |
+| 7 | Migrate PVCs to Longhorn | ○ Pending |
+| 8 | Balance Workloads to Workers | ○ Pending |
+| 9 | Cilium CNI Migration | ○ Pending |
+| 10 | NetworkPolicies per Namespace | ○ Pending |
+| 11 | Velero Full Backup | ○ Pending |
+| 12 | Headlamp Dashboard | ○ Pending |
 
 ## Cluster Snapshot (2026-04-04)
 
@@ -70,8 +68,7 @@ Next action: Merge PR, then `/gsd:plan-phase 2`
 - All secrets must be SOPS-encrypted before commit
 - `apps/staging/kustomization.yaml` — homarr is commented out intentionally
 - cert-manager-cainjector has 17100 restarts — monitor but not blocking
-- Renovate `external-host-error` on 2d-ago runs, recent runs OK — investigate in Phase 5
-- Phase 11 (Cilium) is the highest-risk phase — requires maintenance window, node config changes
+- Phase 9 (Cilium) is the highest-risk phase — requires maintenance window, node config changes
 
 ---
 *State initialized: 2026-04-04*

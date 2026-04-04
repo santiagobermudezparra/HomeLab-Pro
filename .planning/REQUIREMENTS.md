@@ -87,30 +87,30 @@
 |-------------|-------|--------|
 | CRIT-01 | Phase 1 | Complete |
 | CRIT-02 | Phase 2 | Pending |
-| CRIT-03 | Phase 3 | Pending |
-| CRIT-04 | Phase 4 | Complete |
-| CRIT-05 | Phase 5 | Pending |
-| BACK-01 | Phase 6 | Pending |
-| BACK-02 | Phase 7 | Pending |
-| STOR-01 | Phase 8 | Pending |
-| STOR-02 | Phase 8 | Pending |
-| STOR-03 | Phase 8 | Pending |
-| STOR-06 | Phase 8 | Pending |
-| STOR-04 | Phase 9 | Pending |
-| STOR-05 | Phase 9 | Pending |
-| SCHED-01 | Phase 10 | Pending |
-| SCHED-02 | Phase 10 | Pending |
-| SCHED-03 | Phase 10 | Pending |
-| SEC-01 | Phase 11 | Pending |
-| SEC-02 | Phase 11 | Pending |
-| SEC-03 | Phase 12 | Pending |
-| SEC-04 | Phase 12 | Pending |
-| SEC-05 | Phase 12 | Pending |
-| BACK-03 | Phase 13 | Pending |
-| BACK-04 | Phase 13 | Pending |
-| BACK-05 | Phase 13 | Pending |
-| OBS-01 | Phase 14 | Pending |
-| OBS-02 | Phase 8 | Pending |
+| CRIT-03 | Unassigned | Pending |
+| CRIT-04 | Phase 3 | Complete |
+| CRIT-05 | Phase 4 | Pending |
+| BACK-01 | Phase 5 | Pending |
+| BACK-02 | Phase 6 | Pending |
+| STOR-01 | Phase 7 | Pending |
+| STOR-02 | Phase 7 | Pending |
+| STOR-03 | Phase 7 | Pending |
+| STOR-06 | Phase 7 | Pending |
+| OBS-02 | Phase 7 | Pending |
+| STOR-04 | Phase 8 | Pending |
+| STOR-05 | Phase 8 | Pending |
+| SCHED-01 | Phase 9 | Pending |
+| SCHED-02 | Phase 9 | Pending |
+| SCHED-03 | Phase 9 | Pending |
+| SEC-01 | Phase 10 | Pending |
+| SEC-02 | Phase 10 | Pending |
+| SEC-03 | Phase 11 | Pending |
+| SEC-04 | Phase 11 | Pending |
+| SEC-05 | Phase 11 | Pending |
+| BACK-03 | Phase 12 | Pending |
+| BACK-04 | Phase 12 | Pending |
+| BACK-05 | Phase 12 | Pending |
+| OBS-01 | Phase 13 | Pending |
 
 **Coverage:**
 - v1 requirements: 23 total
