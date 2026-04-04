@@ -3,3 +3,4 @@ kind: Kustomization
 resources:
   - secrets.yaml
   - postgresql-cluster.yaml
+  - backup-config.yaml

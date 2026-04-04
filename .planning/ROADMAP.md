@@ -68,6 +68,11 @@ Plans:
 
 **Requirements:** BACK-01
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 04-01-PLAN.md — Create ScheduledBackup for n8n-postgresql-cluster and add to kustomization
+
 **Scope:**
 - Create `databases/staging/n8n/backup-config.yaml` (ScheduledBackup, daily 3am, mirrors linkding pattern)
 - Configure backup destination (object storage — MinIO or S3 bucket)
