@@ -4,12 +4,12 @@ milestone: v2.5.1
 milestone_name: milestone
 status: completed
 stopped_at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
-last_updated: "2026-04-04T10:18:34.395Z"
+last_updated: "2026-04-04T10:50:11.508Z"
 progress:
   total_phases: 3
-  completed_phases: 1
-  total_plans: 1
-  completed_plans: 1
+  completed_phases: 2
+  total_plans: 2
+  completed_plans: 2
 ---
 
 # Project State
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 02 — resource-limits-audiobookshelf
+**Current focus:** Phase 03 — grafana-admin-password-as-sops-secret
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
