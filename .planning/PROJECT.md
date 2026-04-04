@@ -30,7 +30,7 @@ Every stateful app survives any single node failure without data loss.
 - [ ] FluxCD dependsOn ordering fixed (apps race with infra on bootstrap)
 - [ ] All app deployments have resource requests and limits
 - [ ] All image tags pinned (no :latest in production)
-- [ ] Grafana admin password stored as SOPS-encrypted secret
+- ✓ Grafana admin password stored as SOPS-encrypted secret — Validated in Phase 3
 - [ ] n8n database has scheduled backup config
 - [ ] Linkding backup has configured object-storage destination
 - [ ] Longhorn distributed storage installed and set as default StorageClass
@@ -111,4 +111,4 @@ does NOT follow — a node failure means that app's data is inaccessible until t
 | Fine granularity roadmap | User prefers one concern per phase for visibility and rollback safety | ✓ |
 
 ---
-*Last updated: 2026-04-04 after initial cluster diagnosis*
+*Last updated: 2026-04-04 — Phase 3 complete (Grafana admin password as SOPS secret)*
