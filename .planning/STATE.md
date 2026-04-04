@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v2.5.1
+milestone_name: milestone
+status: completed
+stopped_at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
+last_updated: "2026-04-04T10:42:53.604Z"
+progress:
+  total_phases: 3
+  completed_phases: 1
+  total_plans: 2
+  completed_plans: 1
+---
+
 # Project State
 
 ## Project Reference
@@ -5,30 +19,29 @@
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 03 — Grafana Admin Password as SOPS Secret (complete)
+**Current focus:** Phase 03 — grafana-admin-password-as-sops-secret
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
-**Phase 03: Grafana Admin Password as SOPS Secret**
-Status: Complete — PR pending merge (`feat/phase-2-resource-limits`)
-Stopped at: Completed 03-grafana-admin-password-as-sops-secret/03-01-PLAN.md
-Next action: Merge PR, then continue next phase
+**Phase 1: Fix FluxCD Bootstrap Race Condition**
+Status: Complete — PR pending merge (`feat/phase-1-fix-fluxcd-bootstrap-race-condition`)
+Stopped at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
+Next action: Merge PR, then `/gsd:plan-phase 2`
 
-## Key Decisions (Phase 03)
+## Key Decisions (Phase 01)
 
-- Use `grafana.admin.existingSecret: grafana-admin-secret` in HelmRelease instead of hardcoded `adminPassword` — satisfies CRIT-04
-- Secret keys match kube-prometheus-stack Helm chart convention: `admin-user` and `admin-password`
-- Encrypted with SOPS age key using `encrypted_regex: ^(data|stringData)$` — only data fields sealed
+- FluxCD apps Kustomization now depends on `databases`, completing bootstrap chain: `infrastructure-controllers -> databases -> apps`
+- No `wait: true` or healthChecks added to apps.yaml — minimal change sufficient, out of scope for this phase
 
 ## Phase Progress
 
 | Phase | Name | Status |
 |-------|------|--------|
-| 1 | Fix FluxCD Bootstrap Race | ○ Pending |
+| 1 | Fix FluxCD Bootstrap Race | ✓ Complete |
 | 2 | Resource Limits — audiobookshelf | ○ Pending |
 | 3 | Pin All Image Tags | ○ Pending |
-| 4 | Grafana Password to Secret | ✓ Complete |
+| 4 | Grafana Password to Secret | ○ Pending |
 | 5 | Fix Renovate Errors | ○ Pending |
 | 6 | n8n Database Backup | ○ Pending |
 | 7 | Fix linkding Backup Destination | ○ Pending |
