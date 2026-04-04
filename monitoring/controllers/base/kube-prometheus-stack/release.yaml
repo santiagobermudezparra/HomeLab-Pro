@@ -46,7 +46,8 @@ spec:
           provider:
             allowUiUpdates: true
 
-      adminPassword: watary
+      admin:
+        existingSecret: grafana-admin-secret
       ingress:
         enabled: true
         ingressClassName: traefik
