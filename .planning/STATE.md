@@ -24,10 +24,10 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 ## Current Phase
 
-**Phase 1: Fix FluxCD Bootstrap Race Condition**
-Status: Complete — PR pending merge (`feat/phase-1-fix-fluxcd-bootstrap-race-condition`)
-Stopped at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
-Next action: Merge PR, then `/gsd:plan-phase 2`
+**Phase 4: n8n Database Backup**
+Status: Complete — Verification checkpoint approved
+Stopped at: Completed 04-n8n-database-backup/04-01-PLAN.md
+Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
 
@@ -41,7 +41,7 @@ Next action: Merge PR, then `/gsd:plan-phase 2`
 | 1 | Fix FluxCD Bootstrap Race | ✓ Complete |
 | 2 | Resource Limits — audiobookshelf | ○ Pending |
 | 3 | Grafana Password to SOPS Secret | ○ Pending |
-| 4 | n8n Database Backup | ○ Pending |
+| 4 | n8n Database Backup | ✓ Complete |
 | 5 | Fix linkding Backup Destination | ○ Pending |
 | 6 | Install Longhorn Storage | ○ Pending |
 | 7 | Migrate PVCs to Longhorn | ○ Pending |

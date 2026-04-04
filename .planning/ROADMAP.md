@@ -68,10 +68,10 @@ Plans:
 
 **Requirements:** BACK-01
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 04-01-PLAN.md — Create ScheduledBackup for n8n-postgresql-cluster and add to kustomization
+- [x] 04-01-PLAN.md — Create ScheduledBackup for n8n-postgresql-cluster and add to kustomization
 
 **Scope:**
 - Create `databases/staging/n8n/backup-config.yaml` (ScheduledBackup, daily 3am, mirrors linkding pattern)
