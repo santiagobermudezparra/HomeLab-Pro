@@ -62,7 +62,7 @@ Plans:
 
 ---
 
-## Phase 3: Fix Renovate external-host-error
+## Phase 4: Fix Renovate external-host-error
 
 **Goal:** Renovate runs without errors and successfully scans the repository for outdated images and Helm chart versions.
 
@@ -72,13 +72,13 @@ Plans:
 - Inspect Renovate logs from erroring pods (2d ago) vs successful pods (recent)
 - Identify whether the error is a GitHub API rate limit, token permissions, or network issue
 - Fix Renovate config or secret accordingly
-- Verify successful run produces correct PRs (e.g., for pinned tags from Phase 3)
+- Verify successful run produces correct PRs (e.g., for pinned image tags)
 
 **Done when:** `kubectl get pods -n renovate` shows only `Completed` exits, no `Error` pods in the last 24h.
 
 ---
 
-## Phase 3: n8n Database Backup
+## Phase 5: n8n Database Backup
 
 **Goal:** n8n's PostgreSQL cluster has a scheduled backup so automation data is not lost on database pod failure.
 
@@ -93,7 +93,7 @@ Plans:
 
 ---
 
-## Phase 3: Fix linkding Backup Destination
+## Phase 6: Fix linkding Backup Destination
 
 **Goal:** linkding's existing ScheduledBackup actually persists data to object storage (currently has no `destinationPath` configured).
 
@@ -108,7 +108,7 @@ Plans:
 
 ---
 
-## Phase 3: Install Longhorn Distributed Storage
+## Phase 7: Install Longhorn Distributed Storage
 
 **Goal:** Longhorn is installed, configured as the default StorageClass with replication factor 2, and its UI dashboard is accessible internally via Traefik.
 
@@ -126,7 +126,7 @@ Plans:
 
 ---
 
-## Phase 3: Migrate PVCs to Longhorn
+## Phase 8: Migrate PVCs to Longhorn
 
 **Goal:** All stateful app PVCs and database PVCs are migrated from local-path to Longhorn, enabling data resilience across node failures.
 
@@ -142,7 +142,7 @@ Plans:
 
 ---
 
-## Phase 3: Balance Workloads to Worker Nodes
+## Phase 9: Balance Workloads to Worker Nodes
 
 **Goal:** Worker-02 (18h old, nearly idle) and Worker-01 receive proportional workloads. Control-plane is no longer hosting the majority of app pods.
 
@@ -158,7 +158,7 @@ Plans:
 
 ---
 
-## Phase 3: Cilium CNI Migration
+## Phase 10: Cilium CNI Migration
 
 **Goal:** Cilium replaces Flannel as the CNI, with Hubble observability enabled. All existing network communication works correctly after migration.
 
@@ -178,7 +178,7 @@ Plans:
 
 ---
 
-## Phase 3: NetworkPolicies — Per-Namespace Isolation
+## Phase 11: NetworkPolicies — Per-Namespace Isolation
 
 **Goal:** Each app namespace has a default-deny NetworkPolicy plus explicit allow-rules for its required connections, so no app can reach another app's database.
 
@@ -198,7 +198,7 @@ Plans:
 
 ---
 
-## Phase 3: Velero Full Backup
+## Phase 12: Velero Full Backup
 
 **Goal:** Velero is installed with S3-compatible backend and all app namespaces have daily backup schedules with verified restore capability.
 
@@ -214,7 +214,7 @@ Plans:
 
 ---
 
-## Phase 3: Headlamp Web Dashboard
+## Phase 13: Headlamp Web Dashboard
 
 **Goal:** Headlamp is deployed and accessible via Traefik Ingress for cluster visibility without requiring kubectl.
 
@@ -234,19 +234,19 @@ Plans:
 
 | Phase | Name | Category | Risk | Est. Effort |
 |-------|------|----------|------|-------------|
-| 1 | Fix FluxCD Bootstrap Race | 1/1 | Complete   | 2003-04-03 |
+| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Low | Small |
 | 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small |
-| 4 | Grafana Password to Secret | Security | Low | Small |
-| 5 | Fix Renovate Errors | Critical Fix | Low | Medium |
-| 6 | n8n Database Backup | Backup | Low | Small |
-| 7 | Fix linkding Backup Destination | Backup | Low | Small |
-| 8 | Install Longhorn Storage | Storage | Medium | Medium |
-| 9 | Migrate PVCs to Longhorn | Storage | Medium | Large |
-| 10 | Balance Workloads to Workers | Scheduling | Low | Small |
-| 11 | Cilium CNI Migration | Security | **High** | Large |
-| 12 | NetworkPolicies per Namespace | Security | Medium | Medium |
-| 13 | Velero Full Backup | Backup | Low | Medium |
-| 14 | Headlamp Dashboard | Observability | Low | Small |
+| 3 | Grafana Password to SOPS Secret | Security | Low | Small |
+| 4 | Fix Renovate Errors | Critical Fix | Low | Medium |
+| 5 | n8n Database Backup | Backup | Low | Small |
+| 6 | Fix linkding Backup Destination | Backup | Low | Small |
+| 7 | Install Longhorn Storage | Storage | Medium | Medium |
+| 8 | Migrate PVCs to Longhorn | Storage | Medium | Large |
+| 9 | Balance Workloads to Workers | Scheduling | Low | Small |
+| 10 | Cilium CNI Migration | Security | **High** | Large |
+| 11 | NetworkPolicies per Namespace | Security | Medium | Medium |
+| 12 | Velero Full Backup | Backup | Low | Medium |
+| 13 | Headlamp Dashboard | Observability | Low | Small |
 
 ---
 *Roadmap created: 2003-04-04*
