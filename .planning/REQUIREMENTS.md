@@ -10,7 +10,7 @@
 - [ ] **CRIT-01**: `apps` Kustomization has `dependsOn: [databases]` so apps never race databases on bootstrap
 - [ ] **CRIT-02**: audiobookshelf Deployment has resource `requests` and `limits` defined
 - [ ] **CRIT-03**: All deployments using `:latest` image tags are pinned to specific versions (n8n, cloudflared)
-- [ ] **CRIT-04**: Grafana admin password is stored in a SOPS-encrypted Secret, not hardcoded in HelmRelease values
+- [x] **CRIT-04**: Grafana admin password is stored in a SOPS-encrypted Secret, not hardcoded in HelmRelease values
 - [ ] **CRIT-05**: Renovate external-host-error is diagnosed and resolved
 
 ### Backup (BACK)
@@ -88,7 +88,7 @@
 | CRIT-01 | Phase 1 | Pending |
 | CRIT-02 | Phase 2 | Pending |
 | CRIT-03 | Phase 3 | Pending |
-| CRIT-04 | Phase 4 | Pending |
+| CRIT-04 | Phase 4 | Complete |
 | CRIT-05 | Phase 5 | Pending |
 | BACK-01 | Phase 6 | Pending |
 | BACK-02 | Phase 7 | Pending |

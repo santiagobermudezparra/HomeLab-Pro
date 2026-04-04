@@ -5,14 +5,21 @@
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 1 — Fix FluxCD Bootstrap Race Condition
+**Current focus:** Phase 03 — Grafana Admin Password as SOPS Secret (complete)
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
-**Phase 1: Fix FluxCD Bootstrap Race Condition**
-Status: Not started
-Next action: `/gsd:plan-phase 1`
+**Phase 03: Grafana Admin Password as SOPS Secret**
+Status: Complete — PR pending merge (`feat/phase-2-resource-limits`)
+Stopped at: Completed 03-grafana-admin-password-as-sops-secret/03-01-PLAN.md
+Next action: Merge PR, then continue next phase
+
+## Key Decisions (Phase 03)
+
+- Use `grafana.admin.existingSecret: grafana-admin-secret` in HelmRelease instead of hardcoded `adminPassword` — satisfies CRIT-04
+- Secret keys match kube-prometheus-stack Helm chart convention: `admin-user` and `admin-password`
+- Encrypted with SOPS age key using `encrypted_regex: ^(data|stringData)$` — only data fields sealed
 
 ## Phase Progress
 
@@ -21,7 +28,7 @@ Next action: `/gsd:plan-phase 1`
 | 1 | Fix FluxCD Bootstrap Race | ○ Pending |
 | 2 | Resource Limits — audiobookshelf | ○ Pending |
 | 3 | Pin All Image Tags | ○ Pending |
-| 4 | Grafana Password to Secret | ○ Pending |
+| 4 | Grafana Password to Secret | ✓ Complete |
 | 5 | Fix Renovate Errors | ○ Pending |
 | 6 | n8n Database Backup | ○ Pending |
 | 7 | Fix linkding Backup Destination | ○ Pending |
