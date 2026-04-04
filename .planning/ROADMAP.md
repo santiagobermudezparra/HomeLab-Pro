@@ -55,6 +55,11 @@ Plans:
 
 **Done when:** `grep -r "adminPassword" monitoring/` returns zero matches and Grafana login still works.
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 03-01-PLAN.md — Create SOPS-encrypted grafana-admin-secret and update HelmRelease to use existingSecret
+
 ---
 
 ## Phase 3: Fix Renovate external-host-error
