@@ -2,7 +2,7 @@
 
 **Milestone:** v1 — Cluster Hardening & Resilience
 **Granularity:** Fine (one concern per phase)
-**Created:** 2026-04-04
+**Created:** 2003-04-04
 
 ---
 
@@ -12,10 +12,10 @@
 
 **Requirements:** CRIT-01
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 01-01-PLAN.md — Add dependsOn: databases to apps Kustomization and open PR
+- [x] 01-01-PLAN.md — Add dependsOn: databases to apps Kustomization and open PR
 
 **Scope:**
 - Add `dependsOn: [{ name: databases }]` to `clusters/staging/apps.yaml`
@@ -41,23 +41,7 @@ Plans:
 
 ---
 
-## Phase 3: Pin All Image Tags
-
-**Goal:** No deployment in the cluster uses `:latest` or untagged images. All images are pinned to specific versions for reproducible, GitOps-safe deployments.
-
-**Requirements:** CRIT-03
-
-**Scope:**
-- `apps/base/n8n/deployment.yaml`: `n8nio/n8n:latest` → pin to current stable (e.g. `1.x.y`)
-- All `apps/staging/*/cloudflare.yaml`: `cloudflare/cloudflared:latest` → pin to specific version
-- `infrastructure/controllers/base/renovate/cronjob.yaml`: `renovate/renovate:latest` → pin
-- Verify Renovate will track pinned versions going forward
-
-**Done when:** `grep -r ":latest" apps/ infrastructure/` returns zero matches.
-
----
-
-## Phase 4: Grafana Admin Password as SOPS Secret
+## Phase 3: Grafana Admin Password as SOPS Secret
 
 **Goal:** Grafana admin password is stored in a SOPS-encrypted Kubernetes Secret and referenced by the HelmRelease, not hardcoded in plaintext in git.
 
@@ -73,7 +57,7 @@ Plans:
 
 ---
 
-## Phase 5: Fix Renovate external-host-error
+## Phase 3: Fix Renovate external-host-error
 
 **Goal:** Renovate runs without errors and successfully scans the repository for outdated images and Helm chart versions.
 
@@ -89,7 +73,7 @@ Plans:
 
 ---
 
-## Phase 6: n8n Database Backup
+## Phase 3: n8n Database Backup
 
 **Goal:** n8n's PostgreSQL cluster has a scheduled backup so automation data is not lost on database pod failure.
 
@@ -104,7 +88,7 @@ Plans:
 
 ---
 
-## Phase 7: Fix linkding Backup Destination
+## Phase 3: Fix linkding Backup Destination
 
 **Goal:** linkding's existing ScheduledBackup actually persists data to object storage (currently has no `destinationPath` configured).
 
@@ -119,7 +103,7 @@ Plans:
 
 ---
 
-## Phase 8: Install Longhorn Distributed Storage
+## Phase 3: Install Longhorn Distributed Storage
 
 **Goal:** Longhorn is installed, configured as the default StorageClass with replication factor 2, and its UI dashboard is accessible internally via Traefik.
 
@@ -137,7 +121,7 @@ Plans:
 
 ---
 
-## Phase 9: Migrate PVCs to Longhorn
+## Phase 3: Migrate PVCs to Longhorn
 
 **Goal:** All stateful app PVCs and database PVCs are migrated from local-path to Longhorn, enabling data resilience across node failures.
 
@@ -153,7 +137,7 @@ Plans:
 
 ---
 
-## Phase 10: Balance Workloads to Worker Nodes
+## Phase 3: Balance Workloads to Worker Nodes
 
 **Goal:** Worker-02 (18h old, nearly idle) and Worker-01 receive proportional workloads. Control-plane is no longer hosting the majority of app pods.
 
@@ -169,7 +153,7 @@ Plans:
 
 ---
 
-## Phase 11: Cilium CNI Migration
+## Phase 3: Cilium CNI Migration
 
 **Goal:** Cilium replaces Flannel as the CNI, with Hubble observability enabled. All existing network communication works correctly after migration.
 
@@ -189,7 +173,7 @@ Plans:
 
 ---
 
-## Phase 12: NetworkPolicies — Per-Namespace Isolation
+## Phase 3: NetworkPolicies — Per-Namespace Isolation
 
 **Goal:** Each app namespace has a default-deny NetworkPolicy plus explicit allow-rules for its required connections, so no app can reach another app's database.
 
@@ -209,7 +193,7 @@ Plans:
 
 ---
 
-## Phase 13: Velero Full Backup
+## Phase 3: Velero Full Backup
 
 **Goal:** Velero is installed with S3-compatible backend and all app namespaces have daily backup schedules with verified restore capability.
 
@@ -225,7 +209,7 @@ Plans:
 
 ---
 
-## Phase 14: Headlamp Web Dashboard
+## Phase 3: Headlamp Web Dashboard
 
 **Goal:** Headlamp is deployed and accessible via Traefik Ingress for cluster visibility without requiring kubectl.
 
@@ -245,9 +229,8 @@ Plans:
 
 | Phase | Name | Category | Risk | Est. Effort |
 |-------|------|----------|------|-------------|
-| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Low | Tiny |
+| 1 | Fix FluxCD Bootstrap Race | 1/1 | Complete   | 2003-04-03 |
 | 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small |
-| 3 | Pin All Image Tags | Critical Fix | Low | Small |
 | 4 | Grafana Password to Secret | Security | Low | Small |
 | 5 | Fix Renovate Errors | Critical Fix | Low | Medium |
 | 6 | n8n Database Backup | Backup | Low | Small |
@@ -261,5 +244,5 @@ Plans:
 | 14 | Headlamp Dashboard | Observability | Low | Small |
 
 ---
-*Roadmap created: 2026-04-04*
+*Roadmap created: 2003-04-04*
 *Based on live cluster diagnosis: 3 nodes, 11 PVCs all local-path, FluxCD v2.5.1, K3s v1.30.0*

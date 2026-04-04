@@ -31,6 +31,14 @@ spec:
             - containerPort: 3005
               protocol: TCP
 
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "200Mi"
+            limits:
+              cpu: "500m"
+              memory: "1536Mi"
+
           volumeMounts:
             - mountPath: /config
               name: audiobookshelf-config
@@ -38,6 +46,14 @@ spec:
               name: audiobookshelf-metadata
             - mountPath: /audiobooks
               name: audiobookshelf-audiobooks
+            - mountPath: /podcasts
+              name: audiobookshelf-podcasts
+            - mountPath: /ebooks
+              name: audiobookshelf-ebooks
+            - mountPath: /comics
+              name: audiobookshelf-comics
+            - mountPath: /videos
+              name: audiobookshelf-videos
 
       restartPolicy: Always
 
@@ -51,4 +67,16 @@ spec:
         - name: audiobookshelf-audiobooks
           persistentVolumeClaim:
             claimName: audiobookshelf-audiobooks
+        - name: audiobookshelf-podcasts
+          persistentVolumeClaim:
+            claimName: audiobookshelf-podcasts
+        - name: audiobookshelf-ebooks
+          persistentVolumeClaim:
+            claimName: audiobookshelf-ebooks
+        - name: audiobookshelf-comics
+          persistentVolumeClaim:
+            claimName: audiobookshelf-comics
+        - name: audiobookshelf-videos
+          persistentVolumeClaim:
+            claimName: audiobookshelf-videos
 
