@@ -4,12 +4,12 @@ milestone: v2.5.1
 milestone_name: milestone
 status: completed
 stopped_at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
-last_updated: "2026-04-04T10:42:53.604Z"
+last_updated: "2026-04-04T10:50:11.508Z"
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 2
-  completed_plans: 1
+  completed_plans: 2
 ---
 
 # Project State

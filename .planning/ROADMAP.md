@@ -58,7 +58,7 @@ Plans:
 **Plans:** 1 plan
 
 Plans:
-- [ ] 03-01-PLAN.md — Create SOPS-encrypted grafana-admin-secret and update HelmRelease to use existingSecret
+- [x] 03-01-PLAN.md — Create SOPS-encrypted grafana-admin-secret and update HelmRelease to use existingSecret
 
 ---
 
