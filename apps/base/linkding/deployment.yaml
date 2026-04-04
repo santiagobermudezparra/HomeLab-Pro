@@ -71,6 +71,13 @@ spec:
                   name: linkding-superuser
                   key: password
 
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "192Mi"
+            limits:
+              cpu: "200m"
+              memory: "384Mi"
           securityContext:
             allowPrivilegeEscalation: false
 

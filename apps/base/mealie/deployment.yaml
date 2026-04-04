@@ -16,10 +16,17 @@ spec:
         app: mealie
     spec:
       containers:
-        - image: ghcr.io/mealie-recipes/mealie:v2.8.0 
+        - image: ghcr.io/mealie-recipes/mealie:v2.8.0
           name: mealie
-          ports: 
+          ports:
             - containerPort: 9000
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "600Mi"
+            limits:
+              cpu: "500m"
+              memory: "1200Mi"
           volumeMounts:
           - mountPath: /app/data
             name: mealie-data  
