@@ -1,0 +1,42 @@
+# Source: https://raw.githubusercontent.com/longhorn/longhorn/v1.7.3/deploy/prerequisite/longhorn-iscsi-installation.yaml
+# This DaemonSet installs open-iscsi on all cluster nodes before Longhorn HelmRelease reconciles.
+# It uses nsenter to run commands in the host mount namespace (equivalent to running on the host).
+# The init container does the actual installation; the main container is a no-op keep-alive.
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: longhorn-iscsi-installation
+  namespace: longhorn-system
+  annotations:
+    command: &cmd apt-get install -y open-iscsi && systemctl enable iscsid && systemctl start iscsid && modprobe iscsi_tcp
+spec:
+  selector:
+    matchLabels:
+      app: longhorn-iscsi-installation
+  template:
+    metadata:
+      labels:
+        app: longhorn-iscsi-installation
+    spec:
+      hostNetwork: true
+      hostPID: true
+      initContainers:
+        - name: iscsi-installation
+          command:
+            - nsenter
+            - "--mount=/proc/1/ns/mnt"
+            - "--"
+            - bash
+            - -c
+            - *cmd
+          image: alpine:3.17
+          securityContext:
+            privileged: true
+      containers:
+        - name: longhorn-iscsi-installation
+          image: alpine:3.17
+          command: ["/bin/sh", "-c", "while true; do sleep 86400; done"]
+          securityContext:
+            privileged: true
+  updateStrategy:
+    type: RollingUpdate
