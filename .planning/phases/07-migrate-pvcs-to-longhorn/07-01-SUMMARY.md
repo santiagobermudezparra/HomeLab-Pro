@@ -104,6 +104,15 @@ None - no external service configuration required.
 - Ready to proceed with Plan 02 (filebrowser — 2 PVCs on worker-01)
 - Blocker: Human verification checkpoint for pgadmin UI data integrity must be approved first
 
+## Self-Check: PASSED
+
+- `apps/base/pgadmin/storage.yaml`: FOUND — contains `storageClassName: longhorn`
+- `.planning/phases/07-migrate-pvcs-to-longhorn/07-01-SUMMARY.md`: FOUND
+- Commit `7e07943`: FOUND — feat(07-01): add storageClassName: longhorn to pgadmin-data-pvc
+- Live cluster: `kubectl get pvc pgadmin-data-pvc -n pgadmin -o jsonpath='{.spec.storageClassName}'` = `longhorn`
+- Live cluster: `kubectl get pvc pgadmin-data-pvc -n pgadmin -o jsonpath='{.status.phase}'` = `Bound`
+- Live cluster: pgadmin pod Running 1/1
+
 ---
 *Phase: 07-migrate-pvcs-to-longhorn*
 *Completed: 2026-04-05*
