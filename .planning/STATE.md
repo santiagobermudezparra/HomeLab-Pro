@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
-status: verifying
-stopped_at: "Checkpoint: awaiting PR merge verification for 05-01-PLAN.md"
-last_updated: "2026-04-05T01:31:45.222Z"
+status: in-progress
+stopped_at: "Completed 06-01-PLAN.md"
+last_updated: "2026-04-05T06:32:27.879Z"
 progress:
   total_phases: 12
   completed_phases: 4
-  total_plans: 4
+  total_plans: 8
   completed_plans: 4
 ---
 
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 05 — fix-linkding-backup-destination
+**Current focus:** Phase 06 — install-longhorn-distributed-storage (Plan 01 complete, Plan 02 next)
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
@@ -33,6 +33,12 @@ Next action: `/gsd:plan-phase 5`
 
 - FluxCD apps Kustomization now depends on `databases`, completing bootstrap chain: `infrastructure-controllers -> databases -> apps`
 - No `wait: true` or healthChecks added to apps.yaml — minimal change sufficient, out of scope for this phase
+
+## Key Decisions (Phase 06, Plan 01)
+
+- Longhorn v1.7.3 iscsi-installer DaemonSet deployed as permanent fixture (not Job) so new nodes automatically get open-iscsi
+- Staging overlay has no secrets — iscsi-installer requires no credentials, simpler than cert-manager overlay
+- Manifests follow base/overlay pattern matching cert-manager and cloudnative-pg exactly
 
 ## Phase Progress
 
