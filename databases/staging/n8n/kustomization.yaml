@@ -4,3 +4,4 @@ resources:
   - secrets.yaml
   - postgresql-cluster.yaml
   - backup-config.yaml
+  - n8n-backup-s3-secret.yaml

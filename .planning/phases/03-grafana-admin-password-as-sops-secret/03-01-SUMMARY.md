@@ -76,7 +76,7 @@ Each task was committed atomically:
 ## Decisions Made
 - Used `grafana.admin.existingSecret` HelmRelease pattern — chart convention for externalizing credentials
 - Secret keys `admin-user` and `admin-password` match kube-prometheus-stack Helm chart's expected key names
-- Kept the same password value (`watary`) inside the encrypted secret to avoid breaking the running Grafana instance
+- Kept the existing Grafana password inside the encrypted secret to avoid breaking the running Grafana instance
 
 ## Deviations from Plan
 

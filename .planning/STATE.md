@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
-status: completed
-stopped_at: Completed 01-fix-fluxcd-bootstrap-race-condition/01-01-PLAN.md
-last_updated: "2026-04-04T20:51:03.038Z"
+status: verifying
+stopped_at: "Checkpoint: awaiting PR merge verification for 05-01-PLAN.md"
+last_updated: "2026-04-05T01:19:58.263Z"
 progress:
   total_phases: 12
-  completed_phases: 2
-  total_plans: 2
-  completed_plans: 2
+  completed_phases: 4
+  total_plans: 4
+  completed_plans: 4
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 03 — grafana-admin-password-as-sops-secret
+**Current focus:** Phase 05 — fix-linkding-backup-destination
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 04-n8n-database-backup/04-01-PLAN.md
+Stopped at: Checkpoint: awaiting PR merge verification for 05-01-PLAN.md
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
