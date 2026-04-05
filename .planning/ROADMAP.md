@@ -111,8 +111,8 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 06-01-PLAN.md — iscsi-installer DaemonSet prereq: namespace, DaemonSet, staging overlay wired into controller hierarchy
-- [ ] 06-02-PLAN.md — Longhorn HelmRelease: HelmRepository + HelmRelease with replica=2, default StorageClass, ServiceMonitor
+- [x] 06-01-PLAN.md — iscsi-installer DaemonSet prereq: namespace, DaemonSet, staging overlay wired into controller hierarchy
+- [x] 06-02-PLAN.md — Longhorn HelmRelease: HelmRepository + HelmRelease with replica=2, default StorageClass, ServiceMonitor
 - [ ] 06-03-PLAN.md — Longhorn UI ingress: Traefik Ingress at longhorn.watarystack.org pointing to longhorn-frontend:80
 - [ ] 06-04-PLAN.md — local-path demotion: K3s config disable local-storage on all nodes, K3s restart, StorageClass verification
 
