@@ -8,7 +8,7 @@ spec:
   schedule: "0 3 * * *"
   
   # Backup immediately on creation
-  #immediate: true
+  immediate: true
   
   # Reference to the cluster
   cluster:
