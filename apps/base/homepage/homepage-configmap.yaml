@@ -51,7 +51,7 @@ data:
             description: File manager — upload and share files between devices
             icon: filebrowser.png
         - Longhorn:
-            href: http://longhorn.watarystack.org
+            href: https://longhorn.watarystack.org
             description: Distributed block storage
             icon: longhorn.png
   widgets.yaml: |
