@@ -108,10 +108,18 @@ Plans:
 
 **Requirements:** STOR-01, STOR-02, STOR-03, STOR-06, OBS-02
 
+**Plans:** 4 plans
+
+Plans:
+- [ ] 06-01-PLAN.md — iscsi-installer DaemonSet prereq: namespace, DaemonSet, staging overlay wired into controller hierarchy
+- [ ] 06-02-PLAN.md — Longhorn HelmRelease: HelmRepository + HelmRelease with replica=2, default StorageClass, ServiceMonitor
+- [ ] 06-03-PLAN.md — Longhorn UI ingress: Traefik Ingress at longhorn.watarystack.org pointing to longhorn-frontend:80
+- [ ] 06-04-PLAN.md — local-path demotion: K3s config disable local-storage on all nodes, K3s restart, StorageClass verification
+
 **Scope:**
 - Add `infrastructure/controllers/base/longhorn/` — HelmRelease, namespace, repository
 - Add `infrastructure/controllers/staging/longhorn/` — staging overlay with values (defaultClass: true, replication: 2)
-- Configure Longhorn UI via Traefik Ingress at `longhorn.internal.watarystack.org` (or similar)
+- Configure Longhorn UI via Traefik Ingress at `longhorn.watarystack.org` (internal)
 - Update `infrastructure/controllers/staging/kustomization.yaml` to include longhorn
 - Verify Prometheus scrapes Longhorn metrics
 - Do NOT migrate existing PVCs yet (Phase 8)
@@ -168,7 +176,7 @@ Plans:
 
 **Done when:** `cilium status` shows all nodes healthy, `hubble status` shows flows, existing apps all Running and reachable via Cloudflare Tunnels.
 
-**⚠ High-risk phase** — requires node-level config changes and a maintenance window. All pods will restart.
+**High-risk phase** — requires node-level config changes and a maintenance window. All pods will restart.
 
 ---
 
