@@ -6,29 +6,45 @@ metadata:
 spec:
   description: "PostgreSQL cluster for Linkding application"
   instances: 1
-  
+
   # Enable monitoring (remove podMonitorEnabled line)
   # monitoring:
   #   enabled: true
   #   podMonitorEnabled: true
 
-    
   postgresql:
     parameters:
       max_connections: "100"
       shared_buffers: "128MB"
       effective_cache_size: "512MB"
-  
+
   storage:
     size: 2Gi
     # storageClass: ""
-  
+
   superuserSecret:
     name: linkding-superuser
-  
+
   bootstrap:
     initdb:
       database: linkding
       owner: linkding
       secret:
         name: linkding-db-credentials
+
+  backup:
+    barmanObjectStore:
+      destinationPath: "s3://homelab-postgres-backups/linkding"
+      endpointURL: "https://cf504e28de7836d9611b6774cdcb303e.r2.cloudflarestorage.com"
+      s3Credentials:
+        accessKeyId:
+          name: linkding-backup-s3-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: linkding-backup-s3-secret
+          key: ACCESS_KEY_SECRET
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "30d"
