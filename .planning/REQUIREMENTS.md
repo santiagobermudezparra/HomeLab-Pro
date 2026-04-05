@@ -16,7 +16,7 @@
 ### Backup (BACK)
 
 - [ ] **BACK-01**: n8n CloudNativePG cluster has a `ScheduledBackup` resource configured
-- [ ] **BACK-02**: linkding `ScheduledBackup` has a `destinationPath` pointing to object storage
+- [x] **BACK-02**: linkding `ScheduledBackup` has a `destinationPath` pointing to object storage
 - [ ] **BACK-03**: Velero is installed and configured with an S3-compatible backup target
 - [ ] **BACK-04**: All app namespaces have Velero backup schedules (daily, configurable retention)
 - [ ] **BACK-05**: A Velero test restore has been performed and documented
@@ -91,7 +91,7 @@
 | CRIT-04 | Phase 3 | Complete |
 | CRIT-05 | Phase 4 | Pending |
 | BACK-01 | Phase 5 | Pending |
-| BACK-02 | Phase 6 | Pending |
+| BACK-02 | Phase 6 | Complete |
 | STOR-01 | Phase 7 | Pending |
 | STOR-02 | Phase 7 | Pending |
 | STOR-03 | Phase 7 | Pending |

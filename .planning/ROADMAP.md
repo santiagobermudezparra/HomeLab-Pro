@@ -95,10 +95,10 @@ Plans:
 
 **Done when:** `kubectl get backup -n linkding` shows a successful backup with an object storage destination.
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
-- [ ] 05-01-PLAN.md — Create SOPS-encrypted S3 secret, patch postgresql-cluster.yaml with barmanObjectStore, activate backup-config.yaml, open PR
+- [x] 05-01-PLAN.md — Create SOPS-encrypted S3 secret, patch postgresql-cluster.yaml with barmanObjectStore, activate backup-config.yaml, open PR
 
 ---
 
@@ -232,7 +232,7 @@ Plans:
 | 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small |
 | 3 | Grafana Password to SOPS Secret | Security | Low | Small |
 | 4 | n8n Database Backup | Backup | Low | Small |
-| 5 | Fix linkding Backup Destination | Backup | Low | Small |
+| 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
 | 6 | Install Longhorn Storage | Storage | Medium | Medium |
 | 7 | Migrate PVCs to Longhorn | Storage | Medium | Large |
 | 8 | Balance Workloads to Workers | Scheduling | Low | Small |
