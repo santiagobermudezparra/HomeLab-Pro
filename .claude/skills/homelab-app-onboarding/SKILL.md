@@ -347,6 +347,8 @@ Add this to the kustomization.yaml resources list.
 
 For apps only accessible on your local network. Much simpler — no tunnel, no Cloudflare credentials.
 
+**⚠️ Important:** Always use cert-manager for TLS on Traefik Ingress. Include the annotation `cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod` in your Ingress manifest (shown below). This is the only way to provision TLS certificates for internal apps.
+
 #### kustomization.yaml
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1

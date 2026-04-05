@@ -335,7 +335,8 @@ flux reconcile kustomization apps
 2. **Follow the base/overlay pattern** — keep base configs reusable, environment-specific stuff in overlays
 3. **Encrypt all secrets** — don't let unencrypted secrets into the repo
 4. **Branch from main** — never commit directly to main
-5. **Add new apps to the Homepage dashboard** (Step 10 of the onboarding skill):
+5. **For Traefik Ingress (internal apps): Always use cert-manager** — include the annotation `cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod` in ingress manifests to automatically provision TLS certificates
+6. **Add new apps to the Homepage dashboard** (Step 10 of the onboarding skill):
    - **Internal/Traefik apps**: Uncomment `gethomepage.dev/*` annotations in the Ingress manifest (`ingress.yaml`)
    - **Cloudflare Tunnel apps**: Add entries to `apps/base/homepage/` configuration files with the app's hostname and description
    - This ensures all deployed apps are discoverable and accessible from the homepage landing page
