@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
-status: verifying
-stopped_at: "Checkpoint: awaiting PR merge verification for 05-01-PLAN.md"
-last_updated: "2026-04-05T01:19:58.263Z"
+status: in-progress
+stopped_at: "Completed 06-03-PLAN.md"
+last_updated: "2026-04-05T06:50:54Z"
 progress:
   total_phases: 12
   completed_phases: 4
-  total_plans: 4
-  completed_plans: 4
+  total_plans: 8
+  completed_plans: 6
 ---
 
 # Project State
@@ -19,20 +19,41 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 05 — fix-linkding-backup-destination
+**Current focus:** Phase 06 — install-longhorn-distributed-storage (Plans 01, 02, and 03 complete, Plan 04 next)
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Checkpoint: awaiting PR merge verification for 05-01-PLAN.md
+Stopped at: Completed 06-02-PLAN.md
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
 
 - FluxCD apps Kustomization now depends on `databases`, completing bootstrap chain: `infrastructure-controllers -> databases -> apps`
 - No `wait: true` or healthChecks added to apps.yaml — minimal change sufficient, out of scope for this phase
+
+## Key Decisions (Phase 06, Plan 01)
+
+- Longhorn v1.7.3 iscsi-installer DaemonSet deployed as permanent fixture (not Job) so new nodes automatically get open-iscsi
+- Staging overlay has no secrets — iscsi-installer requires no credentials, simpler than cert-manager overlay
+- Manifests follow base/overlay pattern matching cert-manager and cloudnative-pg exactly
+
+## Key Decisions (Phase 06, Plan 02)
+
+- Longhorn 1.7.3 version pinned (research date 2026-04-05); re-verify if >30 days before deploying
+- Both replica count fields required: `persistence.defaultClassReplicaCount: 2` (K8s StorageClass parameters) AND `defaultSettings.defaultReplicaCount: "2"` (must be string, Longhorn UI default)
+- Ingress section omitted from release.yaml — handled in Plan 03 overlay (consistent with linkding pattern)
+- ServiceMonitor label `release: kube-prometheus-stack` matches live cluster's serviceMonitorSelector confirmed via kubectl
+- FluxCD reconciliation and smoke tests are post-merge concerns (GitOps constraint: FluxCD tracks main branch only)
+
+## Key Decisions (Phase 06, Plan 03)
+
+- No TLS on Longhorn UI ingress — internal-only operator dashboard, cert-manager annotation intentionally omitted
+- Matched linkding ingress pattern exactly (same spec structure: ingressClassName: traefik, pathType: Prefix, path: /)
+- Standalone ingress.yaml placed in staging overlay (not base) — routing config is environment-specific per established convention
+- Traefik LAN IP is 192.168.1.115; browser access requires /etc/hosts entry on each workstation
 
 ## Phase Progress
 
