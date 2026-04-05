@@ -3,8 +3,14 @@ kind: Ingress
 metadata:
   name: longhorn-ui
   namespace: longhorn-system
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - longhorn.watarystack.org
+      secretName: longhorn-ui-tls
   rules:
     - host: longhorn.watarystack.org
       http:
