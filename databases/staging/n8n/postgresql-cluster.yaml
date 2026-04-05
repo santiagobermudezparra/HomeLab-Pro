@@ -34,7 +34,7 @@ spec:
 
   backup:
     barmanObjectStore:
-      destinationPath: "s3://homelab-postgres-backups/n8n"
+      destinationPath: "s3://homelab-postgres-backup/n8n"
       endpointURL: "https://cf504e28de7836d9611b6774cdcb303e.r2.cloudflarestorage.com"
       s3Credentials:
         accessKeyId:
