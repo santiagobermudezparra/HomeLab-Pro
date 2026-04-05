@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-04-05T07:22:17.769Z"
+stopped_at: "Checkpoint: 07-01 human-verify pgadmin UI data integrity"
+last_updated: "2026-04-05T19:44:39.292Z"
 progress:
   total_phases: 12
   completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
+  total_plans: 15
+  completed_plans: 9
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 06 — install-longhorn-distributed-storage (Plans 01, 02, and 03 complete, Plan 04 next)
+**Current focus:** Phase 07 — migrate-pvcs-to-longhorn
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 06-02-PLAN.md
+Stopped at: Checkpoint: 07-01 human-verify pgadmin UI data integrity
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -55,6 +55,12 @@ Next action: `/gsd:plan-phase 5`
 - Standalone ingress.yaml placed in staging overlay (not base) — routing config is environment-specific per established convention
 - Traefik LAN IP is 192.168.1.115; browser access requires /etc/hosts entry on each workstation
 
+## Key Decisions (Phase 07, Plan 01)
+
+- Proactively chown restored files to app UID (5050:5050 for pgadmin) in debug pod before scale-up — prevents permission denied errors; `kubectl cp` preserves local user ownership not container UID
+- Debug pod restore + chown pattern validated: copy data in via busybox debug pod, fix ownership to app UID, delete pod, then scale up app — pgadmin started cleanly on first attempt
+- PVC migration procedure confirmed end-to-end: scale-to-0 → debug pod + kubectl cp out → delete PVC → apply updated storage.yaml → wait Bound → debug pod + kubectl cp in + chown → delete pod → scale-to-1
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -65,7 +71,7 @@ Next action: `/gsd:plan-phase 5`
 | 4 | n8n Database Backup | ✓ Complete |
 | 5 | Fix linkding Backup Destination | ○ Pending |
 | 6 | Install Longhorn Storage | ○ Pending |
-| 7 | Migrate PVCs to Longhorn | ○ Pending |
+| 7 | Migrate PVCs to Longhorn | ↻ In Progress (Plan 01 awaiting human-verify) |
 | 8 | Balance Workloads to Workers | ○ Pending |
 | 9 | Cilium CNI Migration | ○ Pending |
 | 10 | NetworkPolicies per Namespace | ○ Pending |
