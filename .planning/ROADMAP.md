@@ -134,9 +134,20 @@ Plans:
 
 **Requirements:** STOR-04, STOR-05
 
+**Plans:** 7 plans
+
+Plans:
+- [ ] 07-01-PLAN.md — pgadmin: update storage.yaml + live migration of pgadmin-data-pvc (1Gi) to Longhorn
+- [ ] 07-02-PLAN.md — filebrowser: update storage.yaml + live migration of filebrowser-db and filebrowser-files (2 PVCs) to Longhorn
+- [ ] 07-03-PLAN.md — mealie: update storage.yaml + live migration of mealie-data (1Gi) to Longhorn
+- [ ] 07-04-PLAN.md — audiobookshelf: update storage.yaml + live migration of all 7 PVCs atomically to Longhorn
+- [ ] 07-05-PLAN.md — linkding: update storage.yaml + live migration of linkding-data-pvc (1Gi) to Longhorn
+- [ ] 07-06-PLAN.md — n8n: update storage.yaml + live migration of n8n-data (2Gi) to Longhorn
+- [ ] 07-07-PLAN.md — CNPG: pre-migration backups, bootstrap.recovery migration for linkding-postgres-1 and n8n-postgresql-cluster-1, PR
+
 **Scope (per app, sequential to avoid data loss):**
 - Scale down app → backup PVC data → delete local-path PVC → recreate with Longhorn storageClass → restore data → scale up
-- Order: pgadmin → filebrowser → mealie → audiobookshelf (3 PVCs) → linkding-data → n8n-data → CNPG PVCs (linkding-postgres-1, n8n-postgresql-cluster-1)
+- Order: pgadmin → filebrowser → mealie → audiobookshelf (7 PVCs) → linkding-data → n8n-data → CNPG PVCs (linkding-postgres-1, n8n-postgresql-cluster-1)
 - CNPG PVCs: handled via CNPG backup/restore workflow (not manual copy)
 - Update PVC definitions in base configs to specify `storageClassName: longhorn`
 
