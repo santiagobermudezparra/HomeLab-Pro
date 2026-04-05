@@ -108,12 +108,12 @@ Plans:
 
 **Requirements:** STOR-01, STOR-02, STOR-03, STOR-06, OBS-02
 
-**Plans:** 4 plans
+**Plans:** 2/4 plans executed
 
 Plans:
 - [ ] 06-01-PLAN.md — iscsi-installer DaemonSet prereq: namespace, DaemonSet, staging overlay wired into controller hierarchy
-- [ ] 06-02-PLAN.md — Longhorn HelmRelease: HelmRepository + HelmRelease with replica=2, default StorageClass, ServiceMonitor
-- [ ] 06-03-PLAN.md — Longhorn UI ingress: Traefik Ingress at longhorn.watarystack.org pointing to longhorn-frontend:80
+- [x] 06-02-PLAN.md — Longhorn HelmRelease: HelmRepository + HelmRelease with replica=2, default StorageClass, ServiceMonitor
+- [x] 06-03-PLAN.md — Longhorn UI ingress: Traefik Ingress at longhorn.watarystack.org pointing to longhorn-frontend:80
 - [ ] 06-04-PLAN.md — local-path demotion: K3s config disable local-storage on all nodes, K3s restart, StorageClass verification
 
 **Scope:**
@@ -241,7 +241,7 @@ Plans:
 | 3 | Grafana Password to SOPS Secret | Security | Low | Small |
 | 4 | n8n Database Backup | Backup | Low | Small |
 | 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
-| 6 | Install Longhorn Storage | Storage | Medium | Medium |
+| 6 | Install Longhorn Storage | 2/4 | In Progress|  |
 | 7 | Migrate PVCs to Longhorn | Storage | Medium | Large |
 | 8 | Balance Workloads to Workers | Scheduling | Low | Small |
 | 9 | Cilium CNI Migration | Security | **High** | Large |
