@@ -16,7 +16,7 @@
 ### Backup (BACK)
 
 - [ ] **BACK-01**: n8n CloudNativePG cluster has a `ScheduledBackup` resource configured
-- [ ] **BACK-02**: linkding `ScheduledBackup` has a `destinationPath` pointing to object storage
+- [x] **BACK-02**: linkding `ScheduledBackup` has a `destinationPath` pointing to object storage
 - [ ] **BACK-03**: Velero is installed and configured with an S3-compatible backup target
 - [ ] **BACK-04**: All app namespaces have Velero backup schedules (daily, configurable retention)
 - [ ] **BACK-05**: A Velero test restore has been performed and documented
@@ -28,7 +28,7 @@
 - [x] **STOR-03**: Longhorn replication factor set to 2 (data on 2 nodes minimum)
 - [ ] **STOR-04**: All stateful app PVCs (audiobookshelf, mealie, linkding-data, filebrowser, n8n-data, pgadmin) migrated from local-path to Longhorn
 - [ ] **STOR-05**: CloudNativePG PVCs (linkding-postgres-1, n8n-postgresql-cluster-1) migrated from local-path to Longhorn
-- [ ] **STOR-06**: Longhorn UI dashboard is accessible (via Traefik Ingress, internal access)
+- [x] **STOR-06**: Longhorn UI dashboard is accessible (via Traefik Ingress, internal access)
 
 ### Scheduling (SCHED)
 
@@ -91,11 +91,11 @@
 | CRIT-04 | Phase 3 | Complete |
 | CRIT-05 | Phase 4 | Pending |
 | BACK-01 | Phase 5 | Pending |
-| BACK-02 | Phase 6 | Pending |
+| BACK-02 | Phase 6 | Complete |
 | STOR-01 | Phase 7 | Complete |
 | STOR-02 | Phase 7 | Complete |
 | STOR-03 | Phase 7 | Complete |
-| STOR-06 | Phase 7 | Pending |
+| STOR-06 | Phase 7 | Complete |
 | OBS-02 | Phase 7 | Complete |
 | STOR-04 | Phase 8 | Pending |
 | STOR-05 | Phase 8 | Pending |
