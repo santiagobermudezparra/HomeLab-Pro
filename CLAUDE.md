@@ -85,7 +85,7 @@ Git Commit → FluxCD Sync (1min interval) → Kustomize Build → kubectl apply
 
 ### The Standard Workflow
 
-Use the **HomeLab App Onboarding** skill to automate this. Trigger it by saying things like:
+Use the **HomeLab App Onboarding** skill (`.claude/skills/homelab-app-onboarding/`) to automate this. Trigger it by saying things like:
 - "Add X app to my homelab"
 - "Deploy X to my Kubernetes cluster"
 - "Onboard X service to my homelab"
@@ -331,7 +331,7 @@ flux reconcile kustomization apps
 ## 🎯 Claude Preferences for This Repo
 
 ### When Adding New Apps
-1. **Always use the HomeLab App Onboarding skill** — it handles all steps and opens a PR automatically
+1. **Always use the HomeLab App Onboarding skill** (`.claude/skills/homelab-app-onboarding/`) — it handles all steps (manifests, SOPS secret encryption, Cloudflare tunnel or Traefik ingress config, PR creation) automatically
 2. **Follow the base/overlay pattern** — keep base configs reusable, environment-specific stuff in overlays
 3. **Encrypt all secrets** — don't let unencrypted secrets into the repo
 4. **Branch from main** — never commit directly to main

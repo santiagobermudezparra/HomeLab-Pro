@@ -95,6 +95,11 @@ Plans:
 
 **Done when:** `kubectl get backup -n linkding` shows a successful backup with an object storage destination.
 
+**Plans:** 1 plan
+
+Plans:
+- [ ] 05-01-PLAN.md — Create SOPS-encrypted S3 secret, patch postgresql-cluster.yaml with barmanObjectStore, activate backup-config.yaml, open PR
+
 ---
 
 ## Phase 6: Install Longhorn Distributed Storage
