@@ -347,6 +347,8 @@ Add this to the kustomization.yaml resources list.
 
 For apps only accessible on your local network. Much simpler — no tunnel, no Cloudflare credentials.
 
+**⚠️ Important:** Always use cert-manager for TLS on Traefik Ingress. Include the annotation `cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod` in your Ingress manifest (shown below). This is the only way to provision TLS certificates for internal apps.
+
 #### kustomization.yaml
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
@@ -530,11 +532,60 @@ kubectl get pods -n ${APP_NAME}
 # Check logs
 kubectl logs -f deployment/${APP_NAME} -n ${APP_NAME}
 
-# Verify tunnel is running
+# Verify tunnel is running (public access only)
 kubectl logs -f deployment/cloudflared -n ${APP_NAME}
 ```
 
 If the pod doesn't start, check pod events and logs for errors (image pull failures, missing secrets, port conflicts).
+
+## Step 10 — Add App to Homepage Dashboard (Optional but Recommended)
+
+Once the app is running and stable, add it to the **Homepage** dashboard for quick access. This step is optional but recommended for visibility.
+
+### Option A: Via Ingress Annotations (Internal/Traefik apps)
+
+If your app uses Traefik Ingress (internal access), uncomment and update the annotations in your `apps/staging/${APP_NAME}/ingress.yaml`:
+
+```yaml
+annotations:
+  cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+  # Uncomment to add to Homepage dashboard
+  gethomepage.dev/enabled: "true"
+  gethomepage.dev/name: "${APP_DISPLAY_NAME}"
+  gethomepage.dev/description: "Short description"
+  gethomepage.dev/group: "HomeLab Services"
+  gethomepage.dev/icon: "icon-name.png"  # e.g., "mdiApps", "mdiDatabase", etc.
+```
+
+Then re-apply the updated manifest:
+```bash
+git add apps/staging/${APP_NAME}/ingress.yaml
+git commit -m "feat: add ${APP_NAME} to Homepage dashboard"
+git push origin feat/add-${APP_NAME}
+```
+
+### Option B: Manual Homepage Configuration (Cloudflare Tunnel apps)
+
+For apps with Cloudflare Tunnels (public access), add an entry to the **Homepage** app's configuration. Update `apps/base/homepage/config/services.yaml`:
+
+```yaml
+- HomeLab Services:
+  - ${APP_DISPLAY_NAME}:
+      href: https://${APP_HOSTNAME}
+      description: "Short description"
+      icon: "icon-name.png"
+      widget:
+        type: "iframe"  # or any Homepage widget type
+```
+
+Then commit and push:
+```bash
+git add apps/base/homepage/config/services.yaml
+git commit -m "feat: add ${APP_NAME} link to Homepage"
+git push origin feat/add-${APP_NAME}
+```
+
+**Note:** The exact step depends on your Homepage app setup. Check the deployed Homepage app's configuration files under `apps/base/homepage/` for the current structure.
 
 ---
 

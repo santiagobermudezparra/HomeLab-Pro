@@ -17,27 +17,47 @@ Once a node joins the cluster, these happen on their own:
 
 ## What requires manual steps
 
-### Step 1 — On the new machine: install K3s as an agent
+### Step 0 — Prep the new machine (run on the new PC)
+
+```bash
+# Update system and install required tools
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y curl
+
+# Set a meaningful hostname
+sudo hostnamectl set-hostname homelab-worker-NN  # Replace NN with the next worker number
+
+# Verify network connectivity to control-plane (192.168.1.115)
+ping -c 3 192.168.1.115
+nc -zv 192.168.1.115 6443
+# Both should succeed before continuing
+```
+
+### Step 1 — Install K3s as an agent (run on the new PC)
 
 ```bash
 # Get the server token from the control-plane
-# (run this on the control-plane at 192.168.1.115)
+# (SSH to 192.168.1.115 or run this command on the control-plane)
 sudo cat /var/lib/rancher/k3s/server/node-token
 
-# On the NEW worker node, run:
-curl -sfL https://get.k3s.io | K3S_URL=https://192.168.1.115:6443 \
+# On the NEW worker node, run (with your real K3S_TOKEN):
+curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="v1.30.0+k3s1" \
+  K3S_URL=https://192.168.1.115:6443 \
   K3S_TOKEN=<paste-token-here> \
-  sh -s - agent
+  sh -
+
+# After install completes, enable the agent service to auto-rejoin on reboot
+sudo systemctl enable k3s-agent
 ```
 
-### Step 2 — Verify it joined
+### Step 2 — Verify it joined (run on control-plane)
 
 ```bash
 kubectl get nodes -o wide
 # New node should appear as Ready within 30-60 seconds
 ```
 
-### Step 3 — Verify Longhorn picked it up
+### Step 3 — Verify Longhorn picked it up (run on control-plane)
 
 ```bash
 # Wait ~2 min for iscsi-installer DaemonSet to complete
@@ -50,7 +70,22 @@ kubectl get lhn -n longhorn-system   # Longhorn Node resources
 # If disk is <25% free, it shows Schedulable: false (expected for low-disk nodes)
 ```
 
-### Step 4 — No config.yaml needed on workers
+### Step 4 — Verify monitoring is active (run on control-plane)
+
+```bash
+# Prometheus node-exporter DaemonSet should be running on the new node
+kubectl get pods -n monitoring -l app.kubernetes.io/name=prometheus-node-exporter -o wide
+# New node should be listed and show Running
+
+# Optional: Run a quick workload test
+kubectl create deployment test-nginx --image=nginx:alpine
+kubectl scale deployment test-nginx --replicas=2
+kubectl get pods -o wide | grep test-nginx
+# Pods should spread across nodes; then clean up:
+kubectl delete deployment test-nginx
+```
+
+### Step 5 — Agent config notes
 
 The `disable` flag in `/etc/rancher/k3s/config.yaml` is **server-only** and is **NOT valid for k3s agents**. Do NOT create a config.yaml on worker nodes with the `disable` key — it will cause k3s-agent to fail to start.
 
