@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 06-02-PLAN.md
-last_updated: "2026-04-05T07:22:17.769Z"
+stopped_at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
+last_updated: "2026-04-06T00:51:32.906Z"
 progress:
   total_phases: 12
-  completed_phases: 5
-  total_plans: 8
-  completed_plans: 8
+  completed_phases: 6
+  total_plans: 15
+  completed_plans: 15
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 06 — install-longhorn-distributed-storage (Plans 01, 02, and 03 complete, Plan 04 next)
+**Current focus:** Phase 07 — migrate-pvcs-to-longhorn
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 06-02-PLAN.md
+Stopped at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -55,6 +55,36 @@ Next action: `/gsd:plan-phase 5`
 - Standalone ingress.yaml placed in staging overlay (not base) — routing config is environment-specific per established convention
 - Traefik LAN IP is 192.168.1.115; browser access requires /etc/hosts entry on each workstation
 
+## Key Decisions (Phase 07, Plan 01)
+
+- Proactively chown restored files to app UID (5050:5050 for pgadmin) in debug pod before scale-up — prevents permission denied errors; `kubectl cp` preserves local user ownership not container UID
+- Debug pod restore + chown pattern validated: copy data in via busybox debug pod, fix ownership to app UID, delete pod, then scale up app — pgadmin started cleanly on first attempt
+- PVC migration procedure confirmed end-to-end: scale-to-0 → debug pod + kubectl cp out → delete PVC → apply updated storage.yaml → wait Bound → debug pod + kubectl cp in + chown → delete pod → scale-to-1
+
+## Key Decisions (Phase 07, Plan 03)
+
+- mealie linuxserver image uses UID 911 (abc user) — chown -R 911:911 applied after kubectl cp restore; kubectl cp does not preserve container UID ownership
+- Chown pattern confirmed again across apps: pgadmin=5050, mealie=911; always identify app UID before PVC migration
+
+## Key Decisions (Phase 07, Plan 04)
+
+- All 7 audiobookshelf PVCs migrated atomically in one scale-to-0 window — app mounts all 7 simultaneously, partial migration would cause mount failures
+- Only config (SQLite DB, 320KB) and metadata (logs/cache/backups, 80KB) needed backup; 5 empty media PVCs (audiobooks, podcasts, ebooks, comics, videos) deleted and recreated fresh
+- chown -R 99:100 required for lscr.io/linuxserver/audiobookshelf — runs as UID 99 (nobody), GID 100 (users)
+- storage.yaml has no namespace metadata — always apply PVC manifests with explicit `-n <namespace>` flag to avoid routing to wrong context namespace
+
+## Key Decisions (Phase 07, Plan 05)
+
+- linkding runs as UID 1000 (sethcottle/linkding image default) — chown -R 1000:1000 applied after kubectl cp restore
+- storage.yaml has no namespace metadata — used explicit -n linkding flag on all kubectl apply/delete commands
+
+## Key Decisions (Phase 07, Plan 07)
+
+- CNPG WAL archive check bypass: when new cluster has same name and same backup destinationPath as old cluster, `barman-cloud-check-wal-archive` fails ("Expected empty archive"); workaround: omit backup section during recovery cluster creation (no WAL check without backup section), re-add backup section via `kubectl apply` after cluster reaches healthy state
+- CNPG pvcTemplate is a flat PVC spec — `storageClassName` goes directly under `pvcTemplate`, NOT under `pvcTemplate.spec` (rejected as "unknown field")
+- Use `bootstrap.recovery.source` with `externalClusters` (not `bootstrap.recovery.backup.name`) for CNPG migrations where cluster name and backup path are the same — external cluster name must match original server name in R2
+- CNPG `kubectl get backup` is ambiguous with Longhorn — use `kubectl get backups.postgresql.cnpg.io` to query CNPG backup objects specifically
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -65,7 +95,7 @@ Next action: `/gsd:plan-phase 5`
 | 4 | n8n Database Backup | ✓ Complete |
 | 5 | Fix linkding Backup Destination | ○ Pending |
 | 6 | Install Longhorn Storage | ○ Pending |
-| 7 | Migrate PVCs to Longhorn | ○ Pending |
+| 7 | Migrate PVCs to Longhorn | ✓ Complete (Plans 01-07 complete, PR #39 open) |
 | 8 | Balance Workloads to Workers | ○ Pending |
 | 9 | Cilium CNI Migration | ○ Pending |
 | 10 | NetworkPolicies per Namespace | ○ Pending |

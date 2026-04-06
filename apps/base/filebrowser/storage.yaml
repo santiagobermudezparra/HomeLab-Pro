@@ -3,6 +3,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: filebrowser-db
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:
@@ -14,6 +15,7 @@ kind: PersistentVolumeClaim
 metadata:
   name: filebrowser-files
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:

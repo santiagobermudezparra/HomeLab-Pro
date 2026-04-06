@@ -20,7 +20,13 @@ spec:
 
   storage:
     size: 2Gi
-    # storageClass: ""
+    pvcTemplate:
+      storageClassName: longhorn
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
 
   superuserSecret:
     name: linkding-superuser
