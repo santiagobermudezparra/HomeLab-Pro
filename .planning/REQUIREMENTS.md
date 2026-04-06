@@ -32,9 +32,9 @@
 
 ### Scheduling (SCHED)
 
-- [ ] **SCHED-01**: Worker-02 is receiving app workloads proportional to its capacity (4 CPU, 15.7GB RAM)
+- [x] **SCHED-01**: Worker-02 is receiving app workloads proportional to its capacity (4 CPU, 15.7GB RAM)
 - [x] **SCHED-02**: PodTopologySpreadConstraints are defined on multi-replica deployments (cloudflared) to spread across nodes
-- [ ] **SCHED-03**: Control-plane node is not overloaded with stateful workloads after storage migration
+- [x] **SCHED-03**: Control-plane node is not overloaded with stateful workloads after storage migration
 
 ### Security (SEC)
 
@@ -99,9 +99,9 @@
 | OBS-02 | Phase 7 | Complete |
 | STOR-04 | Phase 8 | Complete |
 | STOR-05 | Phase 8 | Complete |
-| SCHED-01 | Phase 9 | Pending |
+| SCHED-01 | Phase 9 | Complete |
 | SCHED-02 | Phase 9 | Complete |
-| SCHED-03 | Phase 9 | Pending |
+| SCHED-03 | Phase 9 | Complete |
 | SEC-01 | Phase 10 | Pending |
 | SEC-02 | Phase 10 | Pending |
 | SEC-03 | Phase 11 | Pending |

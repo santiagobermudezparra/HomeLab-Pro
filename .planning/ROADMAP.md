@@ -161,11 +161,11 @@ Plans:
 
 **Requirements:** SCHED-01, SCHED-02, SCHED-03
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
 - [x] 08-01-PLAN.md — topologySpreadConstraints on all 7 active cloudflared Deployments (spread 2 replicas across nodes)
-- [ ] 08-02-PLAN.md — nodeAffinity (prefer non-control-plane) on all 8 app Deployments and Prometheus HelmRelease
+- [x] 08-02-PLAN.md — nodeAffinity (prefer non-control-plane) on all 8 app Deployments and Prometheus HelmRelease
 
 **Scope:**
 - Add `topologySpreadConstraints` to cloudflared deployments (currently all pods land on control-plane)
@@ -260,7 +260,7 @@ Plans:
 | 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
 | 6 | Install Longhorn Storage | 2/4 | In Progress|  |
 | 7 | Migrate PVCs to Longhorn | 7/7 | Complete   | 2026-04-06 |
-| 8 | Balance Workloads to Workers | Scheduling | Low | Small |
+| 8 | Balance Workloads to Workers | 2/2 | Complete   | 2026-04-06 |
 | 9 | Cilium CNI Migration | Security | **High** | Large |
 | 10 | NetworkPolicies per Namespace | Security | Medium | Medium |
 | 11 | Velero Full Backup | Backup | Low | Medium |
