@@ -26,7 +26,7 @@
 - [x] **STOR-01**: Longhorn is installed via FluxCD HelmRelease
 - [x] **STOR-02**: Longhorn is configured as the default StorageClass (local-path demoted)
 - [x] **STOR-03**: Longhorn replication factor set to 2 (data on 2 nodes minimum)
-- [ ] **STOR-04**: All stateful app PVCs (audiobookshelf, mealie, linkding-data, filebrowser, n8n-data, pgadmin) migrated from local-path to Longhorn
+- [x] **STOR-04**: All stateful app PVCs (audiobookshelf, mealie, linkding-data, filebrowser, n8n-data, pgadmin) migrated from local-path to Longhorn
 - [ ] **STOR-05**: CloudNativePG PVCs (linkding-postgres-1, n8n-postgresql-cluster-1) migrated from local-path to Longhorn
 - [x] **STOR-06**: Longhorn UI dashboard is accessible (via Traefik Ingress, internal access)
 
@@ -97,7 +97,7 @@
 | STOR-03 | Phase 7 | Complete |
 | STOR-06 | Phase 7 | Complete |
 | OBS-02 | Phase 7 | Complete |
-| STOR-04 | Phase 8 | Pending |
+| STOR-04 | Phase 8 | Complete |
 | STOR-05 | Phase 8 | Pending |
 | SCHED-01 | Phase 9 | Pending |
 | SCHED-02 | Phase 9 | Pending |

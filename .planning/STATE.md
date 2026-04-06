@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: "Checkpoint: 07-01 human-verify pgadmin UI data integrity"
-last_updated: "2026-04-05T19:44:39.292Z"
+stopped_at: "Completed 07-03-PLAN.md: mealie PVC migration to Longhorn"
+last_updated: "2026-04-06T00:12:42.324Z"
 progress:
   total_phases: 12
   completed_phases: 5
   total_plans: 15
-  completed_plans: 9
+  completed_plans: 11
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Checkpoint: 07-01 human-verify pgadmin UI data integrity
+Stopped at: Completed 07-03-PLAN.md: mealie PVC migration to Longhorn
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -61,6 +61,11 @@ Next action: `/gsd:plan-phase 5`
 - Debug pod restore + chown pattern validated: copy data in via busybox debug pod, fix ownership to app UID, delete pod, then scale up app — pgadmin started cleanly on first attempt
 - PVC migration procedure confirmed end-to-end: scale-to-0 → debug pod + kubectl cp out → delete PVC → apply updated storage.yaml → wait Bound → debug pod + kubectl cp in + chown → delete pod → scale-to-1
 
+## Key Decisions (Phase 07, Plan 03)
+
+- mealie linuxserver image uses UID 911 (abc user) — chown -R 911:911 applied after kubectl cp restore; kubectl cp does not preserve container UID ownership
+- Chown pattern confirmed again across apps: pgadmin=5050, mealie=911; always identify app UID before PVC migration
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -71,7 +76,7 @@ Next action: `/gsd:plan-phase 5`
 | 4 | n8n Database Backup | ✓ Complete |
 | 5 | Fix linkding Backup Destination | ○ Pending |
 | 6 | Install Longhorn Storage | ○ Pending |
-| 7 | Migrate PVCs to Longhorn | ↻ In Progress (Plan 01 awaiting human-verify) |
+| 7 | Migrate PVCs to Longhorn | ↻ In Progress (Plans 01-03 complete, 07-04 next) |
 | 8 | Balance Workloads to Workers | ○ Pending |
 | 9 | Cilium CNI Migration | ○ Pending |
 | 10 | NetworkPolicies per Namespace | ○ Pending |

@@ -134,12 +134,12 @@ Plans:
 
 **Requirements:** STOR-04, STOR-05
 
-**Plans:** 1/7 plans executed
+**Plans:** 3/7 plans executed
 
 Plans:
 - [x] 07-01-PLAN.md — pgadmin: update storage.yaml + live migration of pgadmin-data-pvc (1Gi) to Longhorn
-- [ ] 07-02-PLAN.md — filebrowser: update storage.yaml + live migration of filebrowser-db and filebrowser-files (2 PVCs) to Longhorn
-- [ ] 07-03-PLAN.md — mealie: update storage.yaml + live migration of mealie-data (1Gi) to Longhorn
+- [x] 07-02-PLAN.md — filebrowser: update storage.yaml + live migration of filebrowser-db and filebrowser-files (2 PVCs) to Longhorn
+- [x] 07-03-PLAN.md — mealie: update storage.yaml + live migration of mealie-data (1Gi) to Longhorn
 - [ ] 07-04-PLAN.md — audiobookshelf: update storage.yaml + live migration of all 7 PVCs atomically to Longhorn
 - [ ] 07-05-PLAN.md — linkding: update storage.yaml + live migration of linkding-data-pvc (1Gi) to Longhorn
 - [ ] 07-06-PLAN.md — n8n: update storage.yaml + live migration of n8n-data (2Gi) to Longhorn
@@ -253,7 +253,7 @@ Plans:
 | 4 | n8n Database Backup | Backup | Low | Small |
 | 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
 | 6 | Install Longhorn Storage | 2/4 | In Progress|  |
-| 7 | Migrate PVCs to Longhorn | 1/7 | In Progress|  |
+| 7 | Migrate PVCs to Longhorn | 3/7 | In Progress|  |
 | 8 | Balance Workloads to Workers | Scheduling | Low | Small |
 | 9 | Cilium CNI Migration | Security | **High** | Large |
 | 10 | NetworkPolicies per Namespace | Security | Medium | Medium |
