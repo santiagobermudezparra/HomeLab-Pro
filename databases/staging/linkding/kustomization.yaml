@@ -6,3 +6,26 @@ resources:
   - postgresql-cluster.yaml
   - backup-config.yaml
   - linkding-backup-s3-secret.yaml
+  - r2-backup-configmap.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.endpointURL
+    targets:
+      - select:
+          kind: Cluster
+          name: linkding-postgres
+        fieldPaths:
+          - spec.backup.barmanObjectStore.endpointURL
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.destinationPath
+    targets:
+      - select:
+          kind: Cluster
+          name: linkding-postgres
+        fieldPaths:
+          - spec.backup.barmanObjectStore.destinationPath
