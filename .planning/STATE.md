@@ -4,7 +4,7 @@ milestone: v2.5.1
 milestone_name: milestone
 status: verifying
 stopped_at: Completed 08-02-PLAN.md (nodeAffinity for all 8 apps and Prometheus)
-last_updated: "2026-04-06T10:23:07.623Z"
+last_updated: "2026-04-06T10:29:00.148Z"
 progress:
   total_phases: 12
   completed_phases: 7
