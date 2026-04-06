@@ -32,25 +32,11 @@ spec:
     name: linkding-superuser
 
   bootstrap:
-    recovery:
-      source: linkding-postgres
-
-  externalClusters:
-    - name: linkding-postgres
-      barmanObjectStore:
-        destinationPath: "s3://homelab-postgres-backup/linkding"
-        endpointURL: "https://cf504e28de7836d9611b6774cdcb303e.r2.cloudflarestorage.com"
-        s3Credentials:
-          accessKeyId:
-            name: linkding-backup-s3-secret
-            key: ACCESS_KEY_ID
-          secretAccessKey:
-            name: linkding-backup-s3-secret
-            key: ACCESS_KEY_SECRET
-        wal:
-          compression: gzip
-        data:
-          compression: gzip
+    initdb:
+      database: linkding
+      owner: linkding
+      secret:
+        name: linkding-db-credentials
 
   backup:
     barmanObjectStore:
