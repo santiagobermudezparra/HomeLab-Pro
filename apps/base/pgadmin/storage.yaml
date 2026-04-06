@@ -4,6 +4,7 @@ metadata:
   name: pgadmin-data-pvc
   namespace: pgadmin
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:

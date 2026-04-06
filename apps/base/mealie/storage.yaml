@@ -4,6 +4,7 @@ metadata:
   name: mealie-data
   namespace: mealie
 spec:
+  storageClassName: longhorn
   accessModes:
     - ReadWriteOnce
   resources:
