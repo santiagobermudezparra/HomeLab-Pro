@@ -4,7 +4,7 @@ metadata:
   name: renovate
   namespace: renovate
 spec:
-  schedule: "@hourly"
+  schedule: "0 2 * * *"
   concurrencyPolicy: Forbid
   jobTemplate:
     spec:
@@ -13,6 +13,7 @@ spec:
           containers:
             - name: renovate
               image: renovate/renovate:latest
+              imagePullPolicy: IfNotPresent
               args:
                 - santiagobermudezparra/HomeLab-Pro
 
