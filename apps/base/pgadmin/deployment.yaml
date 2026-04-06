@@ -15,6 +15,14 @@ spec:
       labels:
         app: pgadmin
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       securityContext:
         runAsUser: 5050
         runAsGroup: 5050

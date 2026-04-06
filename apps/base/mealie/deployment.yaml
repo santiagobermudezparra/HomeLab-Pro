@@ -15,6 +15,14 @@ spec:
       labels:
         app: mealie
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       containers:
         - image: ghcr.io/mealie-recipes/mealie:v2.8.0
           name: mealie
