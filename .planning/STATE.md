@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 07-05-PLAN.md (linkding PVC migration to Longhorn)
-last_updated: "2026-04-06T00:22:36.998Z"
+stopped_at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
+last_updated: "2026-04-06T00:51:32.906Z"
 progress:
   total_phases: 12
-  completed_phases: 5
+  completed_phases: 6
   total_plans: 15
-  completed_plans: 14
+  completed_plans: 15
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 07-05-PLAN.md (linkding PVC migration to Longhorn)
+Stopped at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -78,6 +78,13 @@ Next action: `/gsd:plan-phase 5`
 - linkding runs as UID 1000 (sethcottle/linkding image default) — chown -R 1000:1000 applied after kubectl cp restore
 - storage.yaml has no namespace metadata — used explicit -n linkding flag on all kubectl apply/delete commands
 
+## Key Decisions (Phase 07, Plan 07)
+
+- CNPG WAL archive check bypass: when new cluster has same name and same backup destinationPath as old cluster, `barman-cloud-check-wal-archive` fails ("Expected empty archive"); workaround: omit backup section during recovery cluster creation (no WAL check without backup section), re-add backup section via `kubectl apply` after cluster reaches healthy state
+- CNPG pvcTemplate is a flat PVC spec — `storageClassName` goes directly under `pvcTemplate`, NOT under `pvcTemplate.spec` (rejected as "unknown field")
+- Use `bootstrap.recovery.source` with `externalClusters` (not `bootstrap.recovery.backup.name`) for CNPG migrations where cluster name and backup path are the same — external cluster name must match original server name in R2
+- CNPG `kubectl get backup` is ambiguous with Longhorn — use `kubectl get backups.postgresql.cnpg.io` to query CNPG backup objects specifically
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -88,7 +95,7 @@ Next action: `/gsd:plan-phase 5`
 | 4 | n8n Database Backup | ✓ Complete |
 | 5 | Fix linkding Backup Destination | ○ Pending |
 | 6 | Install Longhorn Storage | ○ Pending |
-| 7 | Migrate PVCs to Longhorn | ↻ In Progress (Plans 01-05 complete, 07-06 next) |
+| 7 | Migrate PVCs to Longhorn | ✓ Complete (Plans 01-07 complete, PR #39 open) |
 | 8 | Balance Workloads to Workers | ○ Pending |
 | 9 | Cilium CNI Migration | ○ Pending |
 | 10 | NetworkPolicies per Namespace | ○ Pending |
