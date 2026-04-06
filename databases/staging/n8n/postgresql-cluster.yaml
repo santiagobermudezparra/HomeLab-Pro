@@ -20,17 +20,22 @@ spec:
 
   storage:
     size: 2Gi
-    # storageClass: "" # Use default storage class
+    pvcTemplate:
+      spec:
+        storageClassName: longhorn
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
 
   superuserSecret:
     name: n8n-superuser
 
   bootstrap:
-    initdb:
-      database: n8n
-      owner: n8n
-      secret:
-        name: n8n-db-credentials
+    recovery:
+      backup:
+        name: pre-migration-n8n
 
   backup:
     barmanObjectStore:

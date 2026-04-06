@@ -20,17 +20,22 @@ spec:
 
   storage:
     size: 2Gi
-    # storageClass: ""
+    pvcTemplate:
+      spec:
+        storageClassName: longhorn
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 2Gi
 
   superuserSecret:
     name: linkding-superuser
 
   bootstrap:
-    initdb:
-      database: linkding
-      owner: linkding
-      secret:
-        name: linkding-db-credentials
+    recovery:
+      backup:
+        name: pre-migration-linkding
 
   backup:
     barmanObjectStore:
