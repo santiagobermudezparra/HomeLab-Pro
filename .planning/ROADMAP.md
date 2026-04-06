@@ -140,7 +140,7 @@ Plans:
 - [x] 07-01-PLAN.md — pgadmin: update storage.yaml + live migration of pgadmin-data-pvc (1Gi) to Longhorn
 - [x] 07-02-PLAN.md — filebrowser: update storage.yaml + live migration of filebrowser-db and filebrowser-files (2 PVCs) to Longhorn
 - [x] 07-03-PLAN.md — mealie: update storage.yaml + live migration of mealie-data (1Gi) to Longhorn
-- [ ] 07-04-PLAN.md — audiobookshelf: update storage.yaml + live migration of all 7 PVCs atomically to Longhorn
+- [x] 07-04-PLAN.md — audiobookshelf: update storage.yaml + live migration of all 7 PVCs atomically to Longhorn
 - [ ] 07-05-PLAN.md — linkding: update storage.yaml + live migration of linkding-data-pvc (1Gi) to Longhorn
 - [ ] 07-06-PLAN.md — n8n: update storage.yaml + live migration of n8n-data (2Gi) to Longhorn
 - [ ] 07-07-PLAN.md — CNPG: pre-migration backups, bootstrap.recovery migration for linkding-postgres-1 and n8n-postgresql-cluster-1, PR
