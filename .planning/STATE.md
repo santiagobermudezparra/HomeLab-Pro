@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
-last_updated: "2026-04-06T00:55:55.353Z"
+stopped_at: Completed 08-01-PLAN.md (topologySpreadConstraints for cloudflared deployments)
+last_updated: "2026-04-06T10:22:48.765Z"
 progress:
   total_phases: 12
   completed_phases: 6
-  total_plans: 15
-  completed_plans: 15
+  total_plans: 17
+  completed_plans: 16
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 07 — migrate-pvcs-to-longhorn
+**Current focus:** Phase 08 — balance-workloads-to-worker-nodes
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
+Stopped at: Completed 08-01-PLAN.md (topologySpreadConstraints for cloudflared deployments)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)

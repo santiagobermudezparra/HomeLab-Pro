@@ -164,7 +164,7 @@ Plans:
 **Plans:** 2 plans
 
 Plans:
-- [ ] 08-01-PLAN.md — topologySpreadConstraints on all 7 active cloudflared Deployments (spread 2 replicas across nodes)
+- [x] 08-01-PLAN.md — topologySpreadConstraints on all 7 active cloudflared Deployments (spread 2 replicas across nodes)
 - [ ] 08-02-PLAN.md — nodeAffinity (prefer non-control-plane) on all 8 app Deployments and Prometheus HelmRelease
 
 **Scope:**
