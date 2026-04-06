@@ -33,8 +33,8 @@ Every stateful app survives any single node failure without data loss.
 - ✓ Grafana admin password stored as SOPS-encrypted secret — Validated in Phase 3
 - [ ] n8n database has scheduled backup config
 - [ ] Linkding backup has configured object-storage destination
-- [ ] Longhorn distributed storage installed and set as default StorageClass
-- [ ] All stateful PVCs migrated from local-path to Longhorn
+- ✓ Longhorn distributed storage installed and set as default StorageClass — Validated in Phase 6
+- ✓ All stateful PVCs migrated from local-path to Longhorn — Validated in Phase 7
 - [ ] Worker-02 (new node, 18h old) receives workload proportional to its capacity
 - [ ] Renovate external-host-error resolved
 - [ ] Cilium replaces Flannel as CNI

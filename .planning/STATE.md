@@ -4,7 +4,7 @@ milestone: v2.5.1
 milestone_name: milestone
 status: verifying
 stopped_at: Completed 07-07-PLAN.md (CNPG PostgreSQL PVC migration to Longhorn)
-last_updated: "2026-04-06T00:51:32.906Z"
+last_updated: "2026-04-06T00:55:55.353Z"
 progress:
   total_phases: 12
   completed_phases: 6

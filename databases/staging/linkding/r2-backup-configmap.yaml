@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: r2-backup-config
+  namespace: linkding
+data:
+  endpointURL: "https://cf504e28de7836d9611b6774cdcb303e.r2.cloudflarestorage.com"
+  destinationPath: "s3://homelab-postgres-backup/linkding"

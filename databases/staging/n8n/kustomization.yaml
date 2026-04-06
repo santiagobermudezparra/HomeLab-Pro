@@ -5,3 +5,26 @@ resources:
   - postgresql-cluster.yaml
   - backup-config.yaml
   - n8n-backup-s3-secret.yaml
+  - r2-backup-configmap.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.endpointURL
+    targets:
+      - select:
+          kind: Cluster
+          name: n8n-postgresql-cluster
+        fieldPaths:
+          - spec.backup.barmanObjectStore.endpointURL
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.destinationPath
+    targets:
+      - select:
+          kind: Cluster
+          name: n8n-postgresql-cluster
+        fieldPaths:
+          - spec.backup.barmanObjectStore.destinationPath
