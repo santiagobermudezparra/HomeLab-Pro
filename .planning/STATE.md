@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 07-06-PLAN.md (n8n PVC migration to Longhorn)
-last_updated: "2026-04-06T00:21:59.115Z"
+stopped_at: Completed 07-05-PLAN.md (linkding PVC migration to Longhorn)
+last_updated: "2026-04-06T00:22:36.998Z"
 progress:
   total_phases: 12
   completed_phases: 5
   total_plans: 15
-  completed_plans: 13
+  completed_plans: 14
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 07-06-PLAN.md (n8n PVC migration to Longhorn)
+Stopped at: Completed 07-05-PLAN.md (linkding PVC migration to Longhorn)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -73,6 +73,11 @@ Next action: `/gsd:plan-phase 5`
 - chown -R 99:100 required for lscr.io/linuxserver/audiobookshelf — runs as UID 99 (nobody), GID 100 (users)
 - storage.yaml has no namespace metadata — always apply PVC manifests with explicit `-n <namespace>` flag to avoid routing to wrong context namespace
 
+## Key Decisions (Phase 07, Plan 05)
+
+- linkding runs as UID 1000 (sethcottle/linkding image default) — chown -R 1000:1000 applied after kubectl cp restore
+- storage.yaml has no namespace metadata — used explicit -n linkding flag on all kubectl apply/delete commands
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -83,7 +88,7 @@ Next action: `/gsd:plan-phase 5`
 | 4 | n8n Database Backup | ✓ Complete |
 | 5 | Fix linkding Backup Destination | ○ Pending |
 | 6 | Install Longhorn Storage | ○ Pending |
-| 7 | Migrate PVCs to Longhorn | ↻ In Progress (Plans 01-04 complete, 07-05 next) |
+| 7 | Migrate PVCs to Longhorn | ↻ In Progress (Plans 01-05 complete, 07-06 next) |
 | 8 | Balance Workloads to Workers | ○ Pending |
 | 9 | Cilium CNI Migration | ○ Pending |
 | 10 | NetworkPolicies per Namespace | ○ Pending |
