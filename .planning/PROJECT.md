@@ -111,4 +111,4 @@ does NOT follow — a node failure means that app's data is inaccessible until t
 | Fine granularity roadmap | User prefers one concern per phase for visibility and rollback safety | ✓ |
 
 ---
-*Last updated: 2026-04-04 — Phase 3 complete (Grafana admin password as SOPS secret)*
+*Last updated: 2026-04-06 — Phase 8 complete (workload balancing: topologySpreadConstraints on cloudflared, nodeAffinity on all app Deployments + Prometheus; pending live verification after PR #45 merge)*

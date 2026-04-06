@@ -123,6 +123,14 @@ spec:
       labels:
         app: ${APP_NAME}
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            preference:
+              matchExpressions:
+              - key: node-role.kubernetes.io/control-plane
+                operator: DoesNotExist
       containers:
       - name: ${APP_NAME}
         image: ${APP_IMAGE}
@@ -152,8 +160,31 @@ spec:
 
 **Notes:**
 - If the app is stateless, you're done
-- If it stores data, add a `volumeMounts` section and corresponding `volumes` with PVC
+- If it stores data, add a `volumeMounts` section and corresponding `volumes` with PVC — always use `storageClassName: longhorn` (see storage.yaml below)
 - If it needs database access, add `LD_DB_HOST`, `LD_DB_PASSWORD` env vars (examples for Postgres)
+
+### storage.yaml *(apps with persistent data only)*
+
+Create a separate `storage.yaml` for PVCs (keeps deployment.yaml clean). Always use `storageClassName: longhorn` — Longhorn is the cluster's default distributed StorageClass (replicated across nodes, not tied to a single host):
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ${APP_NAME}-data
+  namespace: ${APP_NAME}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 1Gi
+```
+
+If the app needs multiple PVCs (e.g., a DB file + a data directory), define them all in the same `storage.yaml`. When migrating or recreating, always scale to 0 and handle all PVCs atomically — scaling up between PVC operations risks data inconsistency.
+
+Add `storage.yaml` to the base `kustomization.yaml` resources list.
 
 ### service.yaml
 ```yaml
@@ -245,6 +276,13 @@ spec:
       labels:
         app: cloudflared
     spec:
+      topologySpreadConstraints:
+      - maxSkew: 1
+        topologyKey: kubernetes.io/hostname
+        whenUnsatisfiable: DoNotSchedule
+        labelSelector:
+          matchLabels:
+            app: cloudflared
       containers:
       - name: cloudflared
         image: cloudflare/cloudflared:latest
@@ -694,5 +732,9 @@ Each app gets its own `cloudflared` deployment for:
 
 ---
 
-**Version**: 1.0
-**Last Updated**: March 28, 2026
+**Version**: 1.1
+**Last Updated**: April 6, 2026
+**Changelog:**
+- v1.1: Added `nodeAffinity` (prefer worker nodes) to deployment template — Phase 08
+- v1.1: Added `topologySpreadConstraints` to cloudflared deployment template — Phase 08
+- v1.1: Added Longhorn `storage.yaml` section with `storageClassName: longhorn` — Phase 07
