@@ -20,6 +20,14 @@ spec:
     spec:
       serviceAccountName: homepage
       automountServiceAccountToken: true
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       dnsPolicy: ClusterFirst
       enableServiceLinks: true
       securityContext:

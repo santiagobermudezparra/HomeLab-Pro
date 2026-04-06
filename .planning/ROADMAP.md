@@ -161,11 +161,17 @@ Plans:
 
 **Requirements:** SCHED-01, SCHED-02, SCHED-03
 
+**Plans:** 2/2 plans complete
+
+Plans:
+- [x] 08-01-PLAN.md — topologySpreadConstraints on all 7 active cloudflared Deployments (spread 2 replicas across nodes)
+- [x] 08-02-PLAN.md — nodeAffinity (prefer non-control-plane) on all 8 app Deployments and Prometheus HelmRelease
+
 **Scope:**
-- Add `podAntiAffinity` or `topologySpreadConstraints` to cloudflared deployments (currently all pods land on control-plane)
-- Add `topologySpreadConstraints` to high-memory apps (mealie, prometheus) to spread across workers
-- Consider `nodeAffinity` to prefer workers over control-plane for app pods
-- Verify control-plane `kubectl taint` is not needed (k3s doesn't taint control-plane by default)
+- Add `topologySpreadConstraints` to cloudflared deployments (currently all pods land on control-plane)
+- Add `nodeAffinity` (preferredDuringSchedulingIgnoredDuringExecution, DoesNotExist on node-role.kubernetes.io/control-plane) to all app deployments
+- Add same affinity to Prometheus via HelmRelease values
+- No hardcoded node names — role-based scheduling only
 
 **Done when:** `kubectl get pods --all-namespaces -o wide` shows workloads distributed across all 3 nodes, worker-02 running at least 5 non-system pods.
 
@@ -254,7 +260,7 @@ Plans:
 | 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
 | 6 | Install Longhorn Storage | 2/4 | In Progress|  |
 | 7 | Migrate PVCs to Longhorn | 7/7 | Complete   | 2026-04-06 |
-| 8 | Balance Workloads to Workers | Scheduling | Low | Small |
+| 8 | Balance Workloads to Workers | 2/2 | Complete   | 2026-04-06 |
 | 9 | Cilium CNI Migration | Security | **High** | Large |
 | 10 | NetworkPolicies per Namespace | Security | Medium | Medium |
 | 11 | Velero Full Backup | Backup | Low | Medium |

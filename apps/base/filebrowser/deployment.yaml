@@ -17,6 +17,14 @@ spec:
       labels:
         app: filebrowser
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
       initContainers:
         - name: init-admin
           image: filebrowser/filebrowser:latest
