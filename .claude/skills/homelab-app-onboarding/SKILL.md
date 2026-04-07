@@ -34,11 +34,22 @@ Ask the user for these details. If they've already provided some in the conversa
 | `ACCESS_TYPE` | `public` or `internal` | **public** = Cloudflare Tunnel (internet-accessible); **internal** = Traefik Ingress (local network only) |
 | `DB_REQUIRED` | `yes`/`no` | Does the app need a database? |
 | `DB_TYPE` | `postgres`, `sqlite` | If yes, which database system |
+| `USE_CNPG` | `yes`/`no` | **Only ask if `DB_TYPE=postgres`** — do you want CloudNativePG to manage the PostgreSQL cluster? If the user hasn't said, use your knowledge of the app to decide if it supports PostgreSQL (e.g., Vaultwarden, Gitea, Outline → yes; apps that only use SQLite or have no DB option → don't ask at all). If unsure, ask the user. |
 | `SECRETS` | `ADMIN_USER=admin`, `API_KEY=xyz` | Key=value pairs for env secrets |
 
 **When to use each access type:**
 - **`public`** — app needs to be reachable from the internet (Cloudflare Tunnel handles routing + DDoS protection)
 - **`internal`** — app is only for home network / LAN access (Traefik Ingress is simpler, no tunnel required)
+
+**CloudNativePG decision logic:**
+- If `DB_TYPE` is NOT `postgres` (e.g., sqlite, no DB): skip `USE_CNPG` entirely — don't even mention it
+- If `DB_TYPE=postgres` AND you know the app supports it: ask "Do you want CloudNativePG to manage the PostgreSQL cluster? (Recommended — matches linkding/n8n setup)"
+- If `USE_CNPG=yes`: also gather:
+  - `DB_NAME` — database name (default: `${APP_NAME}`)
+  - `DB_USER` — database owner username (default: `${APP_NAME}`)
+  - `R2_ACCESS_KEY_ID` and `R2_ACCESS_KEY_SECRET` — Cloudflare R2 credentials for backups (tell user: "Same R2 bucket as linkding/n8n — just need a new access key pair for this app, or reuse existing if already shared")
+  - `R2_BUCKET_PATH` — S3 destination (default: `s3://homelab-postgres-backup/${APP_NAME}`)
+  - `R2_ENDPOINT_URL` — R2 endpoint (default: existing one from linkding: `https://cf504e28de7836d9611b6774cdcb303e.r2.cloudflarestorage.com`)
 
 **Port conflict check — always run this before picking a port:**
 ```bash
@@ -140,6 +151,24 @@ spec:
         - name: PORT
           value: "${APP_PORT}"
         # Add database connection env vars here if needed
+        # If USE_CNPG=yes, add these (pointing to the CNPG cluster service):
+        # - name: DB_HOST
+        #   value: "${APP_NAME}-postgres-rw.${APP_NAME}.svc.cluster.local"
+        # - name: DB_PORT
+        #   value: "5432"
+        # - name: DB_NAME
+        #   value: "${DB_NAME}"
+        # - name: DB_USER
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: ${APP_NAME}-db-credentials
+        #       key: username
+        # - name: DB_PASSWORD
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: ${APP_NAME}-db-credentials
+        #       key: password
+        # Note: exact env var names vary by app — check the app's docs
         envFrom:
         - configMapRef:
             name: ${APP_NAME}-config
@@ -213,6 +242,208 @@ resources:
   - deployment.yaml
   - service.yaml
 ```
+
+## Step 2.5 — CloudNativePG Database Setup *(only if `USE_CNPG=yes` — skip otherwise)*
+
+Create a managed PostgreSQL cluster for the app, following the exact same pattern as linkding and n8n. This lives in `databases/staging/${APP_NAME}/` (not in `apps/`).
+
+```bash
+mkdir -p databases/staging/${APP_NAME}
+```
+
+### postgresql-cluster.yaml
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: ${APP_NAME}-postgres
+  namespace: ${APP_NAME}
+spec:
+  description: "PostgreSQL cluster for ${APP_NAME} application"
+  instances: 1
+
+  # Enable monitoring (uncomment when Prometheus is configured)
+  # monitoring:
+  #   enabled: true
+  #   podMonitorEnabled: true
+
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
+      effective_cache_size: "512MB"
+
+  storage:
+    size: 2Gi
+    pvcTemplate:
+      storageClassName: longhorn
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 2Gi
+
+  superuserSecret:
+    name: ${APP_NAME}-superuser
+
+  bootstrap:
+    initdb:
+      database: ${DB_NAME}
+      owner: ${DB_USER}
+      secret:
+        name: ${APP_NAME}-db-credentials
+
+  backup:
+    barmanObjectStore:
+      destinationPath: "${R2_BUCKET_PATH}"
+      endpointURL: "${R2_ENDPOINT_URL}"
+      s3Credentials:
+        accessKeyId:
+          name: ${APP_NAME}-backup-s3-secret
+          key: ACCESS_KEY_ID
+        secretAccessKey:
+          name: ${APP_NAME}-backup-s3-secret
+          key: ACCESS_KEY_SECRET
+      wal:
+        compression: gzip
+      data:
+        compression: gzip
+    retentionPolicy: "7d"
+```
+
+### backup-config.yaml
+
+```yaml
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: ${APP_NAME}-backup
+  namespace: ${APP_NAME}
+spec:
+  # Schedule: Daily at 3 AM
+  schedule: "0 3 * * *"
+
+  # Backup immediately on creation
+  #immediate: true
+
+  # Reference to the cluster
+  cluster:
+    name: ${APP_NAME}-postgres
+
+  # Retention policy
+  backupOwnerReference: cluster
+```
+
+### r2-backup-configmap.yaml
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: r2-backup-config
+  namespace: ${APP_NAME}
+data:
+  endpointURL: "${R2_ENDPOINT_URL}"
+  destinationPath: "${R2_BUCKET_PATH}"
+```
+
+### secrets.yaml
+
+Create SOPS-encrypted DB credentials and superuser secrets:
+
+```bash
+# Create db-credentials secret (plaintext first)
+kubectl create secret generic ${APP_NAME}-db-credentials \
+  --type=kubernetes.io/basic-auth \
+  --from-literal=username=${DB_USER} \
+  --from-literal=password=$(openssl rand -base64 24) \
+  --dry-run=client -o yaml > /tmp/${APP_NAME}-db-creds.yaml
+
+# Create superuser secret
+kubectl create secret generic ${APP_NAME}-superuser \
+  --from-literal=username=postgres \
+  --from-literal=password=$(openssl rand -base64 24) \
+  --dry-run=client -o yaml >> /tmp/${APP_NAME}-db-creds.yaml
+
+# Review passwords before encrypting (save them somewhere safe)
+cat /tmp/${APP_NAME}-db-creds.yaml
+
+# Move to databases directory
+cp /tmp/${APP_NAME}-db-creds.yaml databases/staging/${APP_NAME}/secrets.yaml
+
+# Encrypt
+AGE_KEY=$(grep -A 2 "creation_rules:" clusters/staging/.sops.yaml | grep "age:" | awk '{print $NF}')
+sops --age=${AGE_KEY} \
+  --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place databases/staging/${APP_NAME}/secrets.yaml
+```
+
+### ${APP_NAME}-backup-s3-secret.yaml
+
+```bash
+# Create R2 backup credentials (plaintext)
+kubectl create secret generic ${APP_NAME}-backup-s3-secret \
+  --from-literal=ACCESS_KEY_ID=${R2_ACCESS_KEY_ID} \
+  --from-literal=ACCESS_KEY_SECRET=${R2_ACCESS_KEY_SECRET} \
+  --dry-run=client -o yaml > databases/staging/${APP_NAME}/${APP_NAME}-backup-s3-secret.yaml
+
+# Encrypt
+sops --age=${AGE_KEY} \
+  --encrypt --encrypted-regex '^(data|stringData)$' \
+  --in-place databases/staging/${APP_NAME}/${APP_NAME}-backup-s3-secret.yaml
+```
+
+### kustomization.yaml
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: ${APP_NAME}
+resources:
+  - secrets.yaml
+  - postgresql-cluster.yaml
+  - backup-config.yaml
+  - ${APP_NAME}-backup-s3-secret.yaml
+  - r2-backup-configmap.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.endpointURL
+    targets:
+      - select:
+          kind: Cluster
+          name: ${APP_NAME}-postgres
+        fieldPaths:
+          - spec.backup.barmanObjectStore.endpointURL
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.destinationPath
+    targets:
+      - select:
+          kind: Cluster
+          name: ${APP_NAME}-postgres
+        fieldPaths:
+          - spec.backup.barmanObjectStore.destinationPath
+```
+
+### Register in databases/staging/kustomization.yaml
+
+Add the new app to `databases/staging/kustomization.yaml`:
+
+```yaml
+resources:
+  - linkding
+  - n8n
+  - ${APP_NAME}  # Add here
+```
+
+> **Note:** The CNPG cluster is deployed in the app's own namespace (`${APP_NAME}`), so the app's deployment can reach PostgreSQL at `${APP_NAME}-postgres-rw.${APP_NAME}.svc.cluster.local:5432`. Make sure to add the DB env vars in `apps/base/${APP_NAME}/deployment.yaml` (the commented template is in Step 2).
+
+---
 
 ## Step 3 — Create Staging Overlay
 
@@ -633,6 +864,9 @@ git push origin feat/add-${APP_NAME}
 - [ ] Created `apps/base/${APP_NAME}/` with namespace, deployment, service, kustomization
 - [ ] **Public:** Created `apps/staging/${APP_NAME}/` with cloudflare.yaml + encrypted secrets
 - [ ] **Internal:** Created `apps/staging/${APP_NAME}/` with ingress.yaml + encrypted secrets
+- [ ] **CloudNativePG (if `USE_CNPG=yes`):** Created `databases/staging/${APP_NAME}/` with cluster, backup, r2-configmap, encrypted secrets
+- [ ] **CloudNativePG (if `USE_CNPG=yes`):** Updated `databases/staging/kustomization.yaml` with new app
+- [ ] **CloudNativePG (if `USE_CNPG=yes`):** Added DB env vars to `apps/base/${APP_NAME}/deployment.yaml`
 - [ ] Verified secrets are encrypted with SOPS (look for `ENC[AES256_GCM`)
 - [ ] Updated `apps/staging/kustomization.yaml` with new app
 - [ ] Tested manifests with `--dry-run=client`
@@ -732,9 +966,12 @@ Each app gets its own `cloudflared` deployment for:
 
 ---
 
-**Version**: 1.1
-**Last Updated**: April 6, 2026
+**Version**: 1.2
+**Last Updated**: April 7, 2026
 **Changelog:**
+- v1.2: Added CloudNativePG PostgreSQL support (Step 2.5) — full cluster + R2 backup matching linkding/n8n pattern
+- v1.2: Added DB env vars template to deployment.yaml (commented, for CloudNativePG connection)
+- v1.2: Skill now auto-detects whether to offer CloudNativePG based on app's PostgreSQL support
 - v1.1: Added `nodeAffinity` (prefer worker nodes) to deployment template — Phase 08
 - v1.1: Added `topologySpreadConstraints` to cloudflared deployment template — Phase 08
 - v1.1: Added Longhorn `storage.yaml` section with `storageClassName: longhorn` — Phase 07
