@@ -183,6 +183,13 @@ Plans:
 
 **Requirements:** SEC-01, SEC-02
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 09-01-PLAN.md — Maintenance window: disable Flannel in K3s config, restart all nodes, delete flannel.1 interface
+- [ ] 09-02-PLAN.md — Bootstrap Cilium 1.16.19 via helm, install cilium CLI, restart all pods to use Cilium networking
+- [ ] 09-03-PLAN.md — GitOps adoption: commit HelmRelease + Hubble UI Traefik Ingress + homepage entry, open PR
+
 **Scope:**
 - Plan migration: disable k3s flannel, install Cilium via Helm in kube-system
 - Update k3s agent config on all 3 nodes to use `--flannel-backend=none --disable-network-policy`
