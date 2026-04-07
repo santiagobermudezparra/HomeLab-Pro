@@ -4,11 +4,11 @@ metadata:
   name: n8n-backup
   namespace: n8n
 spec:
-  # Schedule: Daily at 3 AM
-  schedule: "0 3 * * *"
+  # Schedule: Daily at 3 AM (CNPG uses 6-field cron: sec min hour dom month dow)
+  schedule: "0 0 3 * * *"
 
-  # Backup immediately on creation
-  #immediate: true
+  # Trigger a backup immediately when the resource is first created (safe - won't re-fire on reconciliation)
+  immediate: true
 
   # Reference to the cluster
   cluster:
