@@ -4,12 +4,12 @@ milestone: v2.5.1
 milestone_name: milestone
 status: verifying
 stopped_at: Completed 08-02-PLAN.md (nodeAffinity for all 8 apps and Prometheus)
-last_updated: "2026-04-06T10:29:00.148Z"
+last_updated: "2026-04-09T07:11:18.604Z"
 progress:
   total_phases: 12
   completed_phases: 7
-  total_plans: 17
-  completed_plans: 17
+  total_plans: 20
+  completed_plans: 19
 ---
 
 # Project State
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 08 — balance-workloads-to-worker-nodes
+**Current focus:** Phase 09 — cilium-cni-migration
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase

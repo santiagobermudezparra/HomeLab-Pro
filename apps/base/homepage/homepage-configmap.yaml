@@ -54,6 +54,10 @@ data:
             href: https://longhorn.watarystack.org
             description: Distributed block storage
             icon: longhorn.png
+        - Hubble:
+            href: https://hubble.watarystack.org
+            description: Cilium network observability
+            icon: cilium.png
   widgets.yaml: |
     - kubernetes:
         cluster:

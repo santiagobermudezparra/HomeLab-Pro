@@ -1,0 +1,24 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hubble-ui
+  namespace: kube-system
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - hubble.watarystack.org
+      secretName: hubble-ui-tls
+  rules:
+    - host: hubble.watarystack.org
+      http:
+        paths:
+          - backend:
+              service:
+                name: hubble-ui
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix

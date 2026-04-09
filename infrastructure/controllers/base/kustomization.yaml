@@ -4,3 +4,4 @@ resources:
   - renovate
   - cert-manager
   - cloudnative-pg
+  - cilium
