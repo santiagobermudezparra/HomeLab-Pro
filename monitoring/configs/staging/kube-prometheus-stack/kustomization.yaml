@@ -5,4 +5,6 @@ resources:
   - cloudnativepg-podmonitor.yaml
   - prometheus-rbac.yaml
   - grafana-admin-secret.yaml
+  - prometheus-ingress.yaml
+  - alertmanager-ingress.yaml
 
