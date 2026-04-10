@@ -70,6 +70,27 @@ kubectl get lhn -n longhorn-system   # Longhorn Node resources
 # If disk is <25% free, it shows Schedulable: false (expected for low-disk nodes)
 ```
 
+### Step 3.5 — Verify Cilium agent is running on new node (run on control-plane)
+
+The cluster uses Cilium as the CNI (replaced Flannel in Phase 9). Cilium deploys as a DaemonSet, so it automatically starts on the new node — but verify it reaches `Running` before declaring success. If the Cilium agent fails, pods on the new node will get no networking.
+
+```bash
+# Cilium agent should be Running on the new node within ~60 seconds
+kubectl get pods -n kube-system -l k8s-app=cilium -o wide
+# New node should appear with STATUS=Running
+
+# If still initializing, watch it:
+kubectl get pods -n kube-system -l k8s-app=cilium -o wide -w
+
+# If the agent is stuck, check its logs:
+kubectl logs -n kube-system -l k8s-app=cilium --tail=50
+
+# Quick connectivity check (requires cilium CLI):
+# cilium status --wait
+```
+
+> **Note:** Do NOT proceed to Step 4 (workload scheduling) until the Cilium agent on the new node is `Running`. Pods scheduled before Cilium is ready will fail with networking errors.
+
 ### Step 4 — Verify monitoring is active (run on control-plane)
 
 ```bash
@@ -111,6 +132,7 @@ node-label:
 | Task | Automatic? |
 |------|-----------|
 | K3s agent join | ❌ Manual (curl install command) |
+| **Cilium agent (CNI)** | ✅ DaemonSet deploys automatically — **verify Running before scheduling workloads** |
 | iscsi-installer (open-iscsi) | ✅ DaemonSet deploys automatically |
 | Longhorn storage detection | ✅ Automatic after iscsi is ready |
 | Prometheus node monitoring | ✅ DaemonSet deploys automatically |

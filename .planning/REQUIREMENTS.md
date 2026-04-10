@@ -8,14 +8,14 @@
 ### Critical Fixes (CRIT)
 
 - [x] **CRIT-01**: `apps` Kustomization has `dependsOn: [databases]` so apps never race databases on bootstrap
-- [ ] **CRIT-02**: audiobookshelf Deployment has resource `requests` and `limits` defined
+- [x] **CRIT-02**: audiobookshelf Deployment has resource `requests` and `limits` defined
 - [ ] **CRIT-03**: All deployments using `:latest` image tags are pinned to specific versions (n8n, cloudflared)
 - [x] **CRIT-04**: Grafana admin password is stored in a SOPS-encrypted Secret, not hardcoded in HelmRelease values
 - [ ] **CRIT-05**: Renovate external-host-error is diagnosed and resolved
 
 ### Backup (BACK)
 
-- [ ] **BACK-01**: n8n CloudNativePG cluster has a `ScheduledBackup` resource configured
+- [x] **BACK-01**: n8n CloudNativePG cluster has a `ScheduledBackup` resource configured
 - [x] **BACK-02**: linkding `ScheduledBackup` has a `destinationPath` pointing to object storage
 - [ ] **BACK-03**: Velero is installed and configured with an S3-compatible backup target
 - [ ] **BACK-04**: All app namespaces have Velero backup schedules (daily, configurable retention)
@@ -38,8 +38,8 @@
 
 ### Security (SEC)
 
-- [ ] **SEC-01**: Cilium is installed as the CNI, replacing Flannel
-- [ ] **SEC-02**: Hubble observability is enabled in Cilium
+- [x] **SEC-01**: Cilium is installed as the CNI, replacing Flannel
+- [x] **SEC-02**: Hubble observability is enabled in Cilium
 - [ ] **SEC-03**: A default-deny NetworkPolicy is applied in each app namespace
 - [ ] **SEC-04**: Allow-rules are configured per namespace so each app can reach only its own database and required services
 - [ ] **SEC-05**: flux-system existing NetworkPolicies are preserved and verified after Cilium migration
@@ -86,11 +86,11 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CRIT-01 | Phase 1 | Complete |
-| CRIT-02 | Phase 2 | Pending |
+| CRIT-02 | Phase 2 | Complete |
 | CRIT-03 | Unassigned | Pending |
 | CRIT-04 | Phase 3 | Complete |
 | CRIT-05 | Phase 4 | Pending |
-| BACK-01 | Phase 5 | Pending |
+| BACK-01 | Phase 5 | Complete |
 | BACK-02 | Phase 6 | Complete |
 | STOR-01 | Phase 7 | Complete |
 | STOR-02 | Phase 7 | Complete |
@@ -102,8 +102,8 @@
 | SCHED-01 | Phase 9 | Complete |
 | SCHED-02 | Phase 9 | Complete |
 | SCHED-03 | Phase 9 | Complete |
-| SEC-01 | Phase 10 | Pending |
-| SEC-02 | Phase 10 | Pending |
+| SEC-01 | Phase 10 | Complete |
+| SEC-02 | Phase 10 | Complete |
 | SEC-03 | Phase 11 | Pending |
 | SEC-04 | Phase 11 | Pending |
 | SEC-05 | Phase 11 | Pending |

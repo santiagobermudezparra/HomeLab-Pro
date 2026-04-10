@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 08-02-PLAN.md (nodeAffinity for all 8 apps and Prometheus)
-last_updated: "2026-04-09T07:15:06.257Z"
+status: in_progress
+stopped_at: Completed Phase 09 — Cilium CNI Migration
+last_updated: "2026-04-11T00:00:00.000Z"
 progress:
   total_phases: 12
-  completed_phases: 8
-  total_plans: 20
-  completed_plans: 20
+  completed_phases: 9
+  total_plans: 23
+  completed_plans: 23
 ---
 
 # Project State
@@ -19,7 +19,7 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 09 — cilium-cni-migration
+**Current focus:** Phase 10 — NetworkPolicies per Namespace
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
@@ -90,14 +90,14 @@ Next action: `/gsd:plan-phase 5`
 | Phase | Name | Status |
 |-------|------|--------|
 | 1 | Fix FluxCD Bootstrap Race | ✓ Complete |
-| 2 | Resource Limits — audiobookshelf | ○ Pending |
-| 3 | Grafana Password to SOPS Secret | ○ Pending |
+| 2 | Resource Limits — audiobookshelf | ✓ Complete |
+| 3 | Grafana Password to SOPS Secret | ✓ Complete |
 | 4 | n8n Database Backup | ✓ Complete |
-| 5 | Fix linkding Backup Destination | ○ Pending |
-| 6 | Install Longhorn Storage | ○ Pending |
-| 7 | Migrate PVCs to Longhorn | ✓ Complete (Plans 01-07 complete, PR #39 open) |
-| 8 | Balance Workloads to Workers | ○ Pending |
-| 9 | Cilium CNI Migration | ○ Pending |
+| 5 | Fix linkding Backup Destination | ✓ Complete |
+| 6 | Install Longhorn Storage | ✓ Complete |
+| 7 | Migrate PVCs to Longhorn | ✓ Complete |
+| 8 | Balance Workloads to Workers | ✓ Complete |
+| 9 | Cilium CNI Migration | ✓ Complete |
 | 10 | NetworkPolicies per Namespace | ○ Pending |
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ○ Pending |

@@ -263,10 +263,9 @@ spec:
   description: "PostgreSQL cluster for ${APP_NAME} application"
   instances: 1
 
-  # Enable monitoring (uncomment when Prometheus is configured)
-  # monitoring:
-  #   enabled: true
-  #   podMonitorEnabled: true
+  monitoring:
+    enabled: true
+    podMonitorEnabled: true
 
   postgresql:
     parameters:
@@ -966,9 +965,10 @@ Each app gets its own `cloudflared` deployment for:
 
 ---
 
-**Version**: 1.2
-**Last Updated**: April 7, 2026
+**Version**: 1.3
+**Last Updated**: April 11, 2026
 **Changelog:**
+- v1.3: Enabled CNPG monitoring by default (`monitoring.enabled: true`, `podMonitorEnabled: true`) — Prometheus is active and scrapes CNPG clusters — Phase 09
 - v1.2: Added CloudNativePG PostgreSQL support (Step 2.5) — full cluster + R2 backup matching linkding/n8n pattern
 - v1.2: Added DB env vars template to deployment.yaml (commented, for CloudNativePG connection)
 - v1.2: Skill now auto-detects whether to offer CloudNativePG based on app's PostgreSQL support
