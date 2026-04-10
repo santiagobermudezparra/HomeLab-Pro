@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 08-02-PLAN.md (nodeAffinity for all 8 apps and Prometheus)
-last_updated: "2026-04-09T07:15:06.257Z"
+stopped_at: Completed 10-01-PLAN.md (NetworkPolicies for all 8 app namespaces)
+last_updated: "2026-04-10T23:02:43.285Z"
 progress:
   total_phases: 12
   completed_phases: 8
-  total_plans: 20
-  completed_plans: 20
+  total_plans: 22
+  completed_plans: 21
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 09 — cilium-cni-migration
+**Current focus:** Phase 10 — NetworkPolicies — Per-Namespace Isolation
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 08-02-PLAN.md (nodeAffinity for all 8 apps and Prometheus)
+Stopped at: Completed 10-01-PLAN.md (NetworkPolicies for all 8 app namespaces)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -78,6 +78,13 @@ Next action: `/gsd:plan-phase 5`
 - linkding runs as UID 1000 (sethcottle/linkding image default) — chown -R 1000:1000 applied after kubectl cp restore
 - storage.yaml has no namespace metadata — used explicit -n linkding flag on all kubectl apply/delete commands
 
+## Key Decisions (Phase 10, Plan 01)
+
+- Traefik allow rule uses combined namespaceSelector+podSelector (single from-entry, AND semantics) to restrict to Traefik pods in kube-system only — not all kube-system pods
+- CNPG allow-cnpg-controller targets `cnpg.io/podRole: instance` pods specifically, not all pods in the namespace
+- xm-spotify-sync allow-same-namespace covers cloudflared (same ns), allow-traefik-ingress covers Traefik — no separate cloudflared policy needed
+- flux-system NetworkPolicies left untouched — they exist imperatively in cluster (not in git); SEC-05 is preservation, not creation
+
 ## Key Decisions (Phase 07, Plan 07)
 
 - CNPG WAL archive check bypass: when new cluster has same name and same backup destinationPath as old cluster, `barman-cloud-check-wal-archive` fails ("Expected empty archive"); workaround: omit backup section during recovery cluster creation (no WAL check without backup section), re-add backup section via `kubectl apply` after cluster reaches healthy state
@@ -98,7 +105,7 @@ Next action: `/gsd:plan-phase 5`
 | 7 | Migrate PVCs to Longhorn | ✓ Complete (Plans 01-07 complete, PR #39 open) |
 | 8 | Balance Workloads to Workers | ○ Pending |
 | 9 | Cilium CNI Migration | ○ Pending |
-| 10 | NetworkPolicies per Namespace | ○ Pending |
+| 10 | NetworkPolicies per Namespace | ◑ In Progress (Plan 01 complete) |
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ○ Pending |
 

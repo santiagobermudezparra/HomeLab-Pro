@@ -40,9 +40,9 @@
 
 - [ ] **SEC-01**: Cilium is installed as the CNI, replacing Flannel
 - [ ] **SEC-02**: Hubble observability is enabled in Cilium
-- [ ] **SEC-03**: A default-deny NetworkPolicy is applied in each app namespace
-- [ ] **SEC-04**: Allow-rules are configured per namespace so each app can reach only its own database and required services
-- [ ] **SEC-05**: flux-system existing NetworkPolicies are preserved and verified after Cilium migration
+- [x] **SEC-03**: A default-deny NetworkPolicy is applied in each app namespace
+- [x] **SEC-04**: Allow-rules are configured per namespace so each app can reach only its own database and required services
+- [x] **SEC-05**: flux-system existing NetworkPolicies are preserved and verified after Cilium migration
 
 ### Observability (OBS)
 
@@ -104,9 +104,9 @@
 | SCHED-03 | Phase 9 | Complete |
 | SEC-01 | Phase 10 | Pending |
 | SEC-02 | Phase 10 | Pending |
-| SEC-03 | Phase 11 | Pending |
-| SEC-04 | Phase 11 | Pending |
-| SEC-05 | Phase 11 | Pending |
+| SEC-03 | Phase 11 | Complete |
+| SEC-04 | Phase 11 | Complete |
+| SEC-05 | Phase 11 | Complete |
 | BACK-03 | Phase 12 | Pending |
 | BACK-04 | Phase 12 | Pending |
 | BACK-05 | Phase 12 | Pending |

@@ -269,7 +269,7 @@ Plans:
 | 7 | Migrate PVCs to Longhorn | 7/7 | Complete   | 2026-04-06 |
 | 8 | Balance Workloads to Workers | 2/2 | Complete   | 2026-04-06 |
 | 9 | Cilium CNI Migration | Security | **High** | Large |
-| 10 | NetworkPolicies per Namespace | Security | Medium | Medium |
+| 10 | NetworkPolicies per Namespace | 1/2 | In Progress|  |
 | 11 | Velero Full Backup | Backup | Low | Medium |
 | 12 | Headlamp Dashboard | Observability | Low | Small |
 
