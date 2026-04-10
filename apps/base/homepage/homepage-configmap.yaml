@@ -8,56 +8,107 @@ data:
   kubernetes.yaml: |
     mode: cluster
   settings.yaml: |
-    # Add your settings here
-    providers:
-      # Add providers if needed
+    title: WataryStack HomeLab
+    theme: dark
+    color: slate
+    headerStyle: boxed
+    target: _blank
+    favicon: https://kubernetes.io/images/favicon.png
+    layout:
+      Media:
+        icon: mdi-play-circle-outline
+        style: row
+        columns: 2
+      Productivity:
+        icon: mdi-briefcase-outline
+        style: row
+        columns: 4
+      Monitoring:
+        icon: mdi-chart-line
+        style: row
+        columns: 2
+      Infrastructure:
+        icon: mdi-server-outline
+        style: row
+        columns: 2
   custom.css: ""
   custom.js: ""
   bookmarks.yaml: |
-    # Bookmarks will be configured through the UI
-    []
+    - Homelab:
+        - HomeLab-Pro Repo:
+            - abbr: GH
+              href: https://github.com/santiagobermudezparra/HomeLab-Pro
+        - GitHub Actions:
+            - abbr: CI
+              href: https://github.com/santiagobermudezparra/HomeLab-Pro/actions
+        - Cloudflare Dashboard:
+            - abbr: CF
+              href: https://dash.cloudflare.com
+    - References:
+        - FluxCD Docs:
+            - abbr: FX
+              href: https://fluxcd.io/docs/
+        - Kubernetes Docs:
+            - abbr: K8s
+              href: https://kubernetes.io/docs/home/
+        - Longhorn Docs:
+            - abbr: LH
+              href: https://longhorn.io/docs/
   services.yaml: |
-    - HomeLab Services:
+    - Media:
         - Audiobookshelf:
             href: https://audiobooks.watarystack.org
-            description: Audiobook and podcast server
+            description: Audiobook & podcast streaming server
             icon: audiobookshelf.png
+            ping: https://audiobooks.watarystack.org
+        - Spotify Sync:
+            href: https://xmspotify.watarystack.org
+            description: Cross-media Spotify scrobbling & sync
+            icon: spotify.png
+            ping: https://xmspotify.watarystack.org
+    - Productivity:
         - Linkding:
             href: https://linkding.watarystack.org
-            description: Bookmark manager
+            description: Self-hosted bookmark manager
             icon: linkding.png
+            ping: https://linkding.watarystack.org
         - Mealie:
             href: https://mealie.watarystack.org
-            description: Recipe manager
+            description: Recipe manager & meal planner
             icon: mealie.png
-        - PgAdmin:
-            href: https://pgadmin.watarystack.org
-            description: PostgreSQL administration
-            icon: pgadmin.png
-        - Grafana:
-            href: https://grafana.watarystack.org
-            description: Monitoring stack
-            icon: grafana.png    
+            ping: https://mealie.watarystack.org
         - n8n:
-            href:  https://n8n.watarystack.org
-            description: workflow automation platform
+            href: https://n8n.watarystack.org
+            description: Workflow automation & integrations
             icon: n8n.png
-        - xmspotify:
-            href:  https://xmspotify.watarystack.org
-            description: LifeWithJM
-            icon: spotify.png
+            ping: https://n8n.watarystack.org
         - Filebrowser:
             href: https://filebrowser.watarystack.org
-            description: File manager — upload and share files between devices
+            description: Web-based file manager & sharing
             icon: filebrowser.png
-        - Longhorn:
-            href: https://longhorn.watarystack.org
-            description: Distributed block storage
-            icon: longhorn.png
+            ping: https://filebrowser.watarystack.org
+    - Monitoring:
+        - Grafana:
+            href: https://grafana.watarystack.org
+            description: Metrics dashboards & alerting
+            icon: grafana.png
+            ping: https://grafana.watarystack.org
         - Hubble:
             href: https://hubble.watarystack.org
-            description: Cilium network observability
+            description: Cilium network observability UI
             icon: cilium.png
+            ping: https://hubble.watarystack.org
+    - Infrastructure:
+        - PgAdmin:
+            href: https://pgadmin.watarystack.org
+            description: PostgreSQL database administration
+            icon: pgadmin.png
+            ping: https://pgadmin.watarystack.org
+        - Longhorn:
+            href: https://longhorn.watarystack.org
+            description: Distributed block storage management
+            icon: longhorn.png
+            ping: https://longhorn.watarystack.org
   widgets.yaml: |
     - kubernetes:
         cluster:
@@ -65,7 +116,7 @@ data:
           cpu: true
           memory: true
           showLabel: true
-          label: "HomeLab Cluster"
+          label: "WataryStack Cluster"
         nodes:
           show: true
           cpu: true
