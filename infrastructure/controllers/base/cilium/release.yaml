@@ -27,6 +27,10 @@ spec:
           - "10.42.0.0/16"
     operator:
       replicas: 1
+    prometheus:
+      enabled: true
+      serviceMonitor:
+        enabled: false
     hubble:
       enabled: true
       relay:
