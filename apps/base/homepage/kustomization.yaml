@@ -8,3 +8,4 @@ resources:
   - configmap.yaml
   - homepage-configmap.yaml 
   - clusterrole.yaml
+  - network-policy.yaml

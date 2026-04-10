@@ -444,6 +444,128 @@ resources:
 
 ---
 
+## Step 2.6 — Add NetworkPolicy for Namespace Isolation
+
+Every new app namespace must include a `network-policy.yaml` in `apps/base/${APP_NAME}/`. This implements the cluster's default-deny security posture — established in Phase 10 — ensuring new apps don't create unintended cross-namespace communication paths.
+
+Create `apps/base/${APP_NAME}/network-policy.yaml` using the appropriate template based on the app's access type and database requirements.
+
+### Template A: Cloudflare Tunnel access, no database (most apps)
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: ${APP_NAME}
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-same-namespace
+  namespace: ${APP_NAME}
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - podSelector: {}
+  policyTypes:
+  - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-monitoring-scraping
+  namespace: ${APP_NAME}
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: monitoring
+  policyTypes:
+  - Ingress
+```
+
+### Template B: Add this policy if `USE_CNPG=yes` (database in same namespace)
+
+Add this policy to the file after the 3 policies above:
+
+```yaml
+---
+# Allow CNPG controller to manage the PostgreSQL cluster pods
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-cnpg-controller
+  namespace: ${APP_NAME}
+spec:
+  podSelector:
+    matchLabels:
+      cnpg.io/podRole: instance
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: cnpg-system
+  policyTypes:
+  - Ingress
+```
+
+### Template C: Add this policy if `ACCESS_TYPE=internal` (Traefik Ingress)
+
+Add this policy to the file after the 3 policies above:
+
+```yaml
+---
+# Allow Traefik (kube-system) to forward requests to the app
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-traefik-ingress
+  namespace: ${APP_NAME}
+spec:
+  podSelector: {}
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          kubernetes.io/metadata.name: kube-system
+      podSelector:
+        matchLabels:
+          app.kubernetes.io/name: traefik
+  policyTypes:
+  - Ingress
+```
+
+### Register in kustomization.yaml
+
+Add `network-policy.yaml` to the resources list in `apps/base/${APP_NAME}/kustomization.yaml`:
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - namespace.yaml
+  - deployment.yaml
+  - service.yaml
+  - network-policy.yaml  # ← add this
+```
+
+### Validate
+
+```bash
+kustomize build apps/base/${APP_NAME}/ | grep -c "NetworkPolicy"
+# Expected: 3 (cloudflared), 4 (cloudflared+CNPG or Traefik), 5 (Traefik+CNPG — rare)
+```
+
+---
+
 ## Step 3 — Create Staging Overlay
 
 Create environment-specific config in `apps/staging/${APP_NAME}/`. The contents depend on the access type chosen in Step 0.
@@ -861,6 +983,8 @@ git push origin feat/add-${APP_NAME}
 
 - [ ] User provided all required info (app name, port, image, hostname, **access type**)
 - [ ] Created `apps/base/${APP_NAME}/` with namespace, deployment, service, kustomization
+- [ ] Added `network-policy.yaml` to `apps/base/${APP_NAME}/` with appropriate policies (Template A + B if CNPG + C if Traefik)
+- [ ] `kustomization.yaml` includes `network-policy.yaml` in resources list
 - [ ] **Public:** Created `apps/staging/${APP_NAME}/` with cloudflare.yaml + encrypted secrets
 - [ ] **Internal:** Created `apps/staging/${APP_NAME}/` with ingress.yaml + encrypted secrets
 - [ ] **CloudNativePG (if `USE_CNPG=yes`):** Created `databases/staging/${APP_NAME}/` with cluster, backup, r2-configmap, encrypted secrets
