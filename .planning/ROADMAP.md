@@ -220,6 +220,13 @@ Plans:
   - flux-system existing policies preserved
 - Test isolation: verify mealie cannot reach linkding's postgres
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — NetworkPolicies for linkding and n8n (default-deny + CNPG/Prometheus/pgadmin allow rules)
+- [ ] 10-02-PLAN.md — NetworkPolicies for mealie, audiobookshelf, pgadmin, filebrowser (default-deny + cloudflared allow)
+- [ ] 10-03-PLAN.md — NetworkPolicies for homepage and xm-spotify-sync (Traefik pattern) + full isolation checkpoint
+
 **Done when:** `kubectl get networkpolicies --all-namespaces` shows policies in all app namespaces, and cross-namespace DB access is blocked (verified by test pod).
 
 ---
