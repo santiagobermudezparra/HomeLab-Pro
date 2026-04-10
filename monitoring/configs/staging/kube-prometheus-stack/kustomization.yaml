@@ -3,6 +3,9 @@ kind: Kustomization
 resources:
   - grafana-tls-secret.yaml
   - cloudnativepg-podmonitor.yaml
+  - cilium-servicemonitor.yaml
+  - fluxcd-podmonitor.yaml
+  - traefik-servicemonitor.yaml
   - prometheus-rbac.yaml
   - grafana-admin-secret.yaml
   - prometheus-ingress.yaml
