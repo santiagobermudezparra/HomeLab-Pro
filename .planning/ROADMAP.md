@@ -55,7 +55,7 @@ Plans:
 
 **Done when:** `grep -r "adminPassword" monitoring/` returns zero matches and Grafana login still works.
 
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 
 Plans:
 - [x] 03-01-PLAN.md — Create SOPS-encrypted grafana-admin-secret and update HelmRelease to use existingSecret
@@ -108,13 +108,13 @@ Plans:
 
 **Requirements:** STOR-01, STOR-02, STOR-03, STOR-06, OBS-02
 
-**Plans:** 2/4 plans executed
+**Plans:** 4/4 plans complete
 
 Plans:
-- [ ] 06-01-PLAN.md — iscsi-installer DaemonSet prereq: namespace, DaemonSet, staging overlay wired into controller hierarchy
+- [x] 06-01-PLAN.md — iscsi-installer DaemonSet prereq: namespace, DaemonSet, staging overlay wired into controller hierarchy
 - [x] 06-02-PLAN.md — Longhorn HelmRelease: HelmRepository + HelmRelease with replica=2, default StorageClass, ServiceMonitor
 - [x] 06-03-PLAN.md — Longhorn UI ingress: Traefik Ingress at longhorn.watarystack.org pointing to longhorn-frontend:80
-- [ ] 06-04-PLAN.md — local-path demotion: K3s config disable local-storage on all nodes, K3s restart, StorageClass verification
+- [x] 06-04-PLAN.md — local-path demotion: K3s config disable local-storage on all nodes, K3s restart, StorageClass verification
 
 **Scope:**
 - Add `infrastructure/controllers/base/longhorn/` — HelmRelease, namespace, repository
@@ -183,12 +183,12 @@ Plans:
 
 **Requirements:** SEC-01, SEC-02
 
-**Plans:** 3 plans
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 09-01-PLAN.md — Maintenance window: disable Flannel in K3s config, restart all nodes, delete flannel.1 interface
-- [ ] 09-02-PLAN.md — Bootstrap Cilium 1.16.19 via helm, install cilium CLI, restart all pods to use Cilium networking
-- [ ] 09-03-PLAN.md — GitOps adoption: commit HelmRelease + Hubble UI Traefik Ingress + homepage entry, open PR
+- [x] 09-01-PLAN.md — Maintenance window: disable Flannel in K3s config, restart all nodes, delete flannel.1 interface
+- [x] 09-02-PLAN.md — Bootstrap Cilium 1.16.19 via helm, install cilium CLI, restart all pods to use Cilium networking
+- [x] 09-03-PLAN.md — GitOps adoption: commit HelmRelease + Hubble UI Traefik Ingress + homepage entry, open PR
 
 **Scope:**
 - Plan migration: disable k3s flannel, install Cilium via Helm in kube-system
@@ -260,15 +260,15 @@ Plans:
 
 | Phase | Name | Category | Risk | Est. Effort |
 |-------|------|----------|------|-------------|
-| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Low | Small |
-| 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small |
-| 3 | Grafana Password to SOPS Secret | Security | Low | Small |
-| 4 | n8n Database Backup | Backup | Low | Small |
-| 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
-| 6 | Install Longhorn Storage | 2/4 | In Progress|  |
-| 7 | Migrate PVCs to Longhorn | 7/7 | Complete   | 2026-04-06 |
-| 8 | Balance Workloads to Workers | 2/2 | Complete   | 2026-04-06 |
-| 9 | Cilium CNI Migration | Security | **High** | Large |
+| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Complete    | 2026-04-10 |
+| 2 | Resource Limits — audiobookshelf | Critical Fix | Complete    | 2026-04-10 |
+| 3 | Grafana Password to SOPS Secret | Security | Complete    | 2026-04-10 |
+| 4 | n8n Database Backup | Backup | Complete    | 2026-04-10 |
+| 5 | Fix linkding Backup Destination | 1/1 | Complete    | 2026-04-10 |
+| 6 | Install Longhorn Storage | 2/4 | Complete    | 2026-04-10 |
+| 7 | Migrate PVCs to Longhorn | 7/7 | Complete    | 2026-04-10 |
+| 8 | Balance Workloads to Workers | 2/2 | Complete    | 2026-04-10 |
+| 9 | Cilium CNI Migration | Security | Complete    | 2026-04-10 |
 | 10 | NetworkPolicies per Namespace | Security | Medium | Medium |
 | 11 | Velero Full Backup | Backup | Low | Medium |
 | 12 | Headlamp Dashboard | Observability | Low | Small |
