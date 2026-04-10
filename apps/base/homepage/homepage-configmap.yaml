@@ -8,56 +8,206 @@ data:
   kubernetes.yaml: |
     mode: cluster
   settings.yaml: |
-    # Add your settings here
-    providers:
-      # Add providers if needed
-  custom.css: ""
+    title: WataryStack HomeLab
+    theme: dark
+    color: slate
+    headerStyle: boxed
+    target: _blank
+    favicon: https://kubernetes.io/images/favicon.png
+    layout:
+      Media:
+        icon: mdi-play-circle-outline
+        style: row
+        columns: 2
+      Productivity:
+        icon: mdi-briefcase-outline
+        style: row
+        columns: 4
+      Monitoring:
+        icon: mdi-chart-line
+        style: row
+        columns: 4
+      Infrastructure:
+        icon: mdi-server-outline
+        style: row
+        columns: 2
+  custom.css: |
+    /* ============================================================
+       WataryStack HomeLab — Custom Theme
+       Dark glassmorphism with indigo accent
+    ============================================================ */
+
+    /* Gradient mesh background */
+    body {
+      background: radial-gradient(ellipse at top left, #1a1040 0%, #0f172a 45%, #0a0f1e 100%) fixed !important;
+    }
+
+    /* ── Service cards — glass effect ── */
+    .service > div {
+      background: rgba(15, 23, 42, 0.65) !important;
+      backdrop-filter: blur(14px) !important;
+      -webkit-backdrop-filter: blur(14px) !important;
+      border: 1px solid rgba(148, 163, 184, 0.10) !important;
+      border-radius: 0.875rem !important;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    /* Card hover — indigo glow */
+    .service > div:hover {
+      border-color: rgba(99, 102, 241, 0.45) !important;
+      box-shadow:
+        0 0 0 1px rgba(99, 102, 241, 0.18),
+        0 8px 30px -6px rgba(99, 102, 241, 0.35) !important;
+      transform: translateY(-2px) !important;
+    }
+
+    /* Icon subtle scale on hover */
+    .service img {
+      transition: transform 0.25s ease !important;
+    }
+    .service:hover img {
+      transform: scale(1.08) !important;
+    }
+
+    /* ── Widgets — glass panels ── */
+    #widgets-wrap > div,
+    #information-widgets > div {
+      background: rgba(15, 23, 42, 0.65) !important;
+      backdrop-filter: blur(14px) !important;
+      border: 1px solid rgba(148, 163, 184, 0.10) !important;
+      border-radius: 0.875rem !important;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+    }
+
+    /* ── Search widget ── */
+    #search-widget input {
+      background: rgba(30, 41, 59, 0.75) !important;
+      border: 1px solid rgba(148, 163, 184, 0.18) !important;
+      border-radius: 0.625rem !important;
+      color: #e2e8f0 !important;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    #search-widget input:focus {
+      border-color: rgba(99, 102, 241, 0.55) !important;
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15) !important;
+      outline: none !important;
+    }
+
+    /* ── Ping dot — make it pop ── */
+    .status-dot {
+      box-shadow: 0 0 6px currentColor !important;
+    }
+
+    /* ── Bookmark cards ── */
+    #bookmarks-widget .bookmark > div {
+      background: rgba(15, 23, 42, 0.65) !important;
+      backdrop-filter: blur(14px) !important;
+      border: 1px solid rgba(148, 163, 184, 0.10) !important;
+      border-radius: 0.875rem !important;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+    }
+    #bookmarks-widget .bookmark > div:hover {
+      border-color: rgba(99, 102, 241, 0.4) !important;
+      box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.15) !important;
+    }
   custom.js: ""
   bookmarks.yaml: |
-    # Bookmarks will be configured through the UI
-    []
+    - Homelab:
+        - HomeLab-Pro Repo:
+            - abbr: GH
+              href: https://github.com/santiagobermudezparra/HomeLab-Pro
+        - GitHub Actions:
+            - abbr: CI
+              href: https://github.com/santiagobermudezparra/HomeLab-Pro/actions
+        - Cloudflare Dashboard:
+            - abbr: CF
+              href: https://dash.cloudflare.com
+    - Monitoring:
+        - CNPG Dashboard:
+            - abbr: PG
+              href: https://grafana.watarystack.org/dashboards
+        - Prometheus Alerts:
+            - abbr: PA
+              href: https://alertmanager.watarystack.org
+        - Node Exporter:
+            - abbr: NE
+              href: https://prometheus.watarystack.org/targets
+    - References:
+        - FluxCD Docs:
+            - abbr: FX
+              href: https://fluxcd.io/docs/
+        - Kubernetes Docs:
+            - abbr: K8s
+              href: https://kubernetes.io/docs/home/
+        - Longhorn Docs:
+            - abbr: LH
+              href: https://longhorn.io/docs/
   services.yaml: |
-    - HomeLab Services:
+    - Media:
         - Audiobookshelf:
             href: https://audiobooks.watarystack.org
-            description: Audiobook and podcast server
+            description: Audiobook & podcast streaming server
             icon: audiobookshelf.png
+            ping: https://audiobooks.watarystack.org
+        - Spotify Sync:
+            href: https://xmspotify.watarystack.org
+            description: Cross-media Spotify scrobbling & sync
+            icon: spotify.png
+            ping: https://xmspotify.watarystack.org
+    - Productivity:
         - Linkding:
             href: https://linkding.watarystack.org
-            description: Bookmark manager
+            description: Self-hosted bookmark manager
             icon: linkding.png
+            ping: https://linkding.watarystack.org
         - Mealie:
             href: https://mealie.watarystack.org
-            description: Recipe manager
+            description: Recipe manager & meal planner
             icon: mealie.png
-        - PgAdmin:
-            href: https://pgadmin.watarystack.org
-            description: PostgreSQL administration
-            icon: pgadmin.png
-        - Grafana:
-            href: https://grafana.watarystack.org
-            description: Monitoring stack
-            icon: grafana.png    
+            ping: https://mealie.watarystack.org
         - n8n:
-            href:  https://n8n.watarystack.org
-            description: workflow automation platform
+            href: https://n8n.watarystack.org
+            description: Workflow automation & integrations
             icon: n8n.png
-        - xmspotify:
-            href:  https://xmspotify.watarystack.org
-            description: LifeWithJM
-            icon: spotify.png
+            ping: https://n8n.watarystack.org
         - Filebrowser:
             href: https://filebrowser.watarystack.org
-            description: File manager — upload and share files between devices
+            description: Web-based file manager & sharing
             icon: filebrowser.png
-        - Longhorn:
-            href: https://longhorn.watarystack.org
-            description: Distributed block storage
-            icon: longhorn.png
+            ping: https://filebrowser.watarystack.org
+    - Monitoring:
+        - Grafana:
+            href: https://grafana.watarystack.org
+            description: Metrics dashboards & alerting
+            icon: grafana.png
+            ping: https://grafana.watarystack.org
+        - Prometheus:
+            href: https://prometheus.watarystack.org
+            description: Metrics collection & query engine
+            icon: prometheus.png
+            ping: https://prometheus.watarystack.org
+        - AlertManager:
+            href: https://alertmanager.watarystack.org
+            description: Alert routing & notification manager
+            icon: alertmanager.png
+            ping: https://alertmanager.watarystack.org
         - Hubble:
             href: https://hubble.watarystack.org
-            description: Cilium network observability
+            description: Cilium network observability UI
             icon: cilium.png
+            ping: https://hubble.watarystack.org
+    - Infrastructure:
+        - PgAdmin:
+            href: https://pgadmin.watarystack.org
+            description: PostgreSQL database administration
+            icon: pgadmin.png
+            ping: https://pgadmin.watarystack.org
+        - Longhorn:
+            href: https://longhorn.watarystack.org
+            description: Distributed block storage management
+            icon: longhorn.png
+            ping: https://longhorn.watarystack.org
   widgets.yaml: |
     - kubernetes:
         cluster:
@@ -65,7 +215,7 @@ data:
           cpu: true
           memory: true
           showLabel: true
-          label: "HomeLab Cluster"
+          label: "WataryStack Cluster"
         nodes:
           show: true
           cpu: true
