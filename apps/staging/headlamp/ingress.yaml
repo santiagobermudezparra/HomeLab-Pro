@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: headlamp
+  namespace: headlamp
+  labels:
+    app.kubernetes.io/name: headlamp
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: Headlamp
+    gethomepage.dev/description: Kubernetes cluster dashboard
+    gethomepage.dev/group: Infrastructure
+    gethomepage.dev/icon: kubernetes.png
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - headlamp.internal.watarystack.org
+      secretName: headlamp-tls
+  rules:
+    - host: headlamp.internal.watarystack.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: headlamp
+                port:
+                  number: 4466
