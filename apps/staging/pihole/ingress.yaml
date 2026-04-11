@@ -17,7 +17,7 @@ spec:
     - host: pihole.watarystack.org
       http:
         paths:
-          - path: "/"
+          - path: "/admin"
             pathType: Prefix
             backend:
               service:
