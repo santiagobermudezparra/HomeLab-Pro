@@ -32,6 +32,20 @@ spec:
         runAsGroup: 101
         fsGroup: 101
         runAsNonRoot: true
+      initContainers:
+        - name: copy-frontend
+          image: ghcr.io/headlamp-k8s/headlamp:v0.26.0
+          command: ["cp", "-r", "/headlamp/frontend/.", "/frontend-rw/"]
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop:
+                - ALL
+          volumeMounts:
+            - name: frontend-rw
+              mountPath: /frontend-rw
       containers:
         - name: headlamp
           image: ghcr.io/headlamp-k8s/headlamp:v0.26.0
@@ -59,6 +73,11 @@ spec:
             capabilities:
               drop:
                 - ALL
+          volumeMounts:
+            - name: config-dir
+              mountPath: /home/headlamp/.config
+            - name: frontend-rw
+              mountPath: /headlamp/frontend
           livenessProbe:
             httpGet:
               path: /
@@ -71,3 +90,8 @@ spec:
               port: 4466
             initialDelaySeconds: 10
             periodSeconds: 10
+      volumes:
+        - name: config-dir
+          emptyDir: {}
+        - name: frontend-rw
+          emptyDir: {}
