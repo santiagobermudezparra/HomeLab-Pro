@@ -177,6 +177,11 @@ data:
             icon: filebrowser.png
             ping: https://filebrowser.watarystack.org
     - Monitoring:
+        - Gatus:
+            href: https://status.watarystack.org
+            description: Service health & uptime status page
+            icon: gatus.png
+            ping: https://status.watarystack.org
         - Grafana:
             href: https://grafana.watarystack.org
             description: Metrics dashboards & alerting
