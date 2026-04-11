@@ -5,3 +5,12 @@ resources:
   - ../../base/pihole/
   - ingress.yaml
   - pihole-env-secret.yaml
+patches:
+  - patch: |
+      - op: replace
+        path: /spec/strategy
+        value:
+          type: Recreate
+    target:
+      kind: Deployment
+      name: pihole
