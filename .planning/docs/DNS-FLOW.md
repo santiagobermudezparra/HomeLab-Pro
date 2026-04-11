@@ -130,6 +130,49 @@ dig ads.google.com
 - Check logs: `kubectl logs deployment/pihole -n pihole --tail=50`
 - Verify PVC is mounted: `kubectl get pvc -n pihole`
 
+## Cluster Rebuild & Moving Networks
+
+**Important:** PiHole's ClusterIP is **auto-assigned by Kubernetes** and may change if the cluster is completely destroyed and rebuilt. This is intentional to avoid IP conflicts when moving to different networks.
+
+### When Rebuilding Your Cluster
+
+After deploying the cluster in a new location, follow this procedure:
+
+**Step 1: Find the new PiHole ClusterIP**
+```bash
+kubectl get svc -n pihole pihole -o wide
+# Look for the CLUSTER-IP column, e.g., 10.43.200.100
+NEW_PIHOLE_IP=$(kubectl get svc -n pihole pihole -o jsonpath='{.spec.clusterIP}')
+echo "New PiHole IP: $NEW_PIHOLE_IP"
+```
+
+**Step 2: Update your router's DHCP settings**
+1. Log into your router/gateway
+2. Find DHCP or LAN settings
+3. Update **Primary DNS Server** to the new IP from Step 1
+4. Save and apply changes
+
+**Step 3: Renew DHCP on client devices**
+- **Windows:** Open PowerShell and run: `ipconfig /release && ipconfig /renew`
+- **macOS:** System Preferences > Network > (disconnect/reconnect Wi-Fi)
+- **Linux:** `sudo dhclient -r && sudo dhclient`
+- **Mobile:** Forget Wi-Fi and reconnect
+
+**Step 4: Verify DNS working**
+```bash
+# From any client on your network:
+nslookup example.com
+nslookup ads.google.com  # Should return blocked (0.0.0.0 or ::)
+```
+
+### Why Auto-Assigned?
+
+- **No IP conflicts:** Avoids hardcoding an IP that might be reserved on a different network
+- **Portable:** Cluster works the same whether deployed at home, in a datacenter, or moved to a new house
+- **Simple update process:** One-time configuration check after cluster deployment
+
+---
+
 ## Next Steps
 
 1. Verify all client devices are using PiHole DNS
@@ -138,3 +181,4 @@ dig ads.google.com
 4. Plan PiHole backup as part of Phase 11 (Velero) once complete
 5. Consider setting up PiHole Grafana dashboard (Phase 14-03)
 6. Plan DNS redundancy (secondary PiHole replica) in future phase if critical
+7. **On cluster rebuild or network move:** See "Cluster Rebuild & Moving Networks" section above
