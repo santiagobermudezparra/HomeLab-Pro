@@ -37,7 +37,10 @@ spec:
 
           env:
             - name: WEBPASSWORD
-              value: "changeme"
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-env-secret
+                  key: WEBPASSWORD
             - name: DNSMASQ_LISTENING
               value: "all"
             - name: INTERFACE
@@ -76,6 +79,32 @@ spec:
               mountPath: /etc/pihole
             - name: dnsmasq-data
               mountPath: /etc/dnsmasq.d
+
+        - name: pihole-exporter
+          image: ekofr/pihole-exporter:latest
+          ports:
+            - name: metrics
+              containerPort: 9617
+              protocol: TCP
+          env:
+            - name: PIHOLE_HOSTNAME
+              value: "localhost"
+            - name: PIHOLE_PORT
+              value: "80"
+            - name: PIHOLE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-env-secret
+                  key: WEBPASSWORD
+            - name: INTERVAL
+              value: "30s"
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "200m"
+              memory: "256Mi"
 
       volumes:
         - name: pihole-data
