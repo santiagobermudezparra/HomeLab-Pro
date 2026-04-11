@@ -8,6 +8,7 @@ resources:
   - fluxcd-podmonitor.yaml
   - traefik-servicemonitor.yaml
   - traefik-metrics-service.yaml
+  - pihole-servicemonitor.yaml
   - prometheus-rbac.yaml
   - grafana-admin-secret.yaml
   - prometheus-ingress.yaml

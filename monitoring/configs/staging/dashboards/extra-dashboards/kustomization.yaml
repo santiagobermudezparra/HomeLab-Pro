@@ -38,3 +38,10 @@ configMapGenerator:
     options:
       labels:
         grafana_dashboard: "1"
+
+  - name: pihole-grafana-dashboard
+    files:
+      - pihole.json=pihole-dashboard.json
+    options:
+      labels:
+        grafana_dashboard: "1"
