@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 13-01-PLAN.md (Loki HelmRelease single-binary filesystem backend)
-last_updated: "2026-04-11T07:24:12.620Z"
+stopped_at: Completed 13-02-PLAN.md (Fluent Bit DaemonSet + Loki Grafana datasource)
+last_updated: "2026-04-11T07:31:48.930Z"
 progress:
   total_phases: 13
-  completed_phases: 9
+  completed_phases: 10
   total_plans: 31
-  completed_plans: 25
+  completed_plans: 27
 ---
 
 # Project State
@@ -26,7 +26,7 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 13-01-PLAN.md (Loki HelmRelease single-binary filesystem backend)
+Stopped at: Completed 13-02-PLAN.md (Fluent Bit DaemonSet + Loki Grafana datasource)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -106,6 +106,13 @@ Next action: `/gsd:plan-phase 5`
 - Loki 6.29.0 SingleBinary mode with `auth_enabled: false` and gateway disabled for homelab simplicity
 - `longhorn` StorageClass with 10Gi PVC; nodeAffinity prefers non-control-plane nodes
 
+## Key Decisions (Phase 13, Plan 02)
+
+- `namespace.yaml` excluded from fluent-bit base kustomization (same as loki pattern) — including it causes duplicate `Namespace/monitoring` conflict; monitoring namespace owned by kube-prometheus-stack
+- Separate `fluent` HelmRepository created for `fluent.github.io/helm-charts` — distinct from `grafana` HelmRepository; two HelmRepositories coexist in monitoring namespace
+- `grafana_datasource: "1"` label on ConfigMap triggers Grafana sidecar auto-provisioning — no manual Grafana UI or kube-prometheus-stack HelmRelease changes needed
+- Fluent Bit `Match kube.*` in outputs forwards only Kubernetes pod logs (not Fluent Bit internal metrics)
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -122,7 +129,7 @@ Next action: `/gsd:plan-phase 5`
 | 10 | NetworkPolicies per Namespace | ◑ In Progress (Plan 01 complete) |
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ✓ Complete (Plan 01 complete, pending PR merge) |
-| 13 | Observability Stack (Loki, Fluent Bit, Gatus) | ◑ In Progress (Plan 01 complete) |
+| 13 | Observability Stack (Loki, Fluent Bit, Gatus) | ◑ In Progress (Plans 01-02 complete) |
 
 ## Cluster Snapshot (2026-04-04)
 
