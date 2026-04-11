@@ -14,19 +14,54 @@ A production-ready Kubernetes HomeLab built with GitOps principles, featuring au
 - RUN : chmod +x .devcontainer/
 - RUN : devpod up .
 - RUN : bash .devcontainer/setup.sh
+
 ## 📋 Table of Contents
 
+- [About Homelabs](#-about-homelabs)
 - [Applications](#-applications)
 - [Infrastructure](#️-infrastructure)
 - [Architecture](#-architecture-details)
 - [Deployment](#-deployment)
 - [Security](#-security)
 - [Monitoring](#-monitoring)
-- [Access Methods](#-access-methods)
+- [Operational Philosophy](#-operational-philosophy)
 - [Maintenance](#-maintenance)
 
+---
 
+## 🏠 About Homelabs
 
+A homelab is a personal infrastructure project that combines learning, privacy, and control. Unlike cloud services, homelabs let you:
+
+- **Learn infrastructure patterns**: Kubernetes, GitOps, DNS, networking, storage, observability, and automation in a real environment
+- **Own your data**: Personal photos, documents, and services stay on hardware you control — no cloud vendor lock-in
+- **Experiment freely**: Test new tools, architectures, and configurations without affecting production workloads
+- **Understand the full stack**: From hardware selection to container orchestration to monitoring
+
+### Homelab Architecture Patterns
+
+Homelabs vary widely by scope and goals:
+
+| Pattern | Approach | Complexity | Best For |
+|---------|----------|-----------|----------|
+| **Monolithic** | Single powerful machine (NAS, MacBook) + Docker | Low | Small app collections, learning Docker |
+| **Kubernetes Cluster** | Multi-node K3s or Talos, FluxCD GitOps | High | Scaling, HA, microservices patterns, production simulation |
+| **Hybrid** | Mix of VMs (Proxmox), containers, bare metal | Medium | Diverse workload types, flexible resource allocation |
+
+This project uses **Kubernetes + GitOps** — all cluster state lives in Git, and declarative configs drive deployments. Ideal for:
+- Learning enterprise-grade patterns in a personal environment
+- Version control and auditability of all changes
+- Reproducible, disaster-recoverable infrastructure
+
+### Network Segmentation & Security
+
+Production homelabs separate concerns:
+- **External access**: Zero-trust Cloudflare Tunnels (no open ports)
+- **Internal access**: TLS via cert-manager and Let's Encrypt
+- **DNS**: Network-wide filtering (PiHole) for ad-blocking and privacy
+- **Storage tiers**: Fast (distributed like Longhorn) for live data, cold archival for backups
+
+---
 
 ### Infrastructure Services
 
@@ -36,92 +71,152 @@ A production-ready Kubernetes HomeLab built with GitOps principles, featuring au
 | **Prometheus** | Metrics collection | Internal only | ✅ Active |
 | **AlertManager** | Alert management | Internal only | ✅ Active |
 | **FluxCD** | GitOps controller | Internal only | ✅ Active |
+| **Loki** | Log aggregation | Internal (via Grafana) | ✅ Active |
+| **Gatus** | Status page | `status.watarystack.org` | ✅ Active |
 
 ## 🛠️ Infrastructure
 
 ### Core Components
 
-- **Kubernetes Cluster**: Container orchestration platform
-- **FluxCD**: GitOps continuous deployment
-- **Kustomize**: Kubernetes native configuration management
-- **SOPS**: Secret encryption and management
-- **cert-manager**: Automated certificate management
-- **Traefik**: Ingress controller and load balancer
-- **Cloudflare Tunnels**: Secure external access
+- **Kubernetes Cluster**: K3s container orchestration on 3 nodes (1 control-plane + 2 workers)
+- **FluxCD**: GitOps continuous deployment with declarative cluster state in Git
+- **Kustomize**: Kubernetes native configuration management (no Helm, pure YAML)
+- **SOPS**: Secret encryption and management with age key
+- **cert-manager**: Automated TLS certificate generation and renewal
+- **Traefik**: Ingress controller and load balancer for internal services
+- **Cloudflare Tunnels**: Secure external access without port forwarding
+- **Longhorn**: Distributed block storage with replica factor 2 (replaces local-path)
 
 ### Monitoring Stack
 
-- **Prometheus**: Metrics collection and storage
-- **Grafana**: Visualization and dashboards
-- **AlertManager**: Alert routing and management
-- **kube-prometheus-stack**: Complete monitoring solution
+- **Prometheus**: Metrics collection from all nodes, pods, and services
+- **Grafana**: Visualization, dashboards, and alerting
+- **AlertManager**: Alert routing, deduplication, and notification
+- **Fluent Bit**: DaemonSet log collector on every node
+- **Loki**: Log aggregation backend, queryable from Grafana
+- **kube-prometheus-stack**: Complete monitoring operator (Prometheus, Grafana, AlertManager, node-exporter)
+
+---
 
 ## 🏛️ Architecture Details
 
 ### GitOps Workflow
 
 ```
-📝 Git Commit → 🔄 FluxCD Sync → 🚀 Kubernetes Apply → 📊 Monitor
+📝 Git Commit → 🔄 FluxCD Sync (1min interval) → 🚀 Kubernetes Apply → 📊 Monitor
 ```
 
-1. **Configuration Changes**: All changes made via Git commits
-2. **Automatic Sync**: FluxCD monitors repository every minute
-3. **Kubernetes Deployment**: Resources automatically applied to cluster
-4. **Monitoring**: Prometheus tracks all deployments and health
+1. **Configuration Changes**: All changes made via Git commits (never direct `kubectl apply`)
+2. **Automatic Sync**: FluxCD monitors repository and syncs every minute
+3. **Kubernetes Deployment**: Kustomize builds final manifests, kubectl applies them
+4. **Monitoring**: Prometheus tracks all metrics; Loki captures all logs; Grafana visualizes both
+
+**Key principle**: If it's not in Git, it doesn't exist. This ensures reproducibility and enables disaster recovery.
 
 ### Directory Structure
 
 ```
 HomeLab-Pro/
 ├── apps/                     # Application deployments
-│   ├── base/                 # Base configurations
+│   ├── base/                 # Base configurations (reusable across environments)
 │   │   ├── audiobookshelf/
-│   │   ├── homarr/
 │   │   ├── linkding/
-│   │   └── mealie/
+│   │   ├── mealie/
+│   │   ├── n8n/
+│   │   └── ...
 │   └── staging/              # Environment-specific overlays
-│       ├── audiobookshelf/
-│       ├── homarr/
+│       ├── audiobookshelf/   # Staging patches, secrets, tunnel config
 │       ├── linkding/
-│       └── mealie/
+│       └── ...
 ├── clusters/                 # Cluster configurations
 │   └── staging/
-│       ├── apps.yaml
+│       ├── apps.yaml         # Reference to apps/ directory
 │       ├── infrastructure.yaml
 │       └── monitoring.yaml
 ├── infrastructure/           # Infrastructure components
-│   ├── controllers/
+│   ├── controllers/          # Operators (FluxCD, cert-manager, Longhorn, Traefik)
 │   │   ├── base/
 │   │   └── staging/
-│   └── configs/
-└── monitoring/               # Monitoring stack
-    ├── controllers/
-    └── configs/
+│   └── configs/              # ConfigMaps and static configs
+├── monitoring/               # Monitoring stack
+│   ├── controllers/          # kube-prometheus-stack, Loki
+│   └── configs/              # PrometheusRules, dashboards, datasources
+└── databases/                # Database clusters (CloudNativePG)
+    └── staging/              # Backup configs, cluster manifests
 ```
 
 ### Network Architecture
 
 #### External Access (Cloudflare Tunnels)
-- **Security**: Zero-trust network access
-- **Performance**: Global CDN and DDoS protection
-- **Reliability**: No port forwarding required
-- **Applications**: All user-facing applications
+- **Security**: Zero-trust network — no open ports, no port forwarding
+- **Performance**: Global CDN, DDoS protection, caching
+- **Reliability**: Redundant tunnel replicas per app
+- **Applications**: All user-facing apps (audiobookshelf, mealie, n8n, etc.)
 
 #### Internal Access (Traefik + cert-manager)
-- **Security**: TLS certificates from Let's Encrypt
-- **Performance**: Direct cluster access
-- **Flexibility**: Multiple certificate sources
-- **Services**: Infrastructure and monitoring components
+- **Security**: TLS certificates from Let's Encrypt (DNS-01 challenge via Cloudflare)
+- **Performance**: Direct cluster access, no external hops
+- **Flexibility**: Multiple certificate sources (staging and production issuers)
+- **Services**: Infrastructure components (Grafana, Prometheus, Longhorn UI, Headlamp)
+
+#### Network-Wide DNS (PiHole)
+- **Scope**: All devices on the network (phones, laptops, IoT devices)
+- **Function**: Blocks ads and trackers at the DNS level before they load
+- **Integration**: Deployed as K3s pod, promoted to network's primary DNS server
+- **Benefit**: Privacy and reduced bandwidth for all network clients
+
+---
+
+## Homelab Operations Patterns
+
+### Configuration Management (Base/Overlay)
+
+Keep configurations DRY by separating shared from environment-specific:
+
+- **Base** (`apps/base/app-name/`): Generic configs that work in any environment
+  - Pod specs, resource requests/limits, security contexts
+  - Service definitions, network policies
+  - Kept simple, no secrets or environment-specific values
+
+- **Staging Overlay** (`apps/staging/app-name/`): Environment-specific patches
+  - SOPS-encrypted secrets (admin passwords, API keys, tunnel credentials)
+  - Replicas, resource sizes, node affinity
+  - Ingress/tunnel routing configuration
+
+### Monitoring & Observability
+
+Multi-layered approach ensures visibility without complexity:
+
+- **Metrics**: Prometheus scrapes all components every 15s
+- **Logs**: Fluent Bit collects from all nodes/pods → Loki
+- **Status**: Gatus continuously probes all services and displays public status page
+- **Dashboards**: Grafana shows metrics + logs side-by-side, with alerting rules
+
+### Storage Resilience
+
+- **Fast tier**: Longhorn distributed storage with replication factor 2 (survives 1 node failure)
+- **Database tier**: CloudNativePG managed PostgreSQL with automated backups to Cloudflare R2
+- **Full backup tier**: Velero scheduled backups of all namespaces + PVCs (future phase)
+
+### Automation & Dependency Management
+
+- **Renovate bot**: Automatically detects new container image versions and creates PRs
+- **FluxCD**: Reconciles cluster state every 1 minute
+- **cert-manager**: Renews certificates 30 days before expiration
+- **Dependency ordering**: Explicit `dependsOn` chains ensure databases start before apps
+
+---
 
 ## 🚀 Deployment
 
 ### Prerequisites
 
-1. **Kubernetes Cluster**: Running Kubernetes cluster
-2. **FluxCD**: Installed and configured
-3. **SOPS**: Age key for secret decryption
-4. **Cloudflare**: Account with tunnels configured
-5. **Domain**: Registered domain (watarystack.org)
+1. **Kubernetes Cluster**: K3s v1.30.0+ running on 2+ nodes
+2. **FluxCD**: Installed in flux-system namespace
+3. **SOPS + age**: Secret encryption tools and age key
+4. **Cloudflare Account**: For Tunnels and DNS
+5. **Domain**: Registered domain (e.g., watarystack.org)
+6. **Git Repository**: Fork of this repo with GitHub write access
 
 ### Initial Setup
 
@@ -134,7 +229,7 @@ HomeLab-Pro/
 2. **Install FluxCD**
    ```bash
    flux bootstrap github \
-     --owner=santiagobermudezparra \
+     --owner=<your-github-username> \
      --repository=HomeLab-Pro \
      --branch=main \
      --path=./clusters/staging
@@ -161,69 +256,80 @@ HomeLab-Pro/
 ### Environment Configuration
 
 #### Staging Environment
-- **Purpose**: Testing and development
+- **Purpose**: Testing and development of all features
 - **Features**: All applications and monitoring
-- **Security**: Staging certificates and secrets
+- **Security**: Staging TLS certificates and SOPS-encrypted secrets
+- **Status**: Active
 
 #### Production Environment (Future)
-- **Purpose**: Production workloads
-- **Features**: High availability and backup
-- **Security**: Production certificates and hardened security
+- **Purpose**: Production workloads with stricter SLAs
+- **Features**: High availability, automated backups, multi-region support
+- **Security**: Production certificates, hardened network policies
+- **Status**: Planned
+
+---
 
 ## 🔐 Security
 
 ### Secret Management
 
-- **SOPS Encryption**: All secrets encrypted at rest
-- **Age Encryption**: Modern cryptographic standard
-- **Git Security**: Encrypted secrets in Git repository
-- **Kubernetes Secrets**: Decrypted only in cluster
+- **SOPS Encryption**: All secrets encrypted at rest in Git with age key
+- **Age Encryption**: Modern cryptographic standard (not deprecated like PGP)
+- **Git Security**: Only encrypted secrets committed; `*.agekey` in `.gitignore`
+- **Kubernetes Secrets**: Decrypted in-cluster by FluxCD, never in plaintext in Git
+
+**Principle**: Never commit unencrypted secrets. Audit all secrets before pushing.
 
 ### Certificate Management
 
-- **Automated Renewal**: cert-manager handles all certificates
-- **Multiple Issuers**: Let's Encrypt staging and production
-- **DNS Validation**: Cloudflare DNS-01 challenge
-- **TLS Everywhere**: All services use HTTPS
+- **Automated Renewal**: cert-manager handles all certificate lifecycle
+- **Multiple Issuers**: Let's Encrypt staging (for testing) and production (for real TLS)
+- **DNS Validation**: Cloudflare DNS-01 challenge for wildcard certificates
+- **TLS Everywhere**: All internal services use HTTPS; external apps use Cloudflare Tunnel TLS
 
 ### Network Security
 
-- **Zero Trust**: Cloudflare tunnels require authentication
-- **Internal TLS**: All inter-service communication encrypted
+- **Zero Trust**: Cloudflare Tunnels require authentication; no public ingress
+- **Internal TLS**: Traefik enforces TLS for all internal service-to-service communication
 - **No Port Forwarding**: External access via secure tunnels only
-- **Regular Updates**: Renovate bot manages dependency updates
+- **NetworkPolicies**: Per-namespace isolation — each app can only reach its own database
+- **Regular Updates**: Renovate bot automatically creates PRs for security patches
+
+---
 
 ## 📊 Monitoring
 
 ### Metrics Collection
 
-- **Application Metrics**: Custom application metrics
-- **Infrastructure Metrics**: Kubernetes cluster metrics
-- **Security Metrics**: Certificate and security events
-- **Performance Metrics**: Resource usage and performance
+- **Application Metrics**: Custom metrics from app instrumentation
+- **Infrastructure Metrics**: Kubernetes cluster health, node CPU/memory/disk
+- **Storage Metrics**: Longhorn volume usage, replication status
+- **Certificate Metrics**: Cert expiration tracking, renewal success/failure
+- **Network Metrics**: Bandwidth usage, latency, error rates
 
 ### Dashboards
 
-- **Grafana**: Central monitoring dashboard
-- **Cluster Overview**: Kubernetes cluster health
-- **Application Status**: Application-specific metrics
-- **Security Dashboard**: Certificate and security status
+- **Grafana**: Central monitoring UI with Prometheus + Loki datasources
+- **Cluster Overview**: Kubernetes API server health, node resource usage
+- **Application Status**: Per-app memory, CPU, restart count, error rate
+- **Storage Health**: Longhorn replica status, available space, I/O latency
+- **Certificate Status**: Expiration dates, renewal history
+- **Logs**: Fluent Bit → Loki → Grafana Explore (query logs from all pods)
 
 ### Alerting
 
-- **PrometheusRules**: Automated alert generation
-- **AlertManager**: Alert routing and deduplication
-- **Notification Channels**: Multiple alert channels
-- **Escalation Policies**: Tiered alert escalation
+- **PrometheusRules**: Automated alert generation based on thresholds
+- **AlertManager**: Deduplicates and groups related alerts
+- **Notification Channels**: Slack, email, PagerDuty (configurable)
+- **Escalation Policies**: Critical alerts routed immediately; warnings batched hourly
 
-### Administrative Access
+### Status Page
 
-```bash
-# Kubernetes dashboard
-kubectl proxy
+- **Gatus**: Continuously probes all services (HTTP/TCP/DNS/Ping)
+- **Public Dashboard**: Status updates posted to `status.watarystack.org`
+- **Per-Service Details**: Uptime %, response time, error rate
 
-# FluxCD UI
-flux get all
+---
 
 ## 🔧 Maintenance
 
@@ -233,61 +339,77 @@ flux get all
    ```bash
    flux get kustomizations
    kubectl get pods --all-namespaces
+   kubectl top nodes
    ```
 
 2. **Update Dependencies**
-   - Renovate bot automatically creates PRs
-   - Review and merge dependency updates
-   - Monitor deployment status
+   - Renovate bot automatically creates PRs for new image versions
+   - Review changes and test in staging
+   - Merge PRs to trigger FluxCD deployment
 
 3. **Certificate Renewal**
-   - cert-manager handles automatic renewal
-   - Monitor certificate status in Grafana
-   - Verify certificate expiration alerts
+   - cert-manager automatically renews 30 days before expiration
+   - Monitor renewal success in Grafana or via `kubectl describe certificate`
+   - Alerts fire if renewal fails
 
-4. **Backup Management**
-   ```bash
-   # Application data backup
-   kubectl get pvc --all-namespaces
-   
-   # Configuration backup (Git repository)
-   git pull origin main
-   ```
+4. **Backup Verification**
+   - Check database backups are completing: `kubectl get backup --all-namespaces`
+   - Periodically test restore from backup (non-critical namespace first)
+   - Monitor backup logs for errors
 
 ### Troubleshooting
 
-#### Common Issues
+#### FluxCD Sync Issues
+```bash
+flux get sources git
+flux logs --all-namespaces
+flux reconcile source git flux-system  # Force immediate sync
+```
 
-1. **FluxCD Sync Issues**
-   ```bash
-   flux get sources git
-   flux logs --all-namespaces
-   ```
+#### Certificate Issues
+```bash
+kubectl get certificates --all-namespaces
+kubectl describe certificate <cert-name>
+kubectl logs -n cert-manager deployment/cert-manager
+```
 
-2. **Certificate Issues**
-   ```bash
-   kubectl get certificates --all-namespaces
-   kubectl describe certificate <cert-name>
-   ```
+#### Application Startup Issues
+```bash
+kubectl logs -f deployment/<app-name> -n <namespace>
+kubectl describe pod <pod-name> -n <namespace>
+kubectl events -n <namespace>  # Show recent events
+```
 
-3. **Application Startup Issues**
-   ```bash
-   kubectl logs -f deployment/<app-name> -n <namespace>
-   kubectl describe pod <pod-name> -n <namespace>
-   ```
+#### Secret Decryption Issues
+```bash
+kubectl get secret sops-age -n flux-system
+flux logs --namespace flux-system | grep -i decrypt
+sops -d apps/staging/<app>/*-secret.yaml  # Test decrypt locally
+```
 
-4. **Secret Decryption Issues**
-   ```bash
-   kubectl get secret sops-age -n flux-system
-   flux logs --namespace flux-system
-   ```
+#### Longhorn Storage Issues
+```bash
+kubectl get volumesnapshotcontents  # All snapshots
+kubectl describe pvc <pvc-name> -n <namespace>  # PVC details
+kubectl logs -n longhorn-system -l app=longhorn-manager  # Manager logs
+```
+
+#### Workload Distribution
+```bash
+kubectl get pods -o wide --all-namespaces  # See which nodes pods are on
+kubectl top nodes  # Node resource usage
+kubectl describe node <node-name>  # Node details (allocatable resources)
+```
 
 ### Performance Optimization
 
-- **Resource Limits**: All applications have defined resource limits
-- **Horizontal Scaling**: Ready for horizontal pod autoscaling
-- **Storage Optimization**: Persistent volumes for stateful applications
-- **Network Optimization**: Traefik load balancing and routing
+- **Resource Limits**: All apps have defined resource requests and limits
+- **Horizontal Scaling**: topologySpreadConstraints and nodeAffinity distribute load
+- **Storage Optimization**: Longhorn replication + Prometheus compression
+- **Network Optimization**: Traefik load balancing and request routing
+- **Observability**: Monitoring overhead (Prometheus, Fluent Bit) carefully tuned
+
+---
 
 ## 🤝 Contributing
 
@@ -295,55 +417,71 @@ flux get all
 
 1. **Create Feature Branch**
    ```bash
-   git checkout -b feature/new-application
+   git checkout main && git pull origin main
+   git checkout -b feature/new-feature
    ```
 
-2. **Add Application Configuration**
-   - Create base configuration in `apps/base/`
-   - Add environment overlay in `apps/staging/`
-   - Update kustomization files
+2. **Make Changes**
+   - Edit manifests in `apps/`, `infrastructure/`, `monitoring/`, or `databases/`
+   - If adding secrets: encrypt with `sops` before committing
+   - Follow base/overlay pattern: base configs in `base/`, env-specific in `staging/`
 
 3. **Test Deployment**
    ```bash
    # Validate Kubernetes manifests
    kubectl apply --dry-run=client -k apps/staging/new-app/
    
-   # Test with FluxCD
-   flux create kustomization test-app \
-     --source=flux-system \
-     --path="./apps/staging/new-app" \
-     --prune=true
+   # Check Kustomize output
+   kustomize build apps/staging/new-app/
    ```
 
 4. **Submit Pull Request**
-   - Comprehensive description
-   - Test results and screenshots
-   - Documentation updates
+   - Comprehensive description of changes
+   - Link related issues
+   - Wait for FluxCD validation (check for sync errors)
 
 ### Adding New Applications
 
-1. **Base Configuration** (`apps/base/new-app/`)
-   - `namespace.yaml`
-   - `deployment.yaml`
-   - `service.yaml`
-   - `kustomization.yaml`
+**Use the HomeLab App Onboarding skill** (`.claude/skills/homelab-app-onboarding/`) to automate the full process, or follow these manual steps:
 
-2. **Environment Overlay** (`apps/staging/new-app/`)
-   - Environment-specific configuration
-   - Secrets and ConfigMaps
-   - Ingress/tunnel configuration
-   - `kustomization.yaml`
+1. **Create Base Configuration** (`apps/base/new-app/`)
+   - `namespace.yaml` — create app namespace
+   - `deployment.yaml` — pod spec with image, resources, security context
+   - `service.yaml` — expose port to cluster
+   - `kustomization.yaml` — glue the above together
 
-3. **Update Main Kustomization**
+2. **Create Staging Overlay** (`apps/staging/new-app/`)
+   - `kustomization.yaml` — patches from base
+   - `cloudflare.yaml` (if external) — tunnel routing config
+   - `cloudflare-secret.yaml` (if external) — tunnel credentials (SOPS-encrypted)
+   - `new-app-secret.yaml` — app secrets (SOPS-encrypted)
+
+3. **Encrypt Secrets with SOPS**
+   ```bash
+   sops --age $(grep age clusters/staging/.sops.yaml | awk '{print $NF}') \
+     --encrypt --encrypted-regex '^(data|stringData)$' \
+     --in-place apps/staging/new-app/*-secret.yaml
+   ```
+
+4. **Update Main Kustomization**
    ```yaml
    # apps/staging/kustomization.yaml
    resources:
+     - audiobookshelf
      - linkding
      - mealie
-     - audiobookshelf
-     - homarr
      - new-app  # Add here
    ```
+
+5. **Open Pull Request**
+   ```bash
+   git add apps/ databases/
+   git commit -m "feat: add new-app to homelab"
+   git push origin feature/new-feature
+   gh pr create --title "feat: add new-app" --body "Adds new-app with external access via Cloudflare Tunnel."
+   ```
+
+---
 
 ## 📚 Documentation
 
@@ -352,11 +490,18 @@ flux get all
 - [FluxCD Documentation](https://fluxcd.io/docs/)
 - [Kustomize Documentation](https://kustomize.io/)
 - [SOPS Documentation](https://github.com/mozilla/sops)
+- [K3s Documentation](https://docs.k3s.io/)
 - [cert-manager Documentation](https://cert-manager.io/docs/)
 - [Cloudflare Tunnels](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+- [Longhorn Documentation](https://longhorn.io/docs/)
+- [Prometheus Operator](https://prometheus-operator.dev/)
 
 ### License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+
+**Last Updated**: April 12, 2026  
+**Current Version**: v1 Hardening & Resilience Milestone  
+**Cluster State**: 3 nodes (1 control-plane + 2 workers), Longhorn storage, 13 running services, GitOps-managed
