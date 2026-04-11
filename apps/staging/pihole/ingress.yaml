@@ -11,10 +11,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - pihole.internal.watarystack.org
+        - pihole.watarystack.org
       secretName: pihole-tls
   rules:
-    - host: pihole.internal.watarystack.org
+    - host: pihole.watarystack.org
       http:
         paths:
           - path: "/"

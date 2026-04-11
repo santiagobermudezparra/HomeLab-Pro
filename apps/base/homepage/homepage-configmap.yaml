@@ -204,10 +204,10 @@ data:
             ping: https://hubble.watarystack.org
     - Infrastructure:
         - PiHole:
-            href: https://pihole.internal.watarystack.org/admin
+            href: https://pihole.watarystack.org/admin
             description: Network-wide DNS & Ad-Blocking
-            icon: pihole.png
-            ping: https://pihole.internal.watarystack.org
+            icon: mdi-dns
+            ping: https://pihole.watarystack.org
         - PgAdmin:
             href: https://pgadmin.watarystack.org
             description: PostgreSQL database administration

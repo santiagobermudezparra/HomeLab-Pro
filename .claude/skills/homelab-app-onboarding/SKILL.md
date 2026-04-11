@@ -30,7 +30,7 @@ Ask the user for these details. If they've already provided some in the conversa
 | `APP_NAME` | `vaultwarden`, `paperless`, `stirling-pdf` | App identifier (lowercase, no spaces) |
 | `APP_PORT` | `8080`, `3000` | Internal port the app listens on — check existing apps and pick one not already in use |
 | `APP_IMAGE` | `docker.io/user/image:latest` | Full container image with tag |
-| `APP_HOSTNAME` | `myapp.watarystack.org` | Full domain for access |
+| `APP_HOSTNAME` | `{app}.watarystack.org` | Full domain for access — use pattern: `{APP_NAME}.watarystack.org` (one word + domain) |
 | `ACCESS_TYPE` | `public` or `internal` | **public** = Cloudflare Tunnel (internet-accessible); **internal** = Traefik Ingress (local network only) |
 | `DB_REQUIRED` | `yes`/`no` | Does the app need a database? |
 | `DB_TYPE` | `postgres`, `sqlite` | If yes, which database system |
