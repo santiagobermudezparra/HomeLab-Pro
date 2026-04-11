@@ -4,17 +4,10 @@ metadata:
   name: pihole
   labels:
     app.kubernetes.io/name: pihole
-  annotations:
-    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
-    traefik.ingress.kubernetes.io/router.middlewares: traefik-system-redirect-https@kubernetescrd
 spec:
   ingressClassName: traefik
-  tls:
-    - hosts:
-        - pihole.watarystack.org
-      secretName: pihole-tls
   rules:
-    - host: pihole.watarystack.org
+    - host: pihole.internal.watarystack.org
       http:
         paths:
           - path: "/"
