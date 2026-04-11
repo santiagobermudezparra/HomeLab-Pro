@@ -16,6 +16,9 @@ spec:
     - port: metrics
       interval: 30s
       path: /metrics
+      metricRelabelings:
+        - targetLabel: k8s_app
+          replacement: cilium
 ---
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
