@@ -58,7 +58,7 @@
 
 ### Security — DNS (SEC)
 
-- [ ] **SEC-DNS-01**: PiHole Grafana dashboard is configured and wired into Homepage with query statistics
+- [x] **SEC-DNS-01**: PiHole Grafana dashboard is configured and wired into Homepage with query statistics
 
 ## v2 Requirements
 
@@ -126,7 +126,7 @@
 | NET-DNS-02 | Phase 14 | Complete |
 | NET-DNS-03 | Phase 14 | Pending |
 | NET-DNS-04 | Phase 14 | Pending |
-| SEC-DNS-01 | Phase 14 | Pending |
+| SEC-DNS-01 | Phase 14 | Complete |
 
 **Coverage:**
 - v1 requirements: 28 total
