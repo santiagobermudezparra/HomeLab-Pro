@@ -287,7 +287,7 @@ Plans:
 | 10 | NetworkPolicies per Namespace | 2/2 | Complete    | 2026-04-10 |
 | 11 | Velero Full Backup | Backup | Low | Medium |
 | 12 | Headlamp Dashboard | 2/2 | Complete   | 2026-04-11 |
-| 13 | Observability Stack — Loki, Fluent Bit, Gatus | Observability | Low | Medium |
+| 13 | Observability Stack — Loki, Fluent Bit, Gatus | 1/3 | In Progress|  |
 
 ---
 
@@ -299,10 +299,10 @@ Plans:
 
 **Depends on:** Phase 12
 
-**Plans:** 3 plans
+**Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 13-01-PLAN.md — Loki HelmRelease (single-binary, filesystem backend) in monitoring controllers hierarchy
+- [x] 13-01-PLAN.md — Loki HelmRelease (single-binary, filesystem backend) in monitoring controllers hierarchy
 - [ ] 13-02-PLAN.md — Fluent Bit DaemonSet + Grafana Loki datasource ConfigMap
 - [ ] 13-03-PLAN.md — Gatus base manifests, Cloudflare Tunnel, staging overlay, Homepage entry
 

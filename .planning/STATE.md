@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 12-01-PLAN.md (Headlamp base manifests + staging overlay)
-last_updated: "2026-04-11T06:35:31.641Z"
+stopped_at: Completed 13-01-PLAN.md (Loki HelmRelease single-binary filesystem backend)
+last_updated: "2026-04-11T07:24:12.620Z"
 progress:
-  total_phases: 12
+  total_phases: 13
   completed_phases: 9
-  total_plans: 28
-  completed_plans: 24
+  total_plans: 31
+  completed_plans: 25
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 12 — headlamp-web-dashboard
+**Current focus:** Phase 13 — observability-stack-loki-fluent-bit-gatus
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 12-01-PLAN.md (Headlamp base manifests + staging overlay)
+Stopped at: Completed 13-01-PLAN.md (Loki HelmRelease single-binary filesystem backend)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -99,6 +99,13 @@ Next action: `/gsd:plan-phase 5`
 - `gethomepage.dev/group: Infrastructure` chosen over "Cluster Management" to differentiate Headlamp from Homepage itself in the dashboard
 - No `gethomepage.dev/href` annotation needed — Homepage derives URL from Ingress host rule automatically when `gethomepage.dev/enabled: "true"` is set
 
+## Key Decisions (Phase 13, Plan 01)
+
+- `namespace.yaml` excluded from loki base kustomization — including it causes a duplicate `Namespace/monitoring` conflict when kustomize merges kube-prometheus-stack and loki in staging; monitoring namespace is owned by kube-prometheus-stack
+- HelmRepository named `grafana` (not `loki`) to be reused by Fluent Bit and future Grafana-ecosystem charts (Plans 02+)
+- Loki 6.29.0 SingleBinary mode with `auth_enabled: false` and gateway disabled for homelab simplicity
+- `longhorn` StorageClass with 10Gi PVC; nodeAffinity prefers non-control-plane nodes
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -115,6 +122,7 @@ Next action: `/gsd:plan-phase 5`
 | 10 | NetworkPolicies per Namespace | ◑ In Progress (Plan 01 complete) |
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ✓ Complete (Plan 01 complete, pending PR merge) |
+| 13 | Observability Stack (Loki, Fluent Bit, Gatus) | ◑ In Progress (Plan 01 complete) |
 
 ## Cluster Snapshot (2026-04-04)
 
