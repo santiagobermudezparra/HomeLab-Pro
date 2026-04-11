@@ -299,10 +299,12 @@ Plans:
 
 **Depends on:** Phase 12
 
-**Plans:** 0 plans — not started
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run `/gsd:plan-phase 13` to break down)
+- [ ] 13-01-PLAN.md — Loki HelmRelease (single-binary, filesystem backend) in monitoring controllers hierarchy
+- [ ] 13-02-PLAN.md — Fluent Bit DaemonSet + Grafana Loki datasource ConfigMap
+- [ ] 13-03-PLAN.md — Gatus base manifests, Cloudflare Tunnel, staging overlay, Homepage entry
 
 **Scope:**
 - Deploy Loki (single-binary mode, Cloudflare R2 or local filesystem backend) via FluxCD HelmRelease
