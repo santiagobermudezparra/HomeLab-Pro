@@ -97,3 +97,11 @@ data:
         conditions:
           - "[STATUS] == 200"
           - "[RESPONSE_TIME] < 5000"
+
+      - name: PiHole
+        group: Infrastructure
+        url: https://pihole.watarystack.org/admin
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
