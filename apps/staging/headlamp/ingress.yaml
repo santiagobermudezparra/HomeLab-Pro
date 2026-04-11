@@ -16,10 +16,10 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - headlamp.internal.watarystack.org
+        - headlamp.watarystack.org
       secretName: headlamp-tls
   rules:
-    - host: headlamp.internal.watarystack.org
+    - host: headlamp.watarystack.org
       http:
         paths:
           - path: /
