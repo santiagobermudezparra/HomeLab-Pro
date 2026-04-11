@@ -226,11 +226,13 @@ Plans:
 
 ## Phase 11: Velero Full Backup
 
+**Status: Pending — deferred, run when ready (`/gsd:execute-phase 11`)**
+
 **Goal:** Velero is installed with S3-compatible backend and all app namespaces have daily backup schedules with verified restore capability.
 
 **Requirements:** BACK-03, BACK-04, BACK-05
 
-**Plans:** 3 plans
+**Plans:** 3 plans (not started)
 
 Plans:
 - [ ] 11-01-velero-install-PLAN.md — Velero HelmRelease + R2 credentials (SOPS) + NetworkPolicy + staging overlay wired into controller hierarchy
@@ -285,6 +287,33 @@ Plans:
 | 10 | NetworkPolicies per Namespace | 2/2 | Complete    | 2026-04-10 |
 | 11 | Velero Full Backup | Backup | Low | Medium |
 | 12 | Headlamp Dashboard | 2/2 | Complete   | 2026-04-11 |
+| 13 | Observability Stack — Loki, Fluent Bit, Gatus | Observability | Low | Medium |
+
+---
+
+## Phase 13: Observability Stack — Loki, Fluent Bit, and Gatus
+
+**Goal:** Cluster-wide logs are queryable in Grafana (via Loki + Fluent Bit) and all homelab services are continuously probed with results on a public status page (via Gatus).
+
+**Requirements:** OBS-LOG-01, OBS-STATUS-01
+
+**Depends on:** Phase 12
+
+**Plans:** 0 plans — not started
+
+Plans:
+- [ ] TBD (run `/gsd:plan-phase 13` to break down)
+
+**Scope:**
+- Deploy Loki (single-binary mode, Cloudflare R2 or local filesystem backend) via FluxCD HelmRelease
+- Deploy Fluent Bit DaemonSet to collect logs from all nodes and forward to Loki
+- Wire Loki as a Grafana data source so logs appear alongside Prometheus metrics
+- Deploy Gatus via FluxCD (base + staging overlay)
+- Configure Gatus endpoint checks for all active services (audiobookshelf, homarr, linkding, mealie, n8n, etc.)
+- Expose Gatus via Cloudflare Tunnel at `status.watarystack.org`
+- Add both to homepage dashboard
+
+**Done when:** Grafana "Explore" tab shows logs from all app namespaces via Loki, and Gatus status page shows green/red indicators for all monitored services.
 
 ---
 *Roadmap created: 2003-04-04*

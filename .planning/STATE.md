@@ -127,6 +127,15 @@ Next action: `/gsd:plan-phase 5`
 - **Monitoring**: kube-prometheus-stack v66.2.2, all healthy
 - **HelmReleases**: 3 total, all True/healthy
 
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 11 marked as Pending/Deferred — user will run it when ready
+- Phase 13 added: Observability Stack — Loki, Fluent Bit, and Gatus combined into one phase (Rook-Ceph skipped — Longhorn already covers distributed storage)
+- External DNS assessed — not recommended for this setup (Cloudflare Tunnels auto-handle DNS; ExternalDNS adds complexity without clear benefit)
+- Control plane assessment: single CP is fine (28GB RAM, 11% CPU, 21% disk) — no additional CP node needed for homelab
+
 ## Key Context for Resuming
 
 - Branch convention: `feat/phase-N-<slug>` off `feat/homelab-improvement`
