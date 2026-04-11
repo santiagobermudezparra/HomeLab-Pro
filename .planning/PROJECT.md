@@ -40,7 +40,9 @@ Every stateful app survives any single node failure without data loss.
 - [ ] Cilium replaces Flannel as CNI
 - [ ] NetworkPolicies isolate each app namespace
 - [ ] Velero backs up all namespaces + PVCs to object storage
-- [ ] Web dashboard (Headlamp) deployed for cluster visibility
+- ✓ Web dashboard (Headlamp) deployed for cluster visibility — Validated in Phase 12
+- ✓ Network-wide DNS filtering with PiHole ad-blocking — Validated in Phase 14
+- ✓ Grafana observability stack (Loki, Fluent Bit, Gatus) — Validated in Phase 13
 
 ### Out of Scope
 
@@ -111,4 +113,4 @@ does NOT follow — a node failure means that app's data is inaccessible until t
 | Fine granularity roadmap | User prefers one concern per phase for visibility and rollback safety | ✓ |
 
 ---
-*Last updated: 2026-04-06 — Phase 8 complete (workload balancing: topologySpreadConstraints on cloudflared, nodeAffinity on all app Deployments + Prometheus; pending live verification after PR #45 merge)*
+*Last updated: 2026-04-12 — Phase 14 complete (PiHole network-wide DNS with ad-blocking, network gateway configuration, Grafana dashboard integration, and Homepage service links all verified and deployed)*

@@ -49,6 +49,17 @@
 - [x] **OBS-01**: Headlamp dashboard is deployed and accessible via Traefik Ingress (internal)
 - [x] **OBS-02**: Longhorn metrics are scraped by Prometheus
 
+### Networking (NET)
+
+- [x] **NET-DNS-01**: PiHole is deployed in K3s with persistent storage, accessible via internal Traefik Ingress
+- [x] **NET-DNS-02**: Network gateway is configured to use PiHole as primary DNS resolver
+- [ ] **NET-DNS-03**: All network devices (phones, laptops, IoT) are resolving through PiHole
+- [ ] **NET-DNS-04**: Ad-blocking is verified working on client devices
+
+### Security — DNS (SEC)
+
+- [x] **SEC-DNS-01**: PiHole Grafana dashboard is configured and wired into Homepage with query statistics
+
 ## v2 Requirements
 
 ### Media Stack
@@ -111,10 +122,15 @@
 | BACK-04 | Phase 12 | Pending |
 | BACK-05 | Phase 12 | Pending |
 | OBS-01 | Phase 12 | Complete |
+| NET-DNS-01 | Phase 14 | Complete |
+| NET-DNS-02 | Phase 14 | Complete |
+| NET-DNS-03 | Phase 14 | Pending |
+| NET-DNS-04 | Phase 14 | Pending |
+| SEC-DNS-01 | Phase 14 | Complete |
 
 **Coverage:**
-- v1 requirements: 23 total
-- Mapped to phases: 23
+- v1 requirements: 28 total
+- Mapped to phases: 28
 - Unmapped: 0 ✓
 
 ---

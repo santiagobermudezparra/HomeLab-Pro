@@ -3,6 +3,7 @@ kind: Kustomization
 resources:
   - linkding
   - mealie
+  - pihole
   - xm-spotify-sync
   - audiobookshelf
   # - homarr

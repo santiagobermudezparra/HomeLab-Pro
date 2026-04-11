@@ -2,14 +2,13 @@
 gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 13-02-PLAN.md (Fluent Bit DaemonSet + Loki Grafana datasource)
-last_updated: "2026-04-11T07:31:48.930Z"
+status: completed
+last_updated: "2026-04-11T21:25:30.354Z"
 progress:
-  total_phases: 13
-  completed_phases: 10
-  total_plans: 31
-  completed_plans: 27
+  total_phases: 14
+  completed_phases: 11
+  total_plans: 34
+  completed_plans: 30
 ---
 
 # Project State
@@ -19,15 +18,15 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 13 — observability-stack-loki-fluent-bit-gatus
+**Current focus:** Phase 14 — pihole-network-dns-adblocking
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
-**Phase 4: n8n Database Backup**
-Status: Complete — Verification checkpoint approved
-Stopped at: Completed 13-02-PLAN.md (Fluent Bit DaemonSet + Loki Grafana datasource)
-Next action: `/gsd:plan-phase 5`
+**Phase 14: PiHole Network DNS & Ad-Blocking**
+Status: COMPLETE — All 3 plans executed
+Completed: Plan 14-01, 14-02, 14-03
+Next action: Phase 15 (when scheduled)
 
 ## Key Decisions (Phase 01)
 
@@ -113,6 +112,13 @@ Next action: `/gsd:plan-phase 5`
 - `grafana_datasource: "1"` label on ConfigMap triggers Grafana sidecar auto-provisioning — no manual Grafana UI or kube-prometheus-stack HelmRelease changes needed
 - Fluent Bit `Match kube.*` in outputs forwards only Kubernetes pod logs (not Fluent Bit internal metrics)
 
+## Key Decisions (Phase 14, Plan 03)
+
+- Grafana PiHole dashboard uses internal Traefik Ingress URL for consistency (pihole.internal.watarystack.org)
+- Dashboard configured with 6-hour default lookback and 30-second refresh for real-time monitoring
+- Metric names assume PiHole Prometheus exporter (standard exporter or sidecar container)
+- PiHole card placed in Infrastructure group on Homepage (alongside PgAdmin, Longhorn) for consistency
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -130,6 +136,7 @@ Next action: `/gsd:plan-phase 5`
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ✓ Complete (Plan 01 complete, pending PR merge) |
 | 13 | Observability Stack (Loki, Fluent Bit, Gatus) | ◑ In Progress (Plans 01-02 complete) |
+| 14 | PiHole Network DNS & Ad-Blocking | ✓ Complete (Plans 01-03 complete) |
 
 ## Cluster Snapshot (2026-04-04)
 
