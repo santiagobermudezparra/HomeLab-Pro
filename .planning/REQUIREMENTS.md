@@ -46,7 +46,7 @@
 
 ### Observability (OBS)
 
-- [ ] **OBS-01**: Headlamp dashboard is deployed and accessible via Traefik Ingress (internal)
+- [x] **OBS-01**: Headlamp dashboard is deployed and accessible via Traefik Ingress (internal)
 - [x] **OBS-02**: Longhorn metrics are scraped by Prometheus
 
 ## v2 Requirements
@@ -110,7 +110,7 @@
 | BACK-03 | Phase 12 | Pending |
 | BACK-04 | Phase 12 | Pending |
 | BACK-05 | Phase 12 | Pending |
-| OBS-01 | Phase 12 | Pending |
+| OBS-01 | Phase 12 | Complete |
 
 **Coverage:**
 - v1 requirements: 23 total

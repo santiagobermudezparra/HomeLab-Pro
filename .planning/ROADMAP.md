@@ -259,11 +259,11 @@ Plans:
 - Configure RBAC for read-only cluster access
 - Add to homepage dashboard links
 
-**Plans:** 2 plans
+**Plans:** 2/2 plans complete
 
 Plans:
-- [ ] 12-01-PLAN.md — Headlamp base manifests, staging overlay, RBAC, Traefik Ingress at headlamp.internal.watarystack.org
-- [ ] 12-02-PLAN.md — Add Headlamp entry to Homepage dashboard services.yaml (Infrastructure group)
+- [x] 12-01-PLAN.md — Headlamp base manifests, staging overlay, RBAC, Traefik Ingress at headlamp.internal.watarystack.org
+- [x] 12-02-PLAN.md — Add Headlamp entry to Homepage dashboard services.yaml (Infrastructure group)
 
 **Done when:** Headlamp UI loads at configured URL and shows all namespaces and pod states.
 
@@ -284,7 +284,7 @@ Plans:
 | 9 | Cilium CNI Migration | Security | **High** | Large |
 | 10 | NetworkPolicies per Namespace | 2/2 | Complete    | 2026-04-10 |
 | 11 | Velero Full Backup | Backup | Low | Medium |
-| 12 | Headlamp Dashboard | Observability | Low | Small |
+| 12 | Headlamp Dashboard | 2/2 | Complete   | 2026-04-11 |
 
 ---
 *Roadmap created: 2003-04-04*
