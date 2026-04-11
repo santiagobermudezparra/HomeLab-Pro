@@ -273,21 +273,22 @@ Plans:
 
 ## Summary
 
-| Phase | Name | Category | Risk | Est. Effort |
-|-------|------|----------|------|-------------|
-| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Low | Small |
-| 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small |
-| 3 | Grafana Password to SOPS Secret | Security | Low | Small |
-| 4 | n8n Database Backup | Backup | Low | Small |
-| 5 | Fix linkding Backup Destination | 1/1 | Complete   | 2026-04-05 |
-| 6 | Install Longhorn Storage | 2/4 | In Progress|  |
-| 7 | Migrate PVCs to Longhorn | 7/7 | Complete   | 2026-04-06 |
-| 8 | Balance Workloads to Workers | 2/2 | Complete   | 2026-04-06 |
-| 9 | Cilium CNI Migration | Security | **High** | Large |
-| 10 | NetworkPolicies per Namespace | 2/2 | Complete    | 2026-04-10 |
-| 11 | Velero Full Backup | Backup | Low | Medium |
-| 12 | Headlamp Dashboard | 2/2 | Complete   | 2026-04-11 |
-| 13 | Observability Stack — Loki, Fluent Bit, Gatus | 3/3 | Complete   | 2026-04-11 |
+| Phase | Name | Category | Risk | Est. Effort | Status |
+|-------|------|----------|------|-------------|--------|
+| 1 | Fix FluxCD Bootstrap Race | Critical Fix | Low | Small | Complete |
+| 2 | Resource Limits — audiobookshelf | Critical Fix | Low | Small | Complete |
+| 3 | Grafana Password to SOPS Secret | Security | Low | Small | Complete |
+| 4 | n8n Database Backup | Backup | Low | Small | Complete |
+| 5 | Fix linkding Backup Destination | Backup | Low | Small | Complete |
+| 6 | Install Longhorn Storage | Storage | Low | Medium | In Progress |
+| 7 | Migrate PVCs to Longhorn | Storage | Low | Medium | Complete |
+| 8 | Balance Workloads to Workers | Scheduling | Low | Small | Complete |
+| 9 | Cilium CNI Migration | Security | **High** | Large | Pending |
+| 10 | NetworkPolicies per Namespace | Security | Low | Medium | Complete |
+| 11 | Velero Full Backup | Backup | Low | Medium | Deferred |
+| 12 | Headlamp Dashboard | Observability | Low | Small | Complete |
+| 13 | Observability Stack — Loki, Fluent Bit, Gatus | Observability | Low | Medium | Complete |
+| 14 | PiHole Network DNS & Ad-Blocking | Networking | Low | Medium | Pending |
 
 ---
 
@@ -318,5 +319,42 @@ Plans:
 **Done when:** Grafana "Explore" tab shows logs from all app namespaces via Loki, and Gatus status page shows green/red indicators for all monitored services.
 
 ---
+
+## Phase 14: PiHole Network-Wide DNS & Ad-Blocking
+
+**Status: Pending — ready to start (`/gsd:execute-phase 14`)**
+
+**Goal:** PiHole is deployed in K3s and configured as the network's primary DNS server, providing network-wide ad-blocking and privacy protection for all devices (phones, laptops, IoT devices) without requiring per-device configuration.
+
+**Requirements:** NET-DNS-01, SEC-DNS-01
+
+**Context:** K3s comes with CoreDNS built-in for cluster-internal DNS queries (e.g., `service.namespace.svc.cluster.local`). PiHole sits upstream as the network's primary DNS resolver and provides ad-blocking and query analytics for all devices on the network.
+
+**Plans:** 3 plans (not started)
+
+Plans:
+- [ ] 14-01-pihole-install-PLAN.md — PiHole base manifests, staging overlay, persistent storage (PVC), internal Traefik Ingress dashboard
+- [ ] 14-02-network-dns-PLAN.md — Configure network gateway to use PiHole as primary DNS; verify all devices resolve through PiHole; test ad-blocking on client devices
+- [ ] 14-03-grafana-dashboard-PLAN.md — PiHole Grafana dashboard showing query count, blocked %, top clients, top domains; wire into homepage
+
+**Scope:**
+- Deploy PiHole via FluxCD (base + staging overlay)
+- Persistent storage (1Gi PVC) for query logs and whitelist/blacklist configuration
+- Internal Traefik Ingress at `pihole.internal.watarystack.org` for admin dashboard
+- Configure as upstream DNS for network gateway/router (all DHCP clients will use PiHole)
+- Verify ad-blocking on client devices (mobile, laptop, IoT)
+- Add PiHole entry to Homepage dashboard with query stats
+
+**Key Points:**
+- PiHole is independent from K3s's CoreDNS; CoreDNS continues to handle cluster-internal DNS
+- Network devices (phones, laptops, etc.) will query PiHole for all DNS; PiHole forwards cluster-related queries to CoreDNS
+- Benefits: Network-wide ad-blocking, privacy (no ISP DNS logging), query analytics, content filtering
+- Backed by persistent storage so query history and configuration persist across restarts
+
+**Done when:** PiHole admin dashboard is accessible, network devices are resolving through PiHole (verify with `dig @pihole.ip example.com`), ads are blocked on client devices, Grafana dashboard shows query stats.
+
+---
+
 *Roadmap created: 2003-04-04*
+*Last updated: 2026-04-12 — Phase 14 added (PiHole network DNS)*
 *Based on live cluster diagnosis: 3 nodes, 11 PVCs all local-path, FluxCD v2.5.1, K3s v1.30.0*
