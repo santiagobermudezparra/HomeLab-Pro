@@ -330,10 +330,10 @@ Plans:
 
 **Context:** K3s comes with CoreDNS built-in for cluster-internal DNS queries (e.g., `service.namespace.svc.cluster.local`). PiHole sits upstream as the network's primary DNS resolver and provides ad-blocking and query analytics for all devices on the network.
 
-**Plans:** 3 plans (not started)
+**Plans:** 1/3 plans executed
 
 Plans:
-- [ ] 14-01-pihole-install-PLAN.md — PiHole base manifests, staging overlay, persistent storage (PVC), internal Traefik Ingress dashboard
+- [x] 14-01-pihole-install-PLAN.md — PiHole base manifests, staging overlay, persistent storage (PVC), internal Traefik Ingress dashboard
 - [ ] 14-02-network-dns-PLAN.md — Configure network gateway to use PiHole as primary DNS; verify all devices resolve through PiHole; test ad-blocking on client devices
 - [ ] 14-03-grafana-dashboard-PLAN.md — PiHole Grafana dashboard showing query count, blocked %, top clients, top domains; wire into homepage
 

@@ -51,8 +51,8 @@
 
 ### Networking (NET)
 
-- [ ] **NET-DNS-01**: PiHole is deployed in K3s with persistent storage, accessible via internal Traefik Ingress
-- [ ] **NET-DNS-02**: Network gateway is configured to use PiHole as primary DNS resolver
+- [x] **NET-DNS-01**: PiHole is deployed in K3s with persistent storage, accessible via internal Traefik Ingress
+- [x] **NET-DNS-02**: Network gateway is configured to use PiHole as primary DNS resolver
 - [ ] **NET-DNS-03**: All network devices (phones, laptops, IoT) are resolving through PiHole
 - [ ] **NET-DNS-04**: Ad-blocking is verified working on client devices
 
@@ -122,8 +122,8 @@
 | BACK-04 | Phase 12 | Pending |
 | BACK-05 | Phase 12 | Pending |
 | OBS-01 | Phase 12 | Complete |
-| NET-DNS-01 | Phase 14 | Pending |
-| NET-DNS-02 | Phase 14 | Pending |
+| NET-DNS-01 | Phase 14 | Complete |
+| NET-DNS-02 | Phase 14 | Complete |
 | NET-DNS-03 | Phase 14 | Pending |
 | NET-DNS-04 | Phase 14 | Pending |
 | SEC-DNS-01 | Phase 14 | Pending |
