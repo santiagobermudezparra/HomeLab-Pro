@@ -41,6 +41,11 @@ spec:
                 secretKeyRef:
                   name: pihole-env-secret
                   key: WEBPASSWORD
+            - name: FTLCONF_webserver_api_password
+              valueFrom:
+                secretKeyRef:
+                  name: pihole-env-secret
+                  key: WEBPASSWORD
             - name: DNSMASQ_LISTENING
               value: "all"
             - name: INTERFACE
@@ -81,7 +86,7 @@ spec:
               mountPath: /etc/dnsmasq.d
 
         - name: pihole-exporter
-          image: ekofr/pihole-exporter:latest
+          image: ekofr/pihole-exporter:v0.4.0
           ports:
             - name: metrics
               containerPort: 9617
