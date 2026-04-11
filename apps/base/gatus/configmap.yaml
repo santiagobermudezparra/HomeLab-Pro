@@ -100,7 +100,7 @@ data:
 
       - name: PiHole
         group: Infrastructure
-        url: http://pihole.watarystack.org
+        url: https://pihole.watarystack.org/admin/login
         interval: 60s
         conditions:
           - "[STATUS] == 200"

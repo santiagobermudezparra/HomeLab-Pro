@@ -4,8 +4,20 @@ metadata:
   name: pihole
   labels:
     app.kubernetes.io/name: pihole
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: pihole.watarystack.org
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: PiHole
+    gethomepage.dev/group: Infrastructure
+    gethomepage.dev/icon: pi-hole.png
+    gethomepage.dev/description: Network-wide ad blocking
 spec:
   ingressClassName: traefik
+  tls:
+    - hosts:
+        - pihole.watarystack.org
+      secretName: pihole-tls
   rules:
     - host: pihole.watarystack.org
       http:
