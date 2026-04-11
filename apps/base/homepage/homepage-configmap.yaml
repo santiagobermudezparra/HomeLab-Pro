@@ -213,11 +213,6 @@ data:
             description: Distributed block storage management
             icon: longhorn.png
             ping: https://longhorn.watarystack.org
-        - Headlamp:
-            href: https://headlamp.watarystack.org
-            description: Kubernetes cluster dashboard
-            icon: kubernetes.png
-            ping: https://headlamp.watarystack.org
   widgets.yaml: |
     - kubernetes:
         cluster:
