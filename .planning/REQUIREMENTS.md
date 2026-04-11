@@ -110,7 +110,7 @@
 | BACK-03 | Phase 12 | Pending |
 | BACK-04 | Phase 12 | Pending |
 | BACK-05 | Phase 12 | Pending |
-| OBS-01 | Phase 13 | Pending |
+| OBS-01 | Phase 12 | Pending |
 
 **Coverage:**
 - v1 requirements: 23 total
