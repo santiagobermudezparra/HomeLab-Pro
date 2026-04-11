@@ -4,3 +4,4 @@ namespace: pihole
 resources:
   - ../../base/pihole/
   - ingress.yaml
+  - pihole-env-secret.yaml

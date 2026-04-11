@@ -20,8 +20,8 @@ spec:
       targetPort: 80
       protocol: TCP
     - name: metrics
-      port: 8080
-      targetPort: 8080
+      port: 9617
+      targetPort: 9617
       protocol: TCP
   selector:
     app: pihole
