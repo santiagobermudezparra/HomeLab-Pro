@@ -124,7 +124,7 @@
       "id": 4,
       "targets": [
         {
-          "expr": "pihole_blocked_domains",
+          "expr": "pihole_domains_being_blocked",
           "refId": "A",
           "legendFormat": "Domains"
         }
