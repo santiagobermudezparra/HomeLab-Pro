@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: gatus-config
+  namespace: gatus
+data:
+  config.yaml: |
+    # Gatus configuration — WataryStack HomeLab status page
+    web:
+      port: 8080
+
+    storage:
+      type: memory
+
+    ui:
+      title: WataryStack Status
+      header: WataryStack HomeLab
+
+    # Check interval: every 60 seconds
+    endpoints:
+      - name: Audiobookshelf
+        group: Media
+        url: https://audiobooks.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Spotify Sync
+        group: Media
+        url: https://xmspotify.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Linkding
+        group: Productivity
+        url: https://linkding.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Mealie
+        group: Productivity
+        url: https://mealie.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: n8n
+        group: Productivity
+        url: https://n8n.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Filebrowser
+        group: Productivity
+        url: https://filebrowser.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Grafana
+        group: Monitoring
+        url: https://grafana.watarystack.org/api/health
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Prometheus
+        group: Monitoring
+        url: https://prometheus.watarystack.org/-/healthy
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: PgAdmin
+        group: Infrastructure
+        url: https://pgadmin.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Headlamp
+        group: Infrastructure
+        url: https://headlamp.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"

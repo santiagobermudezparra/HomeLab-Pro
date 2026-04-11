@@ -1,0 +1,65 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: fluent-bit
+  namespace: monitoring
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: fluent-bit
+      version: "0.48.3"
+      sourceRef:
+        kind: HelmRepository
+        name: fluent
+        namespace: monitoring
+      interval: 12h
+  values:
+    # DaemonSet is the default — runs on every node automatically
+    kind: DaemonSet
+    # Collect logs from /var/log/containers (standard K8s log location)
+    config:
+      inputs: |
+        [INPUT]
+            Name tail
+            Path /var/log/containers/*.log
+            multiline.parser docker, cri
+            Tag kube.*
+            Mem_Buf_Limit 5MB
+            Skip_Long_Lines On
+      filters: |
+        [FILTER]
+            Name kubernetes
+            Match kube.*
+            Merge_Log On
+            Keep_Log Off
+            K8S-Logging.Parser On
+            K8S-Logging.Exclude On
+      outputs: |
+        [OUTPUT]
+            Name loki
+            Match kube.*
+            Host loki.monitoring.svc.cluster.local
+            Port 3100
+            Labels job=fluent-bit
+            Auto_Kubernetes_Labels On
+            tls Off
+            tls.verify Off
+    # RBAC needed to read pod metadata for Kubernetes filter
+    rbac:
+      create: true
+    serviceAccount:
+      create: true
+    # Tolerations so Fluent Bit runs on control-plane node too (all logs needed)
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    # Resource limits — Fluent Bit is lightweight
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi

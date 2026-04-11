@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 12-01-PLAN.md (Headlamp base manifests + staging overlay)
-last_updated: "2026-04-11T06:35:31.641Z"
+stopped_at: Completed 13-02-PLAN.md (Fluent Bit DaemonSet + Loki Grafana datasource)
+last_updated: "2026-04-11T07:31:48.930Z"
 progress:
-  total_phases: 12
-  completed_phases: 9
-  total_plans: 28
-  completed_plans: 24
+  total_phases: 13
+  completed_phases: 10
+  total_plans: 31
+  completed_plans: 27
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 12 — headlamp-web-dashboard
+**Current focus:** Phase 13 — observability-stack-loki-fluent-bit-gatus
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 12-01-PLAN.md (Headlamp base manifests + staging overlay)
+Stopped at: Completed 13-02-PLAN.md (Fluent Bit DaemonSet + Loki Grafana datasource)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -99,6 +99,20 @@ Next action: `/gsd:plan-phase 5`
 - `gethomepage.dev/group: Infrastructure` chosen over "Cluster Management" to differentiate Headlamp from Homepage itself in the dashboard
 - No `gethomepage.dev/href` annotation needed — Homepage derives URL from Ingress host rule automatically when `gethomepage.dev/enabled: "true"` is set
 
+## Key Decisions (Phase 13, Plan 01)
+
+- `namespace.yaml` excluded from loki base kustomization — including it causes a duplicate `Namespace/monitoring` conflict when kustomize merges kube-prometheus-stack and loki in staging; monitoring namespace is owned by kube-prometheus-stack
+- HelmRepository named `grafana` (not `loki`) to be reused by Fluent Bit and future Grafana-ecosystem charts (Plans 02+)
+- Loki 6.29.0 SingleBinary mode with `auth_enabled: false` and gateway disabled for homelab simplicity
+- `longhorn` StorageClass with 10Gi PVC; nodeAffinity prefers non-control-plane nodes
+
+## Key Decisions (Phase 13, Plan 02)
+
+- `namespace.yaml` excluded from fluent-bit base kustomization (same as loki pattern) — including it causes duplicate `Namespace/monitoring` conflict; monitoring namespace owned by kube-prometheus-stack
+- Separate `fluent` HelmRepository created for `fluent.github.io/helm-charts` — distinct from `grafana` HelmRepository; two HelmRepositories coexist in monitoring namespace
+- `grafana_datasource: "1"` label on ConfigMap triggers Grafana sidecar auto-provisioning — no manual Grafana UI or kube-prometheus-stack HelmRelease changes needed
+- Fluent Bit `Match kube.*` in outputs forwards only Kubernetes pod logs (not Fluent Bit internal metrics)
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -115,6 +129,7 @@ Next action: `/gsd:plan-phase 5`
 | 10 | NetworkPolicies per Namespace | ◑ In Progress (Plan 01 complete) |
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ✓ Complete (Plan 01 complete, pending PR merge) |
+| 13 | Observability Stack (Loki, Fluent Bit, Gatus) | ◑ In Progress (Plans 01-02 complete) |
 
 ## Cluster Snapshot (2026-04-04)
 
@@ -126,6 +141,15 @@ Next action: `/gsd:plan-phase 5`
 - **Storage**: 1 StorageClass (local-path), 11 PVCs total, all node-pinned
 - **Monitoring**: kube-prometheus-stack v66.2.2, all healthy
 - **HelmReleases**: 3 total, all True/healthy
+
+## Accumulated Context
+
+### Roadmap Evolution
+
+- Phase 11 marked as Pending/Deferred — user will run it when ready
+- Phase 13 added: Observability Stack — Loki, Fluent Bit, and Gatus combined into one phase (Rook-Ceph skipped — Longhorn already covers distributed storage)
+- External DNS assessed — not recommended for this setup (Cloudflare Tunnels auto-handle DNS; ExternalDNS adds complexity without clear benefit)
+- Control plane assessment: single CP is fine (28GB RAM, 11% CPU, 21% disk) — no additional CP node needed for homelab
 
 ## Key Context for Resuming
 

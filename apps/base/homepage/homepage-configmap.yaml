@@ -177,6 +177,11 @@ data:
             icon: filebrowser.png
             ping: https://filebrowser.watarystack.org
     - Monitoring:
+        - Gatus:
+            href: https://status.watarystack.org
+            description: Service health & uptime status page
+            icon: gatus.png
+            ping: https://status.watarystack.org
         - Grafana:
             href: https://grafana.watarystack.org
             description: Metrics dashboards & alerting
@@ -209,10 +214,10 @@ data:
             icon: longhorn.png
             ping: https://longhorn.watarystack.org
         - Headlamp:
-            href: https://headlamp.internal.watarystack.org
+            href: https://headlamp.watarystack.org
             description: Kubernetes cluster dashboard
             icon: kubernetes.png
-            ping: https://headlamp.internal.watarystack.org
+            ping: https://headlamp.watarystack.org
   widgets.yaml: |
     - kubernetes:
         cluster:
