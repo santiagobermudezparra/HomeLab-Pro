@@ -4,6 +4,7 @@ metadata:
   name: pihole
 spec:
   type: ClusterIP
+  clusterIP: 10.43.200.53
   ports:
     - name: dns-tcp
       port: 53
