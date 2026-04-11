@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: verifying
-stopped_at: "Completed 10-02-PLAN.md (SKILL.md update + PR #58 opened)"
-last_updated: "2026-04-10T23:09:35.716Z"
+stopped_at: Completed 12-01-PLAN.md (Headlamp base manifests + staging overlay)
+last_updated: "2026-04-11T06:35:31.641Z"
 progress:
   total_phases: 12
   completed_phases: 9
-  total_plans: 22
-  completed_plans: 22
+  total_plans: 28
+  completed_plans: 24
 ---
 
 # Project State
@@ -19,14 +19,14 @@ progress:
 See: .planning/PROJECT.md (updated 2026-04-04)
 
 **Core value:** Every stateful app survives any single node failure without data loss
-**Current focus:** Phase 10 — NetworkPolicies — Per-Namespace Isolation
+**Current focus:** Phase 12 — headlamp-web-dashboard
 **Milestone:** v1 — Cluster Hardening & Resilience
 
 ## Current Phase
 
 **Phase 4: n8n Database Backup**
 Status: Complete — Verification checkpoint approved
-Stopped at: Completed 10-02-PLAN.md (SKILL.md update + PR #58 opened)
+Stopped at: Completed 12-01-PLAN.md (Headlamp base manifests + staging overlay)
 Next action: `/gsd:plan-phase 5`
 
 ## Key Decisions (Phase 01)
@@ -92,6 +92,13 @@ Next action: `/gsd:plan-phase 5`
 - Use `bootstrap.recovery.source` with `externalClusters` (not `bootstrap.recovery.backup.name`) for CNPG migrations where cluster name and backup path are the same — external cluster name must match original server name in R2
 - CNPG `kubectl get backup` is ambiguous with Longhorn — use `kubectl get backups.postgresql.cnpg.io` to query CNPG backup objects specifically
 
+## Key Decisions (Phase 12, Plan 01)
+
+- Headlamp uses `--in-cluster` flag with dedicated ServiceAccount + read-only ClusterRole (not token-based); `automountServiceAccountToken: true` required for in-cluster API access
+- `readOnlyRootFilesystem: true` with no tmpfs — Headlamp v0.26.0 embeds static files in binary, no writable filesystem needed
+- `gethomepage.dev/group: Infrastructure` chosen over "Cluster Management" to differentiate Headlamp from Homepage itself in the dashboard
+- No `gethomepage.dev/href` annotation needed — Homepage derives URL from Ingress host rule automatically when `gethomepage.dev/enabled: "true"` is set
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -107,7 +114,7 @@ Next action: `/gsd:plan-phase 5`
 | 9 | Cilium CNI Migration | ○ Pending |
 | 10 | NetworkPolicies per Namespace | ◑ In Progress (Plan 01 complete) |
 | 11 | Velero Full Backup | ○ Pending |
-| 12 | Headlamp Dashboard | ○ Pending |
+| 12 | Headlamp Dashboard | ✓ Complete (Plan 01 complete, pending PR merge) |
 
 ## Cluster Snapshot (2026-04-04)
 
