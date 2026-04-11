@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v2.5.1
 milestone_name: milestone
 status: in_progress
-stopped_at: "Plan 14-02 complete, ready for Plan 14-03"
-last_updated: "2026-04-12T09:25:00.000Z"
+stopped_at: "Plan 14-03 complete, Phase 14 COMPLETE"
+last_updated: "2026-04-11T21:22:33Z"
 progress:
   total_phases: 14
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 34
-  completed_plans: 30
+  completed_plans: 31
 ---
 
 # Project State
@@ -25,9 +25,9 @@ See: .planning/PROJECT.md (updated 2026-04-04)
 ## Current Phase
 
 **Phase 14: PiHole Network DNS & Ad-Blocking**
-Status: In Progress — Plan 14-02 Complete
-Current: Plan 14-02 (Network Gateway DNS Configuration) — COMPLETE
-Next action: Execute Plan 14-03 (PiHole Dashboard Integration)
+Status: COMPLETE — All 3 plans executed
+Completed: Plan 14-01, 14-02, 14-03
+Next action: Phase 15 (when scheduled)
 
 ## Key Decisions (Phase 01)
 
@@ -113,6 +113,13 @@ Next action: Execute Plan 14-03 (PiHole Dashboard Integration)
 - `grafana_datasource: "1"` label on ConfigMap triggers Grafana sidecar auto-provisioning — no manual Grafana UI or kube-prometheus-stack HelmRelease changes needed
 - Fluent Bit `Match kube.*` in outputs forwards only Kubernetes pod logs (not Fluent Bit internal metrics)
 
+## Key Decisions (Phase 14, Plan 03)
+
+- Grafana PiHole dashboard uses internal Traefik Ingress URL for consistency (pihole.internal.watarystack.org)
+- Dashboard configured with 6-hour default lookback and 30-second refresh for real-time monitoring
+- Metric names assume PiHole Prometheus exporter (standard exporter or sidecar container)
+- PiHole card placed in Infrastructure group on Homepage (alongside PgAdmin, Longhorn) for consistency
+
 ## Phase Progress
 
 | Phase | Name | Status |
@@ -130,7 +137,7 @@ Next action: Execute Plan 14-03 (PiHole Dashboard Integration)
 | 11 | Velero Full Backup | ○ Pending |
 | 12 | Headlamp Dashboard | ✓ Complete (Plan 01 complete, pending PR merge) |
 | 13 | Observability Stack (Loki, Fluent Bit, Gatus) | ◑ In Progress (Plans 01-02 complete) |
-| 14 | PiHole Network DNS & Ad-Blocking | ◑ In Progress (Plans 01-02 complete) |
+| 14 | PiHole Network DNS & Ad-Blocking | ✓ Complete (Plans 01-03 complete) |
 
 ## Cluster Snapshot (2026-04-04)
 
