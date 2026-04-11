@@ -12,4 +12,4 @@ resources:
   - grafana-admin-secret.yaml
   - prometheus-ingress.yaml
   - alertmanager-ingress.yaml
-
+  - loki-datasource.yaml
