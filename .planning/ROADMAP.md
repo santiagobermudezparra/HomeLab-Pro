@@ -230,10 +230,17 @@ Plans:
 
 **Requirements:** BACK-03, BACK-04, BACK-05
 
+**Plans:** 3 plans
+
+Plans:
+- [ ] 11-01-velero-install-PLAN.md — Velero HelmRelease + R2 credentials (SOPS) + NetworkPolicy + staging overlay wired into controller hierarchy
+- [ ] 11-02-backup-schedules-PLAN.md — 8 daily Velero Schedules (one per active app namespace, 14-day retention)
+- [ ] 11-03-restore-test-PLAN.md — Ad-hoc backup + test restore of xm-spotify-sync + RESTORE-PROCEDURE.md runbook
+
 **Scope:**
-- Install Velero HelmRelease with MinIO (or external S3) as backend
+- Install Velero HelmRelease with Cloudflare R2 as S3-compatible backend (no MinIO needed — R2 already in use for CNPG)
 - Configure backup schedules for all app namespaces (daily, 14-day retention)
-- Perform test restore of a non-critical namespace (xm-spotify-sync or pgadmin)
+- Perform test restore of a non-critical namespace (xm-spotify-sync)
 - Document restore procedure
 
 **Done when:** `velero backup get` shows successful scheduled backups for all namespaces, test restore verified.
