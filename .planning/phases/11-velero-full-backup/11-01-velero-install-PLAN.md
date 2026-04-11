@@ -382,12 +382,12 @@ resources:
     <automated>kustomize build infrastructure/controllers/base/velero/ 2>&1 | grep -E "kind:|name:" | head -20</automated>
   </verify>
   <acceptance_criteria>
-    - `kustomize build infrastructure/controllers/base/velero/` produces 5 resources: Namespace/velero, HelmRepository/velero, HelmRelease/velero, and 3 NetworkPolicy objects
+    - `kustomize build infrastructure/controllers/base/velero/` produces 6 resources: Namespace/velero, HelmRepository/velero, HelmRelease/velero, and 3 NetworkPolicy objects
     - HelmRelease references HelmRepository `velero` in namespace `velero`
     - network-policy.yaml has all 3 policies with namespace: velero
     - No plaintext credentials anywhere in these files
   </acceptance_criteria>
-  <done>5 files exist in infrastructure/controllers/base/velero/, kustomize build succeeds with no errors, 5+ Kubernetes resources output</done>
+  <done>5 files exist in infrastructure/controllers/base/velero/, kustomize build succeeds with no errors, 6 Kubernetes resources output</done>
 </task>
 
 <task type="auto">

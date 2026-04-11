@@ -6,8 +6,8 @@ depends_on:
   - 11-01
 autonomous: true
 files_modified:
-  - infrastructure/controllers/base/velero/schedules.yaml
-  - infrastructure/controllers/base/velero/kustomization.yaml
+  - infrastructure/controllers/staging/velero/schedules.yaml
+  - infrastructure/controllers/staging/velero/kustomization.yaml
 requirements:
   - BACK-04
 
@@ -18,28 +18,28 @@ must_haves:
     - "defaultVolumesToFsBackup: true on each schedule so Longhorn PVCs are included"
     - "velero schedule get shows 8 schedules in the cluster after FluxCD sync"
   artifacts:
-    - path: "infrastructure/controllers/base/velero/schedules.yaml"
+    - path: "infrastructure/controllers/staging/velero/schedules.yaml"
       provides: "8 Velero Schedule CRs — one per app namespace"
       contains: "kind: Schedule"
-    - path: "infrastructure/controllers/base/velero/kustomization.yaml"
+    - path: "infrastructure/controllers/staging/velero/kustomization.yaml"
       provides: "Updated base kustomization including schedules.yaml"
       contains: "schedules.yaml"
   key_links:
-    - from: "infrastructure/controllers/base/velero/schedules.yaml"
+    - from: "infrastructure/controllers/staging/velero/schedules.yaml"
       to: "velero BackupStorageLocation/default"
       via: "Schedule.spec.template.storageLocation: default"
       pattern: "storageLocation: default"
-    - from: "infrastructure/controllers/base/velero/kustomization.yaml"
-      to: "infrastructure/controllers/base/velero/schedules.yaml"
+    - from: "infrastructure/controllers/staging/velero/kustomization.yaml"
+      to: "infrastructure/controllers/staging/velero/schedules.yaml"
       via: "resources: - schedules.yaml"
       pattern: "- schedules.yaml"
 ---
 
 <objective>
-Add Velero Schedule CRs for all 8 active app namespaces, stored in `infrastructure/controllers/base/velero/schedules.yaml`. Each schedule runs nightly at 2am, includes filesystem-based PVC backup (kopia via node-agent), and retains backups for 14 days.
+Add Velero Schedule CRs for all 8 active app namespaces, stored in `infrastructure/controllers/staging/velero/schedules.yaml`. Each schedule runs nightly at 2am, includes filesystem-based PVC backup (kopia via node-agent), and retains backups for 14 days.
 
 Purpose: Satisfy BACK-04 — automated daily backups for all namespaces. These schedules deploy alongside Velero via FluxCD, so no manual `velero schedule create` commands are needed.
-Output: `schedules.yaml` with 8 Schedule objects; updated kustomization.yaml includes it.
+Output: `schedules.yaml` with 8 Schedule objects; staging kustomization.yaml updated to include it.
 </objective>
 
 <execution_context>
@@ -85,33 +85,33 @@ Active app namespaces (from apps/staging/kustomization.yaml):
 
 NOTE: homarr is intentionally commented out in staging/kustomization.yaml — do NOT include a schedule for homarr.
 
-Current infrastructure/controllers/base/velero/kustomization.yaml (from Plan 01):
+Current infrastructure/controllers/staging/velero/kustomization.yaml (from Plan 01 — this is the staging overlay kustomization that references the base and applies patches):
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-  - namespace.yaml
-  - repository.yaml
-  - release.yaml
-  - network-policy.yaml
+  - ../../base/velero
+patches:
+  - ...  # S3 URL / credentials patches from Plan 01
 ```
+Read the actual file to see its current state — add `- schedules.yaml` to its resources list.
 </interfaces>
 
 <tasks>
 
 <task type="auto">
-  <name>Task 1: Create schedules.yaml with 8 daily Schedule CRs and update base kustomization</name>
+  <name>Task 1: Create schedules.yaml with 8 daily Schedule CRs and update staging kustomization</name>
   <read_first>
-    - infrastructure/controllers/base/velero/kustomization.yaml (to append schedules.yaml)
+    - infrastructure/controllers/staging/velero/kustomization.yaml (to append schedules.yaml)
     - apps/staging/kustomization.yaml (to confirm active namespaces list — homarr is excluded)
     - infrastructure/controllers/base/velero/release.yaml (verify defaultVolumesToFsBackup is set at HelmRelease level, confirm schedule-level override is correct)
   </read_first>
   <files>
-    infrastructure/controllers/base/velero/schedules.yaml,
-    infrastructure/controllers/base/velero/kustomization.yaml
+    infrastructure/controllers/staging/velero/schedules.yaml,
+    infrastructure/controllers/staging/velero/kustomization.yaml
   </files>
   <action>
-Create `infrastructure/controllers/base/velero/schedules.yaml` with 8 Velero Schedule objects separated by `---`. All schedules use:
+Create `infrastructure/controllers/staging/velero/schedules.yaml` with 8 Velero Schedule objects separated by `---`. All schedules use:
 - `namespace: velero` (Velero CRDs live in the velero control-plane namespace)
 - `schedule: "0 2 * * *"` (daily at 02:00 UTC)
 - `ttl: 336h0m0s` (14 days)
@@ -169,7 +169,7 @@ spec:
 
 Write all 8 Schedule objects in full (do not abbreviate with comments like "repeat pattern" — write every object completely).
 
-Then update `infrastructure/controllers/base/velero/kustomization.yaml` to add `- schedules.yaml` to resources:
+Then update `infrastructure/controllers/staging/velero/kustomization.yaml` to add `- schedules.yaml` to resources:
 ```yaml
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
@@ -182,14 +182,14 @@ resources:
 ```
   </action>
   <verify>
-    <automated>grep -c "kind: Schedule" infrastructure/controllers/base/velero/schedules.yaml && kustomize build infrastructure/controllers/base/velero/ 2>&1 | grep -c "kind:"</automated>
+    <automated>grep -c "kind: Schedule" infrastructure/controllers/staging/velero/schedules.yaml && kustomize build infrastructure/controllers/staging/velero/ 2>&1 | grep -c "kind:"</automated>
   </verify>
   <acceptance_criteria>
-    - `grep -c "kind: Schedule" infrastructure/controllers/base/velero/schedules.yaml` returns exactly `8`
-    - `kustomize build infrastructure/controllers/base/velero/` succeeds with no errors
+    - `grep -c "kind: Schedule" infrastructure/controllers/staging/velero/schedules.yaml` returns exactly `8`
+    - `kustomize build infrastructure/controllers/staging/velero/` succeeds with no errors
     - Each Schedule has `ttl: 336h0m0s`, `defaultVolumesToFsBackup: true`, `snapshotVolumes: false`
     - No schedule exists for `homarr`
-    - `infrastructure/controllers/base/velero/kustomization.yaml` contains `- schedules.yaml`
+    - `infrastructure/controllers/staging/velero/kustomization.yaml` contains `- schedules.yaml`
   </acceptance_criteria>
   <done>schedules.yaml has 8 complete Schedule objects, kustomize build passes, kustomization.yaml includes schedules.yaml</done>
 </task>
@@ -197,10 +197,10 @@ resources:
 </tasks>
 
 <verification>
-1. `grep -c "kind: Schedule" infrastructure/controllers/base/velero/schedules.yaml` → must return `8`
-2. `kustomize build infrastructure/controllers/base/velero/ 2>&1 | grep "kind:"` → must show Namespace, HelmRepository, HelmRelease, 3x NetworkPolicy, 8x Schedule = 13 resources
-3. `grep "homarr" infrastructure/controllers/base/velero/schedules.yaml` → must return nothing (no homarr schedule)
-4. `grep "336h0m0s" infrastructure/controllers/base/velero/schedules.yaml | wc -l` → must return `8`
+1. `grep -c "kind: Schedule" infrastructure/controllers/staging/velero/schedules.yaml` → must return `8`
+2. `kustomize build infrastructure/controllers/staging/velero/ 2>&1 | grep "kind:"` → must show Namespace, HelmRepository, HelmRelease, 3x NetworkPolicy, 8x Schedule = 13 resources
+3. `grep "homarr" infrastructure/controllers/staging/velero/schedules.yaml` → must return nothing (no homarr schedule)
+4. `grep "336h0m0s" infrastructure/controllers/staging/velero/schedules.yaml | wc -l` → must return `8`
 </verification>
 
 <success_criteria>
