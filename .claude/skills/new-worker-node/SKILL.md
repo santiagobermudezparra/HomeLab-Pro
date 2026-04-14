@@ -127,7 +127,7 @@ node-label:
 |------|----------|----|-----|
 | Control-plane | santi-standard-pc-i440fx-piix-1996 | 192.168.1.115 | local |
 | Worker 1 | homelab-worker-01 | 192.168.1.89 | `ssh homelab-worker1@192.168.1.89` |
-| Worker 2 | homelab-worker-02 | 192.168.1.67 | `ssh homelab-worker2@192.168.1.67` |
+| Worker 2 | homelab-worker-02 | 192.168.1.68 | `ssh homelab-worker2@192.168.1.68` |
 
 **Worker SSH password**: in `.env` → `WORKER_NODES_PSWD`
 
