@@ -91,6 +91,10 @@ kubectl logs -n kube-system -l k8s-app=cilium --tail=50
 
 > **Note:** Do NOT proceed to Step 4 (workload scheduling) until the Cilium agent on the new node is `Running`. Pods scheduled before Cilium is ready will fail with networking errors.
 
+**If Cilium doesn't reach Running within 2 minutes:**
+- This is the same issue that caused the April 12 incident
+- See **Troubleshooting: Cilium Networking Failure** below for the fix
+
 ### Step 4 — Verify monitoring is active (run on control-plane)
 
 ```bash
@@ -127,6 +131,80 @@ node-label:
 
 **Worker SSH password**: in `.env` → `WORKER_NODES_PSWD`
 
+## Container Image Cleanup on New Nodes
+
+New worker nodes accumulate Docker images over time (pulled by Renovate, workloads, etc.). After 2-3 months, nodes can reach 70%+ disk usage. To prevent this, set up monthly cleanup.
+
+### Option 1: Automated via Script (Recommended)
+```bash
+# Run this monthly to clean ALL nodes at once
+./infrastructure/scripts/cleanup-container-images.sh
+```
+
+This runs `crictl rmi --prune` on all nodes via SSH. Recovers 50-70GB per node.
+
+### Option 2: Manual per-node cleanup
+```bash
+# On the new worker node, run:
+sudo k3s crictl rmi --prune
+
+# What it does: Removes Docker images not referenced by any pod (safe)
+# Result: Recovers 50-70GB
+# Time: 1-2 minutes
+```
+
+### Option 3: Automated via CronJob (runs monthly reminder)
+The cluster includes a monthly CronJob that reminds you to run cleanup:
+```bash
+# Check the CronJob
+kubectl get cronjob -n kube-system container-image-cleanup
+
+# It triggers monthly on the 1st at 2:00 AM
+# Logs will remind you to run the script
+```
+
+---
+
+## Troubleshooting
+
+### Cilium Networking Failure (April 12 Incident)
+
+**Symptom:** Cilium pod is stuck in `ContainerCreating` or `CrashLoopBackOff` on new node
+
+**Why:** Cilium network agent didn't initialize properly on the new node
+
+**Fix (run on control-plane):**
+```bash
+# Restart Cilium across all nodes to reset the network fabric
+kubectl rollout restart daemonset/cilium -n kube-system
+kubectl wait --for=condition=ready pod -l k8s-app=cilium -n kube-system --timeout=60s
+
+# If the issue persists only on one node, troubleshoot that node's networking
+kubectl describe node <node-name> | grep -A 5 "Conditions:"
+```
+
+**Test connectivity (verify the fix worked):**
+```bash
+# From control-plane, try reaching Kubernetes service API from new node
+ssh homelab-workerN@<IP> "timeout 3 curl -v http://10.43.42.90:9500/v1" 2>&1 | head -10
+# Should connect, not timeout. If it hangs, Cilium is still broken.
+```
+
+### Node Disk Full
+
+**Symptom:** New node disk fills quickly (50%+ in first week)
+
+**Cause:** Container images accumulated from workloads
+
+**Fix (temporary):**
+```bash
+ssh <node> "sudo k3s crictl rmi --prune"
+```
+
+**Long-term:** Set up monthly cleanup script as shown above
+
+---
+
 ## Summary: what's automatic vs manual
 
 | Task | Automatic? |
@@ -138,3 +216,4 @@ node-label:
 | Prometheus node monitoring | ✅ DaemonSet deploys automatically |
 | Traefik load balancing | ✅ Joins LB pool automatically |
 | FluxCD workload scheduling | ✅ Kubernetes schedules automatically |
+| Container image cleanup | ⚠️ Manual monthly (script or cron) |
