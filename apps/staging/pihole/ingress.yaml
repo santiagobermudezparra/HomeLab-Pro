@@ -23,7 +23,8 @@ metadata:
     gethomepage.dev/group: Infrastructure
     gethomepage.dev/icon: pi-hole.png
     gethomepage.dev/description: Network-wide ad blocking
-    traefik.ingress.kubernetes.io/middleware: pihole:pihole-redirect-root
+    gethomepage.dev/href: "https://pihole.watarystack.org/admin/login"
+    traefik.ingress.kubernetes.io/router.middlewares: pihole-pihole-redirect-root@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
