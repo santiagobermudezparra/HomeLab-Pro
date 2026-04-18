@@ -24,7 +24,7 @@ spec:
                   - key: node-role.kubernetes.io/control-plane
                     operator: DoesNotExist
       containers:
-        - image: ghcr.io/mealie-recipes/mealie:v2.8.0
+        - image: ghcr.io/mealie-recipes/mealie:v3.16.0
           name: mealie
           ports:
             - containerPort: 9000
