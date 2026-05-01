@@ -25,6 +25,46 @@ spec:
                 matchExpressions:
                   - key: node-role.kubernetes.io/control-plane
                     operator: DoesNotExist
+      initContainers:
+        - name: wallabag-init
+          image: wallabag/wallabag:latest
+          command:
+            - sh
+            - -c
+            - |
+              cd /var/www/wallabag
+              envsubst < /etc/wallabag/parameters.template.yml > app/config/parameters.yml
+              TABLES=$(PGPASSWORD="$SYMFONY__ENV__DATABASE_PASSWORD" psql \
+                -h "$SYMFONY__ENV__DATABASE_HOST" \
+                -p "$SYMFONY__ENV__DATABASE_PORT" \
+                -U "$SYMFONY__ENV__DATABASE_USER" \
+                -d "$SYMFONY__ENV__DATABASE_NAME" \
+                -tAc "SELECT COUNT(*) FROM information_schema.tables WHERE table_name='wallabag_internal_setting'" 2>/dev/null || echo "0")
+              if [ "$TABLES" = "0" ]; then
+                echo "Schema not found — running wallabag:install..."
+                su -c "php bin/console wallabag:install --env=prod -n" -s /bin/sh nobody
+              else
+                echo "Schema already exists — skipping install."
+              fi
+          envFrom:
+            - configMapRef:
+                name: wallabag-config
+          env:
+            - name: SYMFONY__ENV__DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-credentials
+                  key: username
+            - name: SYMFONY__ENV__DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-credentials
+                  key: password
+            - name: SYMFONY__ENV__SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-env-secret
+                  key: SYMFONY__ENV__SECRET
       containers:
         - name: wallabag
           image: wallabag/wallabag:latest
