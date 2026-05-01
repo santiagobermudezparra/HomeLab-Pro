@@ -179,7 +179,7 @@ data:
         - Wallabag:
             href: https://wallabag.watarystack.org
             description: Self-hosted read-it-later & web archiving
-            icon: wallabag.png
+            icon: sh-wallabag
             ping: https://wallabag.watarystack.org
     - Monitoring:
         - Gatus:
