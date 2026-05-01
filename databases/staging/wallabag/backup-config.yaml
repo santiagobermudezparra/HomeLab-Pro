@@ -1,0 +1,16 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: wallabag-backup
+  namespace: wallabag
+spec:
+  # Schedule: Daily at 2 AM (CNPG uses 6-field cron: sec min hour dom month dow)
+  schedule: "0 0 2 * * *"
+
+  # Trigger a backup immediately when the resource is first created
+  immediate: true
+
+  cluster:
+    name: wallabag-postgres
+
+  backupOwnerReference: cluster

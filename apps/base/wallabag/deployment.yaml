@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: wallabag
+  namespace: wallabag
+  labels:
+    app: wallabag
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: wallabag
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: wallabag
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
+      containers:
+        - name: wallabag
+          image: wallabag/wallabag:latest
+          ports:
+            - containerPort: 80
+              name: http
+          envFrom:
+            - configMapRef:
+                name: wallabag-config
+          env:
+            - name: SYMFONY__ENV__DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-credentials
+                  key: username
+            - name: SYMFONY__ENV__DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-db-credentials
+                  key: password
+            - name: SYMFONY__ENV__SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-env-secret
+                  key: SYMFONY__ENV__SECRET
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: wallabag-images
+              mountPath: /var/www/wallabag/web/assets/images
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 60
+            periodSeconds: 30
+            timeoutSeconds: 10
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          startupProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 10
+            failureThreshold: 20
+      volumes:
+        - name: wallabag-images
+          persistentVolumeClaim:
+            claimName: wallabag-images
+      restartPolicy: Always

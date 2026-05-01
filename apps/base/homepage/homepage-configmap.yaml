@@ -176,6 +176,11 @@ data:
             description: Web-based file manager & sharing
             icon: filebrowser.png
             ping: https://filebrowser.watarystack.org
+        - Wallabag:
+            href: https://wallabag.watarystack.org
+            description: Self-hosted read-it-later & web archiving
+            icon: wallabag.png
+            ping: https://wallabag.watarystack.org
     - Monitoring:
         - Gatus:
             href: https://status.watarystack.org
