@@ -6,6 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: forgejo
   annotations:
+    external-dns.alpha.kubernetes.io/hostname: forgejo.watarystack.org
     cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
     gethomepage.dev/enabled: "true"
     gethomepage.dev/name: Forgejo

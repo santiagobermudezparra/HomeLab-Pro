@@ -27,6 +27,10 @@ data:
         icon: mdi-chart-line
         style: row
         columns: 4
+      Development:
+        icon: mdi-git
+        style: row
+        columns: 2
       Infrastructure:
         icon: mdi-server-outline
         style: row
