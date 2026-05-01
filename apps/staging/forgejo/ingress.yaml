@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: forgejo
+  namespace: forgejo
+  labels:
+    app.kubernetes.io/name: forgejo
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: forgejo.watarystack.org
+    cert-manager.io/cluster-issuer: letsencrypt-cloudflare-prod
+    gethomepage.dev/enabled: "true"
+    gethomepage.dev/name: Forgejo
+    gethomepage.dev/description: Self-hosted Git service
+    gethomepage.dev/group: Development
+    gethomepage.dev/icon: gitea.png
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - forgejo.watarystack.org
+      secretName: forgejo-tls
+  rules:
+    - host: forgejo.watarystack.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: forgejo
+                port:
+                  number: 3000

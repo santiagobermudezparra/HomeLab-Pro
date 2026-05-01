@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: forgejo
+  namespace: forgejo
+  labels:
+    app: forgejo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: forgejo
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: forgejo
+    spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
+      securityContext:
+        fsGroup: 1000
+      containers:
+        - name: forgejo
+          image: codeberg.org/forgejo/forgejo:9
+          ports:
+            - containerPort: 3000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: forgejo-config
+          env:
+            - name: FORGEJO__database__PASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-db-credentials
+                  key: password
+            - name: FORGEJO_ADMIN_USER
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-env-secret
+                  key: FORGEJO_ADMIN_USER
+            - name: FORGEJO_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-env-secret
+                  key: FORGEJO_ADMIN_PASSWORD
+            - name: FORGEJO_ADMIN_EMAIL
+              valueFrom:
+                secretKeyRef:
+                  name: forgejo-env-secret
+                  key: FORGEJO_ADMIN_EMAIL
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/sh
+                  - -c
+                  - |
+                    for i in $(seq 1 30); do
+                      forgejo admin user create \
+                        --admin \
+                        --username "$FORGEJO_ADMIN_USER" \
+                        --password "$FORGEJO_ADMIN_PASSWORD" \
+                        --email "$FORGEJO_ADMIN_EMAIL" \
+                        --must-change-password=false 2>&1 && break
+                      sleep 3
+                    done
+                    exit 0
+          volumeMounts:
+            - name: forgejo-data
+              mountPath: /data
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 30
+            periodSeconds: 30
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 3000
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            failureThreshold: 3
+      volumes:
+        - name: forgejo-data
+          persistentVolumeClaim:
+            claimName: forgejo-data

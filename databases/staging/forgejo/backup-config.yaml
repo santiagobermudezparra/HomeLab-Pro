@@ -1,0 +1,16 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: ScheduledBackup
+metadata:
+  name: forgejo-backup
+  namespace: forgejo
+spec:
+  # Schedule: Daily at 3 AM (CNPG uses 6-field cron: sec min hour dom month dow)
+  schedule: "0 0 3 * * *"
+
+  # Trigger a backup immediately when the resource is first created
+  immediate: true
+
+  cluster:
+    name: forgejo-postgres
+
+  backupOwnerReference: cluster
