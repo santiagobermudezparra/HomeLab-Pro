@@ -7,9 +7,9 @@ spec:
   description: "PostgreSQL cluster for Wallabag application"
   instances: 1
 
-  monitoring:
-    enabled: true
-    podMonitorEnabled: true
+  # monitoring:
+  #   enabled: true
+  #   podMonitorEnabled: true
 
   postgresql:
     parameters:
