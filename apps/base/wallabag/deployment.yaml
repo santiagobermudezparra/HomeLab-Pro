@@ -46,6 +46,8 @@ spec:
               else
                 echo "Schema already exists — skipping install."
               fi
+              echo "Setting admin password..."
+              su -c "php bin/console fos:user:change-password wallabag '$WALLABAG_ADMIN_PASSWORD' --env=prod" -s /bin/sh nobody
           envFrom:
             - configMapRef:
                 name: wallabag-config
@@ -65,6 +67,11 @@ spec:
                 secretKeyRef:
                   name: wallabag-env-secret
                   key: SYMFONY__ENV__SECRET
+            - name: WALLABAG_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: wallabag-env-secret
+                  key: WALLABAG_ADMIN_PASSWORD
       containers:
         - name: wallabag
           image: wallabag/wallabag:latest
