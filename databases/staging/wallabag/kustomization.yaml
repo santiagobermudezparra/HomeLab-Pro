@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - secrets.yaml
+  - superuser-secret.yaml
+  - postgresql-cluster.yaml
+  - backup-config.yaml
+  - wallabag-backup-s3-secret.yaml
+  - r2-backup-configmap.yaml
+
+replacements:
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.endpointURL
+    targets:
+      - select:
+          kind: Cluster
+          name: wallabag-postgres
+        fieldPaths:
+          - spec.backup.barmanObjectStore.endpointURL
+  - source:
+      kind: ConfigMap
+      name: r2-backup-config
+      fieldPath: data.destinationPath
+    targets:
+      - select:
+          kind: Cluster
+          name: wallabag-postgres
+        fieldPaths:
+          - spec.backup.barmanObjectStore.destinationPath
