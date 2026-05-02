@@ -979,6 +979,24 @@ git push origin feat/add-${APP_NAME}
 
 ---
 
+## Step 10.5 — Add App to Gatus Status Page (MANDATORY for every app)
+
+Every new app must be added to the Gatus status page so it is monitored for uptime. Edit `apps/base/gatus/configmap.yaml` and add an endpoint under the appropriate group:
+
+```yaml
+      - name: ${APP_DISPLAY_NAME}
+        group: ${GROUP}   # Media | Productivity | Development | Infrastructure | Monitoring
+        url: https://${APP_HOSTNAME}
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+```
+
+> **Note:** For apps that redirect `/` (e.g., Pi-hole), use the direct login URL. Commit this alongside the rest of the app changes.
+
+---
+
 ## Checklist Summary
 
 - [ ] User provided all required info (app name, port, image, hostname, **access type**)
@@ -992,6 +1010,8 @@ git push origin feat/add-${APP_NAME}
 - [ ] **CloudNativePG (if `USE_CNPG=yes`):** Added DB env vars to `apps/base/${APP_NAME}/deployment.yaml`
 - [ ] Verified secrets are encrypted with SOPS (look for `ENC[AES256_GCM`)
 - [ ] Updated `apps/staging/kustomization.yaml` with new app
+- [ ] **Added app to Homepage** — via `gethomepage.dev/` annotations on Ingress (internal) or `apps/base/homepage/homepage-configmap.yaml` services.yaml (Cloudflare). MANDATORY.
+- [ ] **Added app to Gatus** — added endpoint to `apps/base/gatus/configmap.yaml` under correct group. MANDATORY.
 - [ ] Tested manifests with `--dry-run=client`
 - [ ] Committed to feature branch
 - [ ] Pushed to origin
