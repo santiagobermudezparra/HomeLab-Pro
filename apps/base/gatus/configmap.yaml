@@ -66,6 +66,22 @@ data:
           - "[STATUS] == 200"
           - "[RESPONSE_TIME] < 5000"
 
+      - name: Wallabag
+        group: Productivity
+        url: https://wallabag.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
+      - name: Forgejo
+        group: Development
+        url: https://forgejo.watarystack.org
+        interval: 60s
+        conditions:
+          - "[STATUS] == 200"
+          - "[RESPONSE_TIME] < 5000"
+
       - name: Grafana
         group: Monitoring
         url: https://grafana.watarystack.org/api/health
