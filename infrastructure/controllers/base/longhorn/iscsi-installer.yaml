@@ -29,12 +29,12 @@ spec:
             - bash
             - -c
             - *cmd
-          image: alpine:3.17
+          image: alpine:3.24
           securityContext:
             privileged: true
       containers:
         - name: longhorn-iscsi-installation
-          image: alpine:3.17
+          image: alpine:3.24
           command: ["/bin/sh", "-c", "while true; do sleep 86400; done"]
           securityContext:
             privileged: true
